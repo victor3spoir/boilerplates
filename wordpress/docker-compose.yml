@@ -1,0 +1,29 @@
+version: '3'
+
+networks:
+  app_network:
+    external:
+      true
+
+
+
+services:
+
+  wordpress_01:
+    image: wordpress:6-php8.1
+    restart: always
+    container_name: wordpress_01 
+    networks:
+      - app_network
+    ports:
+      - 127.0.0.1:8080:80
+    environment:
+      - WORDPRESS_DB_HOST=mysql_db
+      - WORDPRESS_DB_USER=wordpress_01
+      - WORDPRESS_DB_PASSWORD=wordpress_01
+      - WORDPRESS_DB_NAME=wordpress_01
+      - WORDPRESS_TABLE_PREFIX=wordpress_
+    volumes:
+      - /d/Development/dockervolumes/wordpress_01:/var/www/html
+
+

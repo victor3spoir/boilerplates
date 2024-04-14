@@ -1,0 +1,35 @@
+version: '3.9'
+
+networks:
+  app_network:
+    external: true
+
+volumes:
+  postgres_volume:
+    external: true
+
+services:
+  postgres_db:
+    image: postgres:16-bullseye
+    container_name: postgres_db
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.25"
+          memory: 20M
+        limits:
+          cpus: "0.50"
+          memory: 150M
+    networks:
+      - app_network
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      # - postgres_volume:/var/lib/postgresql/data/pgdata
+      - /d/Development/dockervolumes/postgres/pgdata:/var/lib/postgresql/data/pgdata
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata

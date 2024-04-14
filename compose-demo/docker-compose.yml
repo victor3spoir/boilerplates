@@ -1,0 +1,8 @@
+version: "3"
+services:
+  app_web:
+    image: nginx:alpine
+    # container_name: app_web
+    ports:
+      - "127.0.0.1:8080:80"
+    
