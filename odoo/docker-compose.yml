@@ -1,39 +1,54 @@
-version: '3.4'
-
 networks:
-  app_network:
+  proxy_network:
     external:
       true
-
-volumes:
-  odoo_volume:
-    external:
-      true
-
 
 services:
   odoo_web:
     image: odoo:17
     container_name: odoo_web
     restart: unless-stopped
+    depends_on:
+      - odoo_db
     networks:
-      - app_network
-    ports:
-      - "127.0.0.1:8069:8069"
+      - proxy_network
+    # ports:
+    #   - '8069:8069'
     environment:
-    - HOST=postgres_db
-    - USER=odoo_user
-    - PASSWORD=odoo_password
+      - HOST=odoo_db
+      - USER=odoo_user
+      - PASSWORD=odoo_password
     volumes:
       - ./config:/etc/odoo:ro
-      # - ./addons:/mnt/extra-addons:rw
-      # - odoo_volume:/var/lib/odoo
-      # - odoo_volume:/mnt/extra-addons
-      - /d/Development/dockervolumes/odoo/data:/var/lib/odoo
-      - /d/Development/dockervolumes/odoo/extra-addons:/mnt/extra-addons:rw
+      - /mnt/d/Development/dockervolumes/odoo/odoo_web/data:/var/lib/odoo
+      - /mnt/d/Development/dockervolumes/odoo/odoo_web/extra-addons:/mnt/extra-addons:rw
+    labels:
+      - traefik.http.routers.odoo_web.rule=Host(`odoo.wslubuntu.com`)
 
-
-
-
-# user:admin
-# password: in config file
+  odoo_db:
+    image: postgres:16-alpine
+    container_name: odoo_db
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          cpus: '0.25'
+          memory: 20M
+        limits:
+          cpus: '0.50'
+          memory: 150M
+    networks:
+      - proxy_network
+    environment:
+      - POSTGRES_USER=odoo_user
+      - POSTGRES_PASSWORD=odoo_password
+      - POSTGRES_DB=postgres
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - /mnt/d/Development/dockervolumes/odoo/odoo_db/pgdata:/var/lib/postgresql/data/pgdata
+    labels:
+      - traefik.enable=true
+      - traefik.tcp.routers.odoo_db.entryPoints=postgres
+      - traefik.tcp.routers.odoo_db.rule=HostSNI(`*`)
+      - traefik.tcp.routers.odoo_db.service=odoo_db
+      - traefik.tcp.services.odoo_db.loadbalancer.server.port=5432

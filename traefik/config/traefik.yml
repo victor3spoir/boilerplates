@@ -1,0 +1,47 @@
+## traefik v3.yml
+
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+# API and dashboard configuration
+api:
+  insecure: true
+  dashboard: true
+
+    
+
+entryPoints:
+  http:
+    address: :80
+    http:
+      redirections:
+        entryPoints:
+          to: https
+          scheme: https
+  https:
+    address: :443
+  postgres:
+    address: :5432
+
+providers:
+  docker: 
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+
+
+certificatesResolvers:
+  staging:
+    acme:
+      email: ""
+      storage: /path/
+      caServer: ""
+      httpChallenge:
+        entryPoints: http
+  production:
+    acme:
+      email: ""
+      storage: /path/
+      caServer: ""
+      httpChallenge:
+        entryPoints: http

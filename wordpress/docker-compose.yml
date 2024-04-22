@@ -1,29 +1,38 @@
-version: '3'
 
 networks:
-  app_network:
+  proxy_network:
     external:
       true
-
-
-
 services:
-
-  wordpress_01:
-    image: wordpress:6-php8.1
+  wordpress_web:
+    image: wordpress:php8.1-fpm-alpine
     restart: always
-    container_name: wordpress_01 
-    networks:
-      - app_network
-    ports:
-      - 127.0.0.1:8080:80
+    container_name: wordpress_web
+    # ports:
+    #   - 127.0.0.1:9080:80
+    # networks:
+    #   - proxy_network
     environment:
-      - WORDPRESS_DB_HOST=mysql_db
+      - WORDPRESS_DB_HOST=wordpress_mariadb
       - WORDPRESS_DB_USER=wordpress_01
       - WORDPRESS_DB_PASSWORD=wordpress_01
       - WORDPRESS_DB_NAME=wordpress_01
       - WORDPRESS_TABLE_PREFIX=wordpress_
     volumes:
-      - /d/Development/dockervolumes/wordpress_01:/var/www/html
+      - /mnt/d/Development/dockervolumes/wordpress_01:/var/www/html
+    labels:
+      - traefik.enable=true
+    #   - traefik.http.routers.wordpress_web.endpoints=http
+    #   - treafik.http.routers.wordpress_web.rule=Host(`wordpress.wslubuntu.com`)
+    #   - traefik.http.services.wordpress_web.loadbalancer.server.port=80
 
-
+  wordpress_mariadb:
+    image: mariadb:lts
+    restart: always
+    container_name: wordpress_mariadb
+    # networks:
+    #   - proxy_network
+    environment:
+      MARIADB_ROOT_PASSWORD: mariadb
+    volumes:
+      - /mnt/d/Development/dockervolumes/mysql_db:/var/lib/mysql

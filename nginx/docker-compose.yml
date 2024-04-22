@@ -1,0 +1,15 @@
+networks:
+  proxy_network:
+    external: true
+
+services:
+  nginx_01:
+    image: nginx:stable-alpine
+    container_name: nginx_01
+    networks:
+      - proxy_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.nginx_01.rule=Host(`nginx.wslubuntu.com`)
+      - traefik.http.services.nginx_01.loadbalancer.server.port=80
+  

@@ -1,24 +1,19 @@
-version: '3'
-
-networks:
-  app_network:
-    external:
-      true
-
 services:
-  traefik-proxy:
-    # The official v2 Traefik docker image
-    image: traefik:v2.11
-    container_name: traefik-proxy
-    # Enables the web UI and tells Traefik to listen to docker
-    command: --api.insecure=true --providers.docker
-    networks:
-      - app_network
+  traefik_proxy:
+    image: traefik:v3.0
+    container_name: traefik_proxy
+    restart: unless-stopped
     ports:
-      # The HTTP port
       - "80:80"
-      # The Web UI (enabled by --api.insecure=true)
+      - "443:443"
+      - "5432:5432"
       - "8080:8080"
     volumes:
-      # So that Traefik can listen to the Docker events
+      - ./config:/etc/traefik
       - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`traefik.localdomain.com`)
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.routers.middlewares=traefikauth
+      - "traefik.http.middlewares.traefikauth.basicauth.users=ryuk:$$2y$$10$$4bRdNt3ZIurDiyBNpBMM8.X7yWGdQhToyHtSMX3jtCyLHyXwGN2A."
