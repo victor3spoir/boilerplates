@@ -1,0 +1,39 @@
+networks:
+  dockernet:
+    external:
+      true
+  front_net:
+    external:
+      true
+  back_net:
+    external:
+      true
+      
+services:
+  traefik_proxy:
+    image: traefik:v3.0
+    container_name: traefik_proxy
+    restart: unless-stopped
+    user: root
+    networks:
+      - dockernet
+      - front_net
+      - back_net
+    ports:
+      - "80:80"
+      - "443:443"
+      - "5432:5432"
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./config:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /appdata/volumes/traefik/_data:/etc/traefik/certs
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik-rtr.entrypoints=http,https
+      - traefik.http.routers.traefik-rtr.rule=Host(`traefik.homestack.me`)
+      - traefik.http.routers.traefik-rtr.middlewares=auth-mw@file,https-mw@file
+      - traefik.http.routers.traefik-rtr.tls=true
+      - traefik.http.routers.traefik-rtr.tls.certresolver=development
+      # - traefik.http.routers.traefik-rtr.services=traefik-svc
+      - traefik.http.services.traefik-svc.loadbalancer.server.port=8080

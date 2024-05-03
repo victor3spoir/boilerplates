@@ -1,0 +1,26 @@
+networks:
+  dockernet:
+    external:
+      true
+
+services:
+  kestra_web:
+    image: kestra/kestra:develop-full
+    container_name: kestra_web
+    command: server local
+    user: root
+    networks:
+      - dockernet
+    # ports:
+    #   - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp:/tmp
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kestra-rtr.entrypoints=http,https
+      - traefik.http.routers.kestra-rtr.rule=Host(`kestra.homestack.me`)
+      # - traefik.http.routers.kestra-rtr.middlewares=middlewares=auth-mw@file,https-mw@file
+      - traefik.http.routers.kestra-rtr.tls=true
+      - traefik.http.routers.kestra-rtr.tls.certresolver=development
+      - traefik.http.services.kestra-svc.loadbalancer.server.port=8080

@@ -1,0 +1,43 @@
+
+networks:
+  dockernet:
+    external:
+      true
+      
+services:
+  wordpress_web:
+    image: wordpress:php8.1-fpm-alpine
+    restart: always
+    container_name: wordpress_web
+    ports:
+      - "7878:80"
+    networks:
+      - dockernet
+    environment:
+      - WORDPRESS_DB_HOST=wordpress_mariadb
+      - WORDPRESS_DB_USER=wordpress_01
+      - WORDPRESS_DB_PASSWORD=wordpress_01
+      - WORDPRESS_DB_NAME=wordpress_01
+      - WORDPRESS_TABLE_PREFIX=wordpress_
+    volumes:
+      - /appdata/volumes/wordpress/web/_data:/var/www/html
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.wordpress-rtr.entrypoints=http,https
+      - traefik.http.routers.wordpress-rtr.rule=Host(`wordpress.homestack.me`)
+      - traefik.http.services.wordpress-svc.loadbalancer.server.port=80
+      # - traefik.http.routers.wordpress-rtr.tls=true
+      # - traefik.http.routers.wordpress-rtr.tls.certresolver=development
+
+  wordpress_mariadb:
+    image: mariadb:lts
+    restart: always
+    container_name: wordpress_mariadb
+    networks:
+      - dockernet
+    environment:
+      - MYSQL_ROOT_PASSWORD=mariadb
+      - MYSQL_USER=wordpress_01
+      - MYSQL_PASSWORD=wordpress_01
+    volumes:
+      - /appdata/volumes/wordpress/db/_data:/var/lib/mysql

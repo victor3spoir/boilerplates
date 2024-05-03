@@ -1,0 +1,94 @@
+# https://docs.docker.com/compose/environment-variables/
+
+networks:
+  dockernet:
+    external:
+      true
+
+services:
+  mattermost_postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    # security_opt:
+    #   - no-new-privileges:true
+    # pids_limit: 100
+    # read_only: true
+    # tmpfs:
+    #   - /tmp
+    #   - /var/run/postgresql
+    volumes:
+      - /appdata/volumes/mattermost/db/_data:/var/lib/postgresql/data
+    networks:
+      - dockernet
+    
+    environment:
+      # timezone inside container
+      - TZ
+      # necessary Postgres options/variables
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - PGDATA=/var/lib/postgresql/data/pgdata
+
+  mattermost_web:
+    depends_on:
+      - mattermost_postgres
+    image: mattermost/mattermost-team-edition:release-9
+    restart: unless-stopped
+    # user: root
+    networks:
+      - dockernet
+    # security_opt:
+    #   - no-new-privileges:true
+    # pids_limit: 200
+    # tmpfs:
+    #   - /tmp
+    # volumes:
+    #   - ${MATTERMOST_CONFIG_PATH}:/mattermost/config:rw
+    #   - ${MATTERMOST_DATA_PATH}:/mattermost/data:rw
+    #   - ${MATTERMOST_LOGS_PATH}:/mattermost/logs:rw
+    #   - ${MATTERMOST_PLUGINS_PATH}:/mattermost/plugins:rw
+    #   - ${MATTERMOST_CLIENT_PLUGINS_PATH}:/mattermost/client/plugins:rw
+    #   - ${MATTERMOST_BLEVE_INDEXES_PATH}:/mattermost/bleve-indexes:rw
+    environment:
+      # timezone inside container
+      - TZ=UTC
+
+      # necessary Mattermost options/variables (see env.example)
+      - MM_SQLSETTINGS_DRIVERNAME=${MM_SQLSETTINGS_DRIVERNAME}
+      - MM_SQLSETTINGS_DATASOURCE=${MM_SQLSETTINGS_DATASOURCE}
+
+      # necessary for bleve
+      - MM_BLEVESETTINGS_INDEXDIR=${MM_BLEVESETTINGS_INDEXDIR}
+
+      # additional settings
+      - MM_SERVICESETTINGS_SITEURL=${MM_SERVICESETTINGS_SITEURL}
+      - MM_TEAMSETTINGS_ENABLEUSERCREATION=${MM_TEAMSETTINGS_ENABLEUSERCREATION}
+    # labels:
+    #   - traefik.enable=true
+    #   - traefik.http.routers.mattermost-rtr.entrypoints=http,https
+    #   - traefik.wss.routers.mattermost-rtr.entrypoints=http,https
+    #   - traefik.http.routers.mattermost-rtr.middlewares=websocket-mw@file
+    #   - traefik.http.routers.mattermost-rtr.rule=Host(`mattermost.homestack.me`)
+    #   - traefik.http.routers.mattermost-rtr.tls=true
+    #   - traefik.http.routers.mattermost-rtr.tls.certresolver=development
+    #   - traefik.http.services.mattermost-svc.loadbalancer.server.port=8065
+
+  mattermost_proxy:
+    image: nginx:stable-alpine
+    command: nginx
+    networks:
+     - dockernet
+    ports:
+      - 9999:80
+    volumes:
+      - ./nginx:/etc/nginx/sites-enabled
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mattermost-rtr.entrypoints=http,https
+      - traefik.wss.routers.mattermost-rtr.entrypoints=http,https
+      - traefik.http.routers.mattermost-rtr.middlewares=websocket-mw@file
+      - traefik.http.routers.mattermost-rtr.rule=Host(`mattermost.homestack.me`)
+      - traefik.http.routers.mattermost-rtr.tls=true
+      - traefik.http.routers.mattermost-rtr.tls.certresolver=development
+      - traefik.http.services.mattermost-svc.loadbalancer.server.port=80
