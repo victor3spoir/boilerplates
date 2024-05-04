@@ -6,23 +6,23 @@ networks:
 
 
 services:
-  odoo_web:
+  odoo.web:
     image: odoo:17
-    container_name: odoo_web
+    container_name: odoo.web
     restart: unless-stopped
     user: root
     depends_on:
-      - odoo_db
+      - odoo.db
     networks:
       - dockernet
     environment:
-      - HOST=odoo_db
+      - HOST=odoo.db
       - USER=odoo_user
       - PASSWORD=odoo_password
     volumes:
       - ./config:/etc/odoo:ro
-      - /appdata/volumes/odoo_web/web/_data:/var/lib/odoo:rw
-      - /appdata/volumes/odoo_web/web/_data:/mnt/extra-addons:rw
+      - odoo_data_web:/var/lib/odoo:rw
+      - odoo_data_web:/mnt/extra-addons:rw
     labels:
       - traefik.enable=true
       - traefik.http.routers.odoo-rtr.entrypoints=http,https
@@ -32,9 +32,9 @@ services:
       - traefik.http.routers.odoo-rtr.service=odoo-svc
       - traefik.http.services.odoo-svc.loadbalancer.server.port=8069
 
-  odoo_db:
+  odoo.db:
     image: postgres:16-alpine
-    container_name: odoo_db
+    container_name: odoo.db
     restart: unless-stopped
     user: root
     networks:
@@ -45,7 +45,7 @@ services:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_DB=postgres
     volumes:
-      - /appdata/volumes/odoo_web/db/_data:/var/lib/postgresql/data/pgdata:rw
+      - odoo_data_db:/var/lib/postgresql/data/pgdata:rw
     labels:
       - traefik.enable=true
       - traefik.tcp.routers.odoo-db-rtr.entrypoints=postgres
@@ -54,3 +54,7 @@ services:
       - traefik.tcp.routers.odoo-db-rtr.tls.passthrough=true
       - traefik.tcp.routers.odoo-db-rtr.tls.certresolver=development
       - traefik.tcp.services.odoo-db-svc.loadbalancer.server.port=5432
+
+volumes:
+  odoo_data_web:
+  odoo_data_db:

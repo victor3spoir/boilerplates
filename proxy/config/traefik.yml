@@ -11,7 +11,6 @@ api:
 log:
   level: INFO
   format: common # | json
-  # filePath: /var/traefik/logs/traefik.log
 
 
 entryPoints:
@@ -22,23 +21,17 @@ entryPoints:
         entryPoint:
           to: https
           scheme: https
-      # middlewares:
-      #   # - https-mw@file
-      #   - websocket-mw@file
   https:
     address: :443
-    # http:
-      # middlewares:
-      #   - websocket-mw@file
-  postgres:
-    address: :5432
+  # postgres:
+  #   address: :5432
 
 providers:
   docker: 
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
   file:
-    directory: /etc/traefik/dyn
+    directory: /etc/traefik/dynamic
     watch: true
 
 
