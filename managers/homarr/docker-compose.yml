@@ -9,7 +9,7 @@ volumes:
 services:
   homarr:
     container_name: homarr
-    image: ghcr.io/ajnart/homarr:latest
+    image: ghcr.io/ajnart/homarr:dev
     restart: unless-stopped
     networks:
       - dockernet
