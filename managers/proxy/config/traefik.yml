@@ -23,8 +23,8 @@ entryPoints:
           scheme: https
   https:
     address: :443
-  # postgres:
-  #   address: :5432
+  postgres:
+    address: :5432
 
 providers:
   docker: 

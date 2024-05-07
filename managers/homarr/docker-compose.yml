@@ -9,13 +9,13 @@ volumes:
 services:
   homarr:
     container_name: homarr
-    image: ghcr.io/ajnart/homarr:dev
+    image: ghcr.io/ajnart/homarr:latest
     restart: unless-stopped
     networks:
       - dockernet
     volumes:
-      # - ./configs:/app/data/configs
-      # - ./icons:/app/public/icons
+      - ./configs:/app/data/configs
+      - ./icons:/app/public/icons
       - homarr_data:/data
       # - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
     # ports:

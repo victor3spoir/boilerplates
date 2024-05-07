@@ -15,8 +15,8 @@ services:
       - dockernet
     environment:
       - WORDPRESS_DB_HOST=wordpress.db
-      - WORDPRESS_DB_USER=root
-      - WORDPRESS_DB_PASSWORD=mysql
+      - WORDPRESS_DB_USER=user
+      - WORDPRESS_DB_PASSWORD=password
       - WORDPRESS_DB_NAME=db
       # - WORDPRESS_TABLE_PREFIX=wordpress_
     depends_on:
@@ -40,15 +40,13 @@ services:
     networks:
       - dockernet
     environment:
-      - MYSQL_DATABASE=db
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=password
+      # - MYSQL_DATABASE=db
+      # - MYSQL_USER=user
+      # - MYSQL_PASSWORD=password
       - MYSQL_ROOT_PASSWORD=mysql
     volumes:
       - wordpress_db_data:/var/lib/mysql
 
 volumes:
   wordpress_db_data:
-    name: wordpress_db_data
   wordpress_web_data:
-    name: wordpress_web_data
