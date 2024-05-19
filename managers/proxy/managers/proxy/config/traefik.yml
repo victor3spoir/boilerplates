@@ -42,6 +42,7 @@ certificatesResolvers:
       email: "kvruntime@proton.me"
       caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
       storage: /var/lib/traefik/certs/acme.json
+      keyType: RSA4096
       httpChallenge:
         entryPoint: http
 

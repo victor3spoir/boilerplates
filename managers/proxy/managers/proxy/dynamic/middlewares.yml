@@ -1,0 +1,23 @@
+http:
+  middlewares:
+    auth-mw:
+      basicAuth:
+        users:
+          - user:$2y$10$4QDUJEllhpySEO0Lm.wRjeKEqXX8LNv2QgVuZSo5rpnjb2rk3efTm
+
+    https-mw:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    websocket-mw:
+      headers:
+        customRequestHeaders:
+          Upgrade: websocket
+          Connection: Upgrade
+          # Host: "${host}"
+          Host: "${http_host}"
+          X-Real-IP: "${remote_addr}"
+          X-Forwarded-For: "${proxy_add_x_forwarded_for}"
+          X-Forwarded-Proto: "${scheme}"
+          X-Frame-Options: "SAMEORIGIN"

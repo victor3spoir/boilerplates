@@ -1,0 +1,30 @@
+networks:
+  dockernet:
+    external:
+      true  
+volumes:
+  homarr_data:
+    name: homarr_data
+
+services:
+  homarr:
+    container_name: homarr
+    image: ghcr.io/ajnart/homarr:latest
+    restart: unless-stopped
+    networks:
+      - dockernet
+    volumes:
+      - ./configs:/app/data/configs
+      - ./icons:/app/public/icons
+      - homarr_data:/data
+      # - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
+    # ports:
+      # - '7575:7575'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.homarr-rtr.entrypoints=http,https
+      - traefik.http.routers.homarr-rtr.rule=Host(`dashboard.homestack.me`)
+      - traefik.http.routers.homarr-rtr.tls=true
+      - traefik.http.routers.homarr-rtr.tls.certresolver=development
+      - traefik.http.routers.service=homarr-svc
+      - traefik.http.services.homarr-svc.loadbalancer.server.port=7575

@@ -1,0 +1,52 @@
+
+networks:
+  dockernet:
+    external:
+      true
+      
+services:
+  wordpress.web:
+    image: wordpress
+    restart: always
+    container_name: wordpress.web
+    # ports:
+    #   - "7878:80"
+    networks:
+      - dockernet
+    environment:
+      - WORDPRESS_DB_HOST=wordpress.db
+      - WORDPRESS_DB_USER=user
+      - WORDPRESS_DB_PASSWORD=password
+      - WORDPRESS_DB_NAME=db
+      # - WORDPRESS_TABLE_PREFIX=wordpress_
+    depends_on:
+      - wordpress.db
+    volumes:
+      - wordpress_web_data:/var/www/html
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.wordpress-rtr.entrypoints=http,https
+      - traefik.http.routers.wordpress-rtr.rule=Host(`wordpress.homestack.me`)
+      - traefik.http.routers.wordpress-rtr.tls=true
+      - traefik.http.routers.wordpress-rtr.tls.certresolver=development
+      - traefik.http.services.wordpress-svc.loadbalancer.server.port=80
+
+  wordpress.db:
+    image: mysql:lts
+    restart: always
+    container_name: wordpress.db
+    ports:
+      - 3306:3306
+    networks:
+      - dockernet
+    environment:
+      # - MYSQL_DATABASE=db
+      # - MYSQL_USER=user
+      # - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=mysql
+    volumes:
+      - wordpress_db_data:/var/lib/mysql
+
+volumes:
+  wordpress_db_data:
+  wordpress_web_data:

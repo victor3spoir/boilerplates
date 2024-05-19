@@ -33,3 +33,4 @@ services:
 
 volumes:
   proxy_traefik_data:
+    name: proxy_traefik_data
