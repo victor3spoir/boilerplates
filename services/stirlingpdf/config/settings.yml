@@ -43,9 +43,9 @@ system:
   customHTMLFiles: false # enable to have files placed in /customFiles/templates override the existing template html files
 
 ui:
-  appName: '' # Application's visible name
-  homeDescription: '' # Short description or tagline shown on homepage.
-  appNameNavbar: '' # Name displayed on the navigation bar
+  appName: 'local-stirling' # Application's visible name
+  homeDescription: 'short description of the local application' # Short description or tagline shown on homepage.
+  appNameNavbar: 'Local Stirling' # Name displayed on the navigation bar
 
 endpoints:
   toRemove: [] # List endpoints to disable (e.g. ['img-to-pdf', 'remove-pages'])
