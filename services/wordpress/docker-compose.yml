@@ -1,52 +1,67 @@
-
 networks:
   dockernet:
-    external:
-      true
-      
+    external: true
+
+secrets:
+  db_user:
+    file: ./db_user
+  db_password:
+    file: ./db_password
+  root_password:
+    file: ./root_password
+
+volumes:
+  wordpress_db_data:
+    name: wordpress_db_data
+  wordpress_web_data:
+    name: wordpress_web_data
+
 services:
-  wordpress.web:
-    image: wordpress
-    restart: always
-    container_name: wordpress.web
-    # ports:
-    #   - "7878:80"
+  wordpress_web:
+    image: wordpress:6-apache
+    restart: unless-stopped
+    ports:
+      - 30080:80
     networks:
       - dockernet
     environment:
-      - WORDPRESS_DB_HOST=wordpress.db
-      - WORDPRESS_DB_USER=user
-      - WORDPRESS_DB_PASSWORD=password
+      - WORDPRESS_DB_HOST=wordpress_db
+      - WORDPRESS_DB_USER_FILE=/run/secrets/db_user
+      - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
       - WORDPRESS_DB_NAME=db
-      # - WORDPRESS_TABLE_PREFIX=wordpress_
+    secrets:
+      - db_user
+      - db_password
     depends_on:
-      - wordpress.db
+      - wordpress_db
     volumes:
       - wordpress_web_data:/var/www/html
     labels:
       - traefik.enable=true
       - traefik.http.routers.wordpress-rtr.entrypoints=http,https
-      - traefik.http.routers.wordpress-rtr.rule=Host(`wordpress.homestack.me`)
+      - traefik.http.routers.wordpress-rtr.rule=Host(`wordpress.local.kvruntime.com`)
       - traefik.http.routers.wordpress-rtr.tls=true
-      - traefik.http.routers.wordpress-rtr.tls.certresolver=development
+      - traefik.http.routers.wordpress-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.wordpress-svc.loadbalancer.server.port=80
 
-  wordpress.db:
-    image: mysql:lts
-    restart: always
-    container_name: wordpress.db
+  wordpress_db:
+    image: mysql:8.0
+    restart: unless-stopped
     ports:
       - 3306:3306
     networks:
       - dockernet
+    secrets:
+      - root_password
+      - db_user
+      - db_password
     environment:
-      # - MYSQL_DATABASE=db
-      # - MYSQL_USER=user
-      # - MYSQL_PASSWORD=password
-      - MYSQL_ROOT_PASSWORD=mysql
+      - MYSQL_DATABASE=db
+      - MYSQL_USER_FILE=/run/secrets/db_user
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root_password
     volumes:
       - wordpress_db_data:/var/lib/mysql
 
-volumes:
-  wordpress_db_data:
-  wordpress_web_data:
+
+# demo_user : D3m0P@55w0rd]

@@ -1,60 +1,71 @@
 networks:
   dockernet:
-    external:
-      true
+    external: true
 
+volumes:
+  odoo_web_data:
+    name: odoo_web_data
+  odoo_db_data:
+    name: odoo_db_data
 
+secrets:
+  db_user:
+    file: ./db_user
+  db_password:
+    file: ./db_password
 
 services:
-  odoo.web:
+  odoo_web:
     image: odoo:17
-    container_name: odoo.web
     restart: unless-stopped
-    user: root
+    privileged: true
     depends_on:
-      - odoo.db
+      - odoo_db
     networks:
       - dockernet
+    ports:
+      - 28069:8069
     environment:
-      - HOST=odoo.db
-      - USER=odoo_user
-      - PASSWORD=odoo_password
+      - HOST=odoo_db
+      - USER_FILE=/run/secrets/db_user
+      - PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_user
+      - db_password
     volumes:
-      - ./config:/etc/odoo:ro
-      - odoo_data_web:/var/lib/odoo:rw
-      - odoo_data_web:/mnt/extra-addons:rw
+      - ./odoo.conf:/etc/odoo/odoo.conf:ro
+      # - odoo_web_data:/var/lib/odoo:rw
+      # - odoo_web_data:/mnt/extra-addons:rw
     labels:
       - traefik.enable=true
       - traefik.http.routers.odoo-rtr.entrypoints=http,https
-      - traefik.http.routers.odoo-rtr.rule=Host(`odoo.homestack.me`)
+      - traefik.http.routers.odoo-rtr.rule=Host(`odoo.local.kvruntime.com`)
       - traefik.http.routers.odoo-rtr.tls=true
-      - traefik.http.routers.odoo-rtr.tls.certresolver=development
-      - traefik.http.routers.odoo-rtr.service=odoo-svc
+      - traefik.http.routers.odoo-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.odoo-svc.loadbalancer.server.port=8069
 
-  odoo.db:
+  odoo_db:
     image: postgres:16-alpine
-    container_name: odoo.db
     restart: unless-stopped
-    user: root
+    privileged: true
     networks:
       - dockernet
     environment:
-      - POSTGRES_USER=odoo_user
-      - POSTGRES_PASSWORD=odoo_password
-      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_USER_FILE=/run/secrets/db_user
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      - PGDATA=/var/lib/postgresql/data
       - POSTGRES_DB=postgres
-    volumes:
-      - odoo_data_db:/var/lib/postgresql/data/pgdata:rw
+    secrets:
+      - db_user
+      - db_password
+    # volumes:
+    #   - odoo_db_data:/var/lib/postgresql/data:rw
     labels:
       - traefik.enable=true
       - traefik.tcp.routers.odoo-db-rtr.entrypoints=postgres
       - traefik.tcp.routers.odoo-db-rtr.rule=HostSNI(`db.odoo.homestack.me`)
       - traefik.tcp.routers.odoo-db-rtr.tls=true
       - traefik.tcp.routers.odoo-db-rtr.tls.passthrough=true
-      - traefik.tcp.routers.odoo-db-rtr.tls.certresolver=development
+      - traefik.tcp.routers.odoo-db-rtr.tls.certresolver=letsencrypt
       - traefik.tcp.services.odoo-db-svc.loadbalancer.server.port=5432
-
-volumes:
-  odoo_data_web:
-  odoo_data_db:
+# default: admin : admin

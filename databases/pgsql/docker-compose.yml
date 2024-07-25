@@ -8,9 +8,8 @@ volumes:
     name: pgsql_data
 
 services:
-  database.pgsql:
+  pgsql:
     image: postgres:16-alpine
-    container_name: database.pgsql
     restart: unless-stopped
     networks:
       - dockernet
@@ -18,14 +17,21 @@ services:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=demodb
-      - PGDATA=/var/lib/postgresql/data/pgdata
+      - PGDATA=/var/lib/postgresql/data
     volumes:
-      - pgsql_data:/var/lib/postgresql/data/pgdata
+      - pgsql_data:/var/lib/postgresql/data
     labels:
       - traefik.enable=true
       - traefik.tcp.routers.pgsql-rtr.entrypoints=postgres
-      - traefik.tcp.routers.pgsql-rtr.rule=HostSNI(`pgsql-db.homestack.me`)
-      - traefik.tcp.routers.pgsql-rtr.tls=true
-      - traefik.tcp.routers.pgsql-rtr.tls.passthrough=true
-      - traefik.tcp.routers.pgsql-rtr.tls.certresolver=development
       - traefik.tcp.services.pgsql-svc.loadbalancer.server.port=5432
+    
+  pgadmin:
+    image: dpage/pgadmin4:snapshot
+    restart: unless-stopped
+    networks:
+      - dockernet
+    ports:
+      - 9090:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@domain.com
+      - PGADMIN_DEFAULT_PASSWORD=SuperSecret
