@@ -1,0 +1,30 @@
+# https://github.com/Stirling-Tools/Stirling-PDF
+networks:
+  dockernet:
+    external: true
+
+# volumes:
+#   stirlingpdf_data:
+#     name: stirlingpdf_data
+
+services:
+  stirlingpdf:
+    image: frooodle/s-pdf:alpha
+    networks:
+      - dockernet
+    ports:
+      - 8080:8080
+    volumes:
+      - ./tessdata:/usr/share/tessdata #Required for extra OCR languages
+      - ./config:/configs
+    #      - ./customFiles:/customFiles/
+    #      - ./logs:/logs/
+    environment:
+      - DOCKER_ENABLE_SECURITY=false
+      - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=false
+      - LANGS=en_Us
+      - SECURITY_INITIALLOGIN_USERNAME=admin
+      - SECURITY_INITIALLOGIN_PASSWORD=stirling
+      - SECURITY_ENABLE_LOGIN=true
+    labels:
+      - traefik.enable=true
