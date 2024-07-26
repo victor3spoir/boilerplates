@@ -4,15 +4,18 @@ networks:
   dockernet:
     external: true
 
+volumes:
+  pihole_data:
+    name: pihole_data
+
 secrets:
-  webpassword:
-    file: ./webpassword.txt
+  web_password:
+    file: ./web_password
 
 services:
   pihole:
     image: pihole/pihole:nightly
     restart: unless-stopped
-    # network_mode: host
     networks:
       - dockernet
     ports:
@@ -21,17 +24,19 @@ services:
       # - 67:67/udp
       - 22222:80/tcp
     secrets:
-      - webpassword
+      - web_password
     environment:
       - TZ=America/Chicago
-      - WEBPASSWORD_FILE=/run/secrets/webpassword
+      - WEBPASSWORD_FILE=/run/secrets/web_password
     volumes:
-      - './etc-pihole:/etc/pihole'
-      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+      # - './etc-pihole:/etc/pihole'
+      # - './etc-dnsmasq.d:/etc/dnsmasq.d'
+      - pihole_data:/etc/pihole
+      - pihole_data:/etc/dnsmasq.d
     labels:
       - traefik.enable=true
       - traefik.http.routers.pihole-rtr.entrypoints=http,https
-      - traefik.http.routers.pihole-rtr.rule=Host(`phihole.local.kvruntime.com`)
+      - traefik.http.routers.pihole-rtr.rule=Host(`pihole.local.kvruntime.com`)
       - traefik.http.routers.pihole-rtr.tls=true
       - traefik.http.routers.pihole-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.pihole-svc.loadbalancer.server.port=80
