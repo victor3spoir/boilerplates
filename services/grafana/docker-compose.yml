@@ -1,3 +1,6 @@
+networks:
+  dockernet:
+    external: true
 volumes:
   grafana_data:
     name: grafana_data
@@ -6,6 +9,8 @@ services:
   grafana:
     image: grafana/grafana-oss
     restart: unless-stopped
+    networks:
+      - dockernet
     ports:
       - 3000:3000
     environment:
@@ -15,5 +20,4 @@ services:
       - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
     volumes:
       - grafana_data:/var/lib/grafana
-
 # grafana-cli plugins install
