@@ -21,16 +21,14 @@ services:
     ports:
       - 53:53/tcp
       - 53:53/udp
-      # - 67:67/udp
-      - 22222:80/tcp
+      - 67:67/udp
+      # - 80/tcp
     secrets:
       - web_password
     environment:
       - TZ=America/Chicago
       - WEBPASSWORD_FILE=/run/secrets/web_password
     volumes:
-      # - './etc-pihole:/etc/pihole'
-      # - './etc-dnsmasq.d:/etc/dnsmasq.d'
       - pihole_data:/etc/pihole
       - pihole_data:/etc/dnsmasq.d
     labels:
@@ -40,3 +38,10 @@ services:
       - traefik.http.routers.pihole-rtr.tls=true
       - traefik.http.routers.pihole-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.pihole-svc.loadbalancer.server.port=80
+
+
+# Configuration on os
+# Disable system self resolving system
+# sudo systemctl stop systemd-resolve
+# sudo systemctl disable systemd-resolve
+# Edit  /etc/resolv.conf file & set `nameserver 1.1.1.1`
