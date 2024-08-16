@@ -22,15 +22,17 @@ services:
       - 53:53/tcp
       - 53:53/udp
       - 67:67/udp
-      # - 80/tcp
+      - 22222:80/tcp
     secrets:
       - web_password
     environment:
       - TZ=America/Chicago
       - WEBPASSWORD_FILE=/run/secrets/web_password
     volumes:
-      - pihole_data:/etc/pihole
-      - pihole_data:/etc/dnsmasq.d
+      - ./etc-pihole:/etc/pihole
+      - ./etc-dnsmasq.d:/etc/dnsmasq.d
+      # - pihole_data:/etc/pihole
+      # - pihole_data:/etc/dnsmasq.d
     labels:
       - traefik.enable=true
       - traefik.http.routers.pihole-rtr.entrypoints=http,https
