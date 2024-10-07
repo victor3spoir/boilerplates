@@ -1,0 +1,18 @@
+networks:
+  dockernet:
+    external: true
+
+services:
+  appsmith:
+    image: bitnami/appsmith #:1.34.0
+    networks:
+      - dockernet
+    ports:
+      - 8080:8080
+    environment:
+      - APPSMITH_PASSWORD=my_password
+      - APPSMITH_MODE=client
+      - APPSMITH_USERNAME=user
+      - APPSMITH_PASSWORD=user
+    # volumes:
+    #  - /path/to/appsmith-persistence:/bitnami

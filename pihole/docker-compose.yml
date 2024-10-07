@@ -1,5 +1,3 @@
-# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
-
 networks:
   dockernet:
     external: true
@@ -16,6 +14,8 @@ services:
   pihole:
     image: pihole/pihole:nightly
     restart: unless-stopped
+    extra_hosts:
+      - google.com:8.8.8.8
     networks:
       - dockernet
     ports:
@@ -29,10 +29,10 @@ services:
       - TZ=America/Chicago
       - WEBPASSWORD_FILE=/run/secrets/web_password
     volumes:
-      - ./etc-pihole:/etc/pihole
-      - ./etc-dnsmasq.d:/etc/dnsmasq.d
-      # - pihole_data:/etc/pihole
-      # - pihole_data:/etc/dnsmasq.d
+      # - ./etc-pihole:/etc/pihole
+      # - ./etc-dnsmasq.d:/etc/dnsmasq.d
+      - pihole_data:/etc/pihole
+      - pihole_data:/etc/dnsmasq.d
     labels:
       - traefik.enable=true
       - traefik.http.routers.pihole-rtr.entrypoints=http,https

@@ -16,9 +16,9 @@ services:
     networks:
       - dockernet
     environment:
-      - MYSQL_USER=/run/secrets/db_user
-      - MYSQL_PASSWORD=/run/secrets/db_password
-      - MYSQL_ROOT_PASSWORD=/run/secrets/root_password
+      - MYSQL_USER_FILE=/run/secrets/db_user
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root_password
     secrets:
       - db_user
       - db_password

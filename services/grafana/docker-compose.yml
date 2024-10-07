@@ -11,8 +11,8 @@ services:
     restart: unless-stopped
     networks:
       - dockernet
-    ports:
-      - 3000:3000
+    # ports:
+    #   - 3000:3000
     environment:
       - GF_LOG_LEVEL=debug
       # - GF_INSTALL_PLUGINS=plug01,plug02,plug03,...
@@ -20,4 +20,11 @@ services:
       - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
     volumes:
       - grafana_data:/var/lib/grafana
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana-rtr.entrypoints=http,https
+      - traefik.http.routers.grafana-rtr.rule=Host(`grafana.local.kvruntime.com`)
+      - traefik.http.routers.grafana-rtr.tls=true
+      - traefik.http.routers.grafana-rtr.tls.certresolver=letsencrypt
+      - traefik.http.services.grafana-svc.loadbalancer.server.port=3000
 # grafana-cli plugins install
