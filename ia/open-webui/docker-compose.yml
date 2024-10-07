@@ -8,9 +8,9 @@ networks:
 
 services:
   open-webui:
-    image: ghcr.io/open-webui/open-webui
-    extra_hosts:
-      - host.docker.internal:host-gateway
+    image: ghcr.io/open-webui/open-webui:main
+    # extra_hosts:
+    #   - host.docker.internal:host-gateway
     restart: unless-stopped
     networks:
       - dockernet
@@ -21,7 +21,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       # Ollama
-      - OLLAMA_BASE_URL=ollama:11434
+      - OLLAMA_BASE_URL=http://ollama:11434
       - USE_OLLAMA_DOCKER=true
       - ENABLE_OLLAMA_API=true
       - ENABLE_IMAGE_GENERATION=True
@@ -33,6 +33,10 @@ services:
       - RAG_WEB_SEARCH_RESULT_COUNT=3
       - RAG_WEB_SEARCH_CONCURRENT_REQUESTS=10
       - SEARXNG_QUERY_URL="http://searxng:8080/search?q=<query>"
+      # Auth
+      - WEBUI_AUTH=false
+      - WEBUI_NAME
+      - CUSTOM_NAME=LocalStack
 
   # searxng:
   #   image: searxng/searxng:2024.9.12-c45870dd7
