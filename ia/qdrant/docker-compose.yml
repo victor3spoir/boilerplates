@@ -1,0 +1,19 @@
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  qdrant_storage:
+    name: qdrant_storage
+
+services:
+  qdrant:
+    image: qdrant/qdrant:master
+    container_name: qdrant
+    networks:
+      - dockernet
+    restart: unless-stopped
+    ports:
+      - 6333:6333
+    volumes:
+      - qdrant_storage:/qdrant/storage
