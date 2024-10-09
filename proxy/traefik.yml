@@ -12,6 +12,10 @@ log:
   level: DEBUG
   format: common # | json
 
+accessLog:
+  filePath: /var/lib/traefik/traefik.log # Specify the path for the access log file
+  format: json
+
 entryPoints:
   http:
     address: :80
@@ -35,8 +39,14 @@ certificatesResolvers:
   letsencrypt:
     acme:
       email: "kvruntime@proton.me"
-      # caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      storage: /var/lib/traefik/acme.json
+      httpChallenge:
+        entryPoint: http
+  dev-letsencrypt:
+    acme:
+      email: kvruntime@proton.me
       caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
-      storage: /var/lib/traefik/certs/acme.json
+      storage: /var/lib/traefik/acme.json
       httpChallenge:
         entryPoint: http

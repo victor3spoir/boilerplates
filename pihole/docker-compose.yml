@@ -14,8 +14,6 @@ services:
   pihole:
     image: pihole/pihole:nightly
     restart: unless-stopped
-    extra_hosts:
-      - google.com:8.8.8.8
     networks:
       - dockernet
     ports:
@@ -38,7 +36,7 @@ services:
       - traefik.http.routers.pihole-rtr.entrypoints=http,https
       - traefik.http.routers.pihole-rtr.rule=Host(`pihole.local.kvruntime.com`)
       - traefik.http.routers.pihole-rtr.tls=true
-      - traefik.http.routers.pihole-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.pihole-rtr.tls.certresolver=dev-letsencrypt
       - traefik.http.services.pihole-svc.loadbalancer.server.port=80
 
 

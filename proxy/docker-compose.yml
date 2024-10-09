@@ -9,7 +9,7 @@ volumes:
       
 services:
   traefikproxy:
-    image: traefik:3.1
+    image: traefik:3.2
     restart: unless-stopped
     privileged: true
     networks:
@@ -22,16 +22,17 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik.yml:/etc/traefik/traefik.yml:ro
       - ./config.yml:/etc/traefik/config.yml:ro
-      - traefikproxy_data:/var/lib/traefik/certs:rw
+      # - traefikproxy_data:/var/lib/traefik/certs:rw
+      - ./acme.json:/var/lib/traefik/acme.json:rw
     environment:
-      - DOMAIN01=${DOMAIN01}
-      - SUBDOMAIN01=${SUBDOMAIN01}
+      - DOMAIN01=${DOMAIN01:-kruntime.com}
+      - SUBDOMAIN01=${SUBDOMAIN01:-local.kruntime.com}
     labels:
       - traefik.enable=true
       - traefik.http.routers.traefik-rtr.entrypoints=http,https
       - traefik.http.routers.traefik-rtr.rule=Host(`traefik.${DOMAIN01}`)
       - traefik.http.routers.traefik-rtr.tls=true
-      - traefik.http.routers.traefik-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik-rtr.tls.certresolver=dev-letsencrypt
       - traefik.http.routers.traefik-rtr.tls.domains[0].main=${DOMAIN01}
       - traefik.http.routers.traefik-rtr.tls.domains[0].sans=${SUBDOMAIN01}
       - traefik.http.services.traefik-svc.loadbalancer.server.port=8080

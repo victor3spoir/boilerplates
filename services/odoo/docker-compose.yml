@@ -41,7 +41,7 @@ services:
       - traefik.http.routers.odoo-rtr.entrypoints=http,https
       - traefik.http.routers.odoo-rtr.rule=Host(`odoo.local.kvruntime.com`)
       - traefik.http.routers.odoo-rtr.tls=true
-      - traefik.http.routers.odoo-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.odoo-rtr.tls.certresolver=dev-letsencrypt
       - traefik.http.routers.odoo-admin-rtr.entrypoints=http,https
       - traefik.http.routers.odoo-admin-rtr.rule=PathPrefix(`/web`)
       - traefik.http.services.odoo-svc.loadbalancer.server.port=8069
@@ -64,10 +64,4 @@ services:
     #   - odoo_db_data:/var/lib/postgresql/data:rw
     labels:
       - traefik.enable=true
-      - traefik.tcp.routers.odoo-db-rtr.entrypoints=postgres
-      - traefik.tcp.routers.odoo-db-rtr.rule=HostSNI(`db.odoo.homestack.me`)
-      - traefik.tcp.routers.odoo-db-rtr.tls=true
-      - traefik.tcp.routers.odoo-db-rtr.tls.passthrough=true
-      - traefik.tcp.routers.odoo-db-rtr.tls.certresolver=letsencrypt
-      - traefik.tcp.services.odoo-db-svc.loadbalancer.server.port=5432
 # default: admin : admin
