@@ -1,18 +1,19 @@
 volumes:
-  kestra_pgsql_data:
-    name: kestra_pgsql_data
-  kestra_data:
-    name: kestra_data
+  kestra-pgsql-storage:
+    name: kestra-pgsql-storage
+  kestra-storage:
+    name: kestra-storage
 
 networks:
   dockernet:
     external: true
 
 services:
-  kestra_pgsql:
+  kestra-pgsql:
     image: postgres:17-alpine
+    pull_policy: if_not_present
     volumes:
-      - kestra_pgsql_data:/var/lib/postgresql/data
+      - kestra-pgsql-storage:/var/lib/postgresql/data
     networks:
       - dockernet
     environment:
@@ -26,24 +27,28 @@ services:
       retries: 10
 
   kestra:
-    image: kestra/kestra:develop-full
-    pull_policy: always
-    command: server standalone --worker-thread=128
+    # image: kestra/kestra:develop
+    image: kestra/kestra:${IMAGE_TAG:-v0.19.2}
+    pull_policy: if_not_present
+    command: server standalone
+    # command: server standalone --worker-thread=128
     # command: server local
+    user: root
     ports:
       - 8080:8080
       - 8081:8081
     networks:
       - dockernet
     volumes:
-      - kestra_data:/app/storage
+      - kestra-storage:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
-      - /tmp/kestra-wd:/tmp/kestra-wd
+      # - ./application.yaml:/etc/config/application.yaml:ro
+      - /tmp:/tmp/
     environment:
       KESTRA_CONFIGURATION: |
         datasources:
           postgres:
-            url: jdbc:postgresql://kestra_pgsql:5432/kestra
+            url: jdbc:postgresql://kestra-pgsql:5432/kestra
             driverClassName: org.postgresql.Driver
             username: kestra
             password: k3str4
@@ -71,9 +76,9 @@ services:
       - traefik.http.routers.kestra-rtr.entrypoints=http,https
       - traefik.http.routers.kestra-rtr.rule=Host(`kestra.homestack.me`)
       - traefik.http.routers.kestra-rtr.tls=true
-      - traefik.http.routers.kestra-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.kestra-rtr.tls.certresolver=dev-letsencrypt
       - traefik.http.services.kestra-svc.loadbalancer.server.port=8080
 
     depends_on:
-      kestra_pgsql:
+      kestra-pgsql:
         condition: service_started

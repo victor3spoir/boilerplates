@@ -3,8 +3,8 @@ networks:
     external: true
 
 volumes:
-  portainer_data:
-    name: portainer_data
+  portainer-storage:
+    name: portainer-storage
 
 services:
   portainer:
@@ -12,13 +12,15 @@ services:
     restart: unless-stopped
     networks:
       - dockernet
+    ports:
+      - 127.0.0.1:9000:9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data:rw
+      - portainer-storage:/data:rw
     labels:
       - traefik.enable=true
       - traefik.http.routers.portainer-rtr.entrypoints=http,https
       - traefik.http.routers.portainer-rtr.tls=true
-      - traefik.http.routers.portainer-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.portainer-rtr.tls.certresolver=dev-letsencrypt
       - traefik.http.routers.portainer-rtr.rule=Host(`portainer.local.kvruntime.com`)
       - traefik.http.services.portainer-svc.loadbalancer.server.port=9000
