@@ -8,7 +8,7 @@ volumes:
 
 secrets:
   web_password:
-    file: ./web_password
+    file: ./secrets/web_password
 
 services:
   pihole:
@@ -27,10 +27,10 @@ services:
       - TZ=America/Chicago
       - WEBPASSWORD_FILE=/run/secrets/web_password
     volumes:
-      # - ./etc-pihole:/etc/pihole
-      # - ./etc-dnsmasq.d:/etc/dnsmasq.d
-      - pihole_data:/etc/pihole
-      - pihole_data:/etc/dnsmasq.d
+      - ./etc-pihole:/etc/pihole
+      - ./etc-dnsmasq.d:/etc/dnsmasq.d
+      # - pihole_data:/etc/pihole
+      # - pihole_data:/etc/dnsmasq.d
     labels:
       - traefik.enable=true
       - traefik.http.routers.pihole-rtr.entrypoints=http,https
