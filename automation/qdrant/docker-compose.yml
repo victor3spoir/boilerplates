@@ -15,5 +15,6 @@ services:
     restart: unless-stopped
     ports:
       - 6333:6333
+      # - 6334:6334 # GRPC endpoint
     volumes:
       - qdrant_storage:/qdrant/storage

@@ -294,3 +294,5 @@ dist
 
 # extra
 **/*/acme.json
+**/*/etc-pihole/*
+**/*/etc-dnsmasq.d/*

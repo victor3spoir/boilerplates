@@ -1,0 +1,53 @@
+volumes:
+  heyform_mongo_storage:
+    name: heyform_mongo_storage
+  heyform_keydb_storage:
+    name: heyform_keydb_storage
+
+# networks:
+#   dockernet:
+
+services:
+  heyform:
+    image: heyform/community-edition:latest
+    restart: unless-stopped
+    # networks:
+    #   - dockernet
+    volumes:
+      # Persist uploaded images
+      - ./assets:/app/static/upload
+    depends_on:
+      - mongo
+      - keydb
+    ports:
+      - '9513:8000'
+    environment:
+      - APP_HOMEPAGE_URL=${APP_HOMEPAGE_URL:-http://localhost:9513}
+      - SESSION_KEY=DD7VV1JEKzFhxiCImAXdBascfy4NmJBBWXoEbbgyzPI=
+      - FORM_ENCRYPTION_KEY=hROPNeR9RmiefDJvXYDhsbWpvgf2MNiCgBnNaA5VOWw=
+      - MONGO_URI='mongodb://mongo:27017/heyform'
+      - REDIS_HOST=${REDIS_HOST:-keydb}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - VERIFY_USER_EMAIL=${VERIFY_USER_EMAIL:-false}
+      # SMTP
+      - SMTP_HOST=${SMTP_HOST:-http://localhost}
+      - SMTP_PORT=${SMTP_PORT:-8888}
+      - SMTP_USER=${SMTP_USER:-user}
+      - SMTP_SECURE=${SMTP_SECURE:-true}
+      - SMTP_FROM=${SMTP_FROM:-user}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-password}
+
+  mongo:
+    image: percona/percona-server-mongodb:4.4
+    restart: unless-stopped
+    # networks:
+    #   - dockernet
+    volumes:
+      - heyform_mongo_storage:/data/db
+
+  keydb:
+    image: eqalpha/keydb:latest
+    restart: always
+    command: keydb-server --appendonly yes
+    volumes:
+      - heyform_keydb_storage:/data
