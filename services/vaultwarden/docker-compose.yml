@@ -1,0 +1,19 @@
+networks:
+  dockernet:
+    external:
+      true
+
+volumes:
+  vaultwarden_storage:
+    name: DOMAIN
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    restart: unless-stopped
+    ports:
+      - 9999:80
+    environment:
+      - DOMAIN=${DOMAIN:-http://localhost:9999} 
+    volumes:
+      - vaultwarden_storage:/data/
+  
