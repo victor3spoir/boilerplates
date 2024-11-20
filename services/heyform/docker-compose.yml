@@ -4,29 +4,43 @@ volumes:
   heyform_keydb_storage:
     name: heyform_keydb_storage
 
-# networks:
-#   dockernet:
+networks:
+  dockernet:
+    external: true
+
+
+secrets:
+  session_key:
+    file: ./secrets/session_key
+  form_key:
+    file: ./secrets/form_key
+
 
 services:
   heyform:
     image: heyform/community-edition:latest
     restart: unless-stopped
-    # networks:
-    #   - dockernet
+    networks:
+      - dockernet
     volumes:
       # Persist uploaded images
       - ./assets:/app/static/upload
     depends_on:
-      - mongo
-      - keydb
+      - heyform_mongo
+      - heyform_keydb
     ports:
-      - '9513:8000'
+      - '8000:8000'
+    secrets:
+      - session_key
+      - form_key
     environment:
-      - APP_HOMEPAGE_URL=${APP_HOMEPAGE_URL:-http://localhost:9513}
-      - SESSION_KEY=DD7VV1JEKzFhxiCImAXdBascfy4NmJBBWXoEbbgyzPI=
-      - FORM_ENCRYPTION_KEY=hROPNeR9RmiefDJvXYDhsbWpvgf2MNiCgBnNaA5VOWw=
-      - MONGO_URI='mongodb://mongo:27017/heyform'
-      - REDIS_HOST=${REDIS_HOST:-keydb}
+      - APP_HOMEPAGE_URL=${APP_HOMEPAGE_URL:-http://localhost:8000}
+      # - SESSION_KEY_FILE=/run/secrets/session_key
+      # - FORM_ENCRYPTION_KEY_FILE=/run/secrets/form_key
+      - SESSION_KEY=${SESSION_KEY:-dummy-secret-encryption-key}
+      - FORM_ENCRYPTION_KEY=${FORM_ENCRYPTION_KEY:-dummy-secret-encryption-key}
+      - MONGO_URI='mongodb://heyform_mongo:27017/heyform'
+      - REDIS_HOST=${REDIS_HOST:-heyform_keydb}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - VERIFY_USER_EMAIL=${VERIFY_USER_EMAIL:-false}
       # SMTP
@@ -36,18 +50,26 @@ services:
       - SMTP_SECURE=${SMTP_SECURE:-true}
       - SMTP_FROM=${SMTP_FROM:-user}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-password}
-
-  mongo:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.heyform-rtr.entrypoints=http,https
+      - traefik.http.routers.heyform-rtr.rule=Host(`${APP_HOMEPAGE_URL:-http://localhost:8080}`)
+      - traefik.http.routers.heyform-rtr.tls=true
+      - traefik.http.routers.heyform-rtr.tls.certresolver=letsencrypt
+      - traefik.http.services.heyform-svc.loadbalancer.server.port=8000
+  heyform_mongo:
     image: percona/percona-server-mongodb:4.4
     restart: unless-stopped
-    # networks:
-    #   - dockernet
-    volumes:
-      - heyform_mongo_storage:/data/db
+    networks:
+      - dockernet
+    # volumes:
+    #   - heyform_mongo_storage:/data/db
 
-  keydb:
+  heyform_keydb:
     image: eqalpha/keydb:latest
     restart: always
     command: keydb-server --appendonly yes
-    volumes:
-      - heyform_keydb_storage:/data
+    networks:
+      - dockernet
+    # volumes:
+    #   - heyform_keydb_storage:/data
