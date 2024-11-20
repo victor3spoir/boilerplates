@@ -10,7 +10,7 @@ x-ollama: &service-ollama
   image: ollama/ollama:rocm
   restart: unless-stopped
   # container_name: ollama
-  networks: 
+  networks:
     - dockernet
   # ports:
   #   - 11434:11434
@@ -34,7 +34,8 @@ services:
     profiles:
       - 'cpu'
     <<: *service-ollama
-
+    volumes:
+      - ${HOME}/.ollama:/root/.ollama:rw
 
   ollama-gpu:
     profiles: ['gpu-nvidia']
@@ -50,13 +51,13 @@ services:
   ollama-pull-llama-cpu:
     <<: *init-ollama
     profiles:
-    - 'cpu'
+      - 'cpu'
     depends_on:
       - ollama
 
   ollama-pull-llama-gpu:
     <<: *init-ollama
-    profiles: 
+    profiles:
       - 'gpu-nvidia'
     depends_on:
       - ollama-gpu

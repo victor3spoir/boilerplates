@@ -1,0 +1,21 @@
+networks:
+  dockernet:
+    external: true
+
+
+services:
+  datastax-studio:
+    image: datastax/dse-studio
+    restart: unless-stopped
+    networks:
+      - dockernet
+    ports:
+      - 9091:9091
+    environment:
+      - DS_LICENSE=accept
+  datastax-opscenter:
+    image: datastax/dse-opscenter
+    environment:
+      - DS_LICENSE=accept
+    ports:
+      - 8888:8888  
