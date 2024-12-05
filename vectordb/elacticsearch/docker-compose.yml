@@ -1,0 +1,26 @@
+networks:
+  dockernet:
+    external: true
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.16.1
+    restart: unless-stopped
+    ports:
+      - 9200:9200
+    networks:
+      - dockernet
+    environment:
+      - xpack.ml.use_auto_machine_memory_percent=true
+      - ELASTIC_PASSWORD="your_password"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.16.1
+    ports:
+      - 5601:5601
+    networks:
+      - dockernet
+    environment:
+      - KIBANA_PASSWORD=changeme
+# docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
+# docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
