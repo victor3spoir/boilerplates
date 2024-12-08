@@ -4,17 +4,17 @@ networks:
 
 secrets:
   db_user:
-    file: ./db_user
+    file: ./secrets/db_user
   db_password:
-    file: ./db_password
+    file: ./secrets/db_password
   root_password:
-    file: ./root_password
+    file: ./secrets/root_password
 
 volumes:
-  wordpress_db_data:
-    name: wordpress_db_data
-  wordpress_web_data:
-    name: wordpress_web_data
+  wordpress_db_storage:
+    name: wordpress_db_storage
+  wordpress_web_storage:
+    name: wordpress_web_storage
 
 services:
   wordpress_web:
@@ -35,11 +35,11 @@ services:
     depends_on:
       - wordpress_db
     volumes:
-      - wordpress_web_data:/var/www/html
+      - wordpress_web_storage:/var/www/html
     labels:
       - traefik.enable=true
       - traefik.http.routers.wordpress-rtr.entrypoints=http,https
-      - traefik.http.routers.wordpress-rtr.rule=Host(`wordpress.local.kvruntime.com`)
+      - traefik.http.routers.wordpress-rtr.rule=Host(`${APP_URL}`)
       - traefik.http.routers.wordpress-rtr.tls=true
       - traefik.http.routers.wordpress-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.wordpress-svc.loadbalancer.server.port=80
@@ -61,7 +61,5 @@ services:
       - MYSQL_PASSWORD_FILE=/run/secrets/db_password
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root_password
     volumes:
-      - wordpress_db_data:/var/lib/mysql
-
-
+      - wordpress_db_storage:/var/lib/mysql
 # demo_user : D3m0P@55w0rd]
