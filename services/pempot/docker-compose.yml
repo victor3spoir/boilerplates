@@ -1,53 +1,35 @@
 networks:
-  penpot:
+  dockernet:
+    external: true
 
 volumes:
   penpot_postgres_storage:
-  penpot_assets:
-  # penpot_minio:
+  penpot_assets_storage:
 
 services:
-
-
   penpot-frontend:
-    image: penpotapp/frontend:latest
+    image: penpotapp/frontend:main
     restart: always
     ports:
       - 9001:80
 
     volumes:
-      - penpot_assets:/opt/data/assets
+      - penpot_assets_storage:/opt/data/assets
 
     depends_on:
       - penpot-backend
       - penpot-exporter
 
     networks:
-      - penpot
+      - dockernet
 
     labels:
-      - "traefik.enable=true"
-
-      ## HTTP: example of labels for the case where penpot will be exposed to the
-      ## internet with only HTTP (without HTTPS) using traefik.
-
-      # - "traefik.http.routers.penpot-http.entrypoints=web"
-      # - "traefik.http.routers.penpot-http.rule=Host(`<DOMAIN_NAME>`)"
-      # - "traefik.http.services.penpot-http.loadbalancer.server.port=80"
-
-      ## HTTPS: example of labels for the case where penpot will be exposed to the
-      ## internet with HTTPS using traefik.
-
-      # - "traefik.http.middlewares.http-redirect.redirectscheme.scheme=https"
-      # - "traefik.http.middlewares.http-redirect.redirectscheme.permanent=true"
-      # - "traefik.http.routers.penpot-http.entrypoints=web"
-      # - "traefik.http.routers.penpot-http.rule=Host(`<DOMAIN_NAME>`)"
-      # - "traefik.http.routers.penpot-http.middlewares=http-redirect"
-      # - "traefik.http.routers.penpot-https.entrypoints=websecure"
-      # - "traefik.http.routers.penpot-https.rule=Host(`<DOMAIN_NAME>`)"
-      # - "traefik.http.services.penpot-https.loadbalancer.server.port=80"
-      # - "traefik.http.routers.penpot-https.tls=true"
-      # - "traefik.http.routers.penpot-https.tls.certresolver=letsencrypt"
+      - 'traefik.enable=true'
+      - traefik.http.routers.pempot-rtr.entrypoints=http,https
+      - traefik.http.routers.pempot-rtr.tls=true
+      - traefik.http.routers.pempot-rtr.rule=Host(`${PEMPOT_APP_URL}`)
+      - traefik.http.routers.pempot-rtr.tls.certresolver=letsencrypt-dev
+      - traefik.http.services.pempot-svc.loadbalancer.server.port=80
 
     ## Configuration envronment variables for the frontend container. In this case, the
     ## container only needs the `PENPOT_FLAGS`. This environment variable is shared with
@@ -71,24 +53,23 @@ services:
       - PENPOT_FLAGS=enable-registration enable-login-with-password enable-demo-users
 
   penpot-backend:
-    image: "penpotapp/backend:latest"
+    image: penpotapp/backend:main
     restart: always
 
     volumes:
-      - penpot_assets:/opt/data/assets
+      - penpot_assets_storage:/opt/data/assets
 
     depends_on:
       - penpot-postgres
       - penpot-redis
 
     networks:
-      - penpot
+      - dockernet
 
     ## Configuration envronment variables for the backend
     ## container.
 
     environment:
-
       ## Relevant flags for backend:
       ## - demo-users
       ## - email-verification
@@ -174,7 +155,7 @@ services:
       ## based on real scenarios. If you want to help us, please leave it enabled. You can
       ## audit what data we send with the code available on github.
 
-      - PENPOT_TELEMETRY_ENABLED=true
+      - PENPOT_TELEMETRY_ENABLED=false
 
       ## Example SMTP/Email configuration. By default, emails are sent to the mailcatch
       ## service, but for production usage it is recommended to setup a real SMTP
@@ -191,10 +172,10 @@ services:
       - PENPOT_SMTP_SSL=false
 
   penpot-exporter:
-    image: "penpotapp/exporter:latest"
+    image: penpotapp/exporter:main
     restart: always
     networks:
-      - penpot
+      - dockernet
 
     environment:
       # Don't touch it; this uses an internal docker network to
@@ -213,7 +194,7 @@ services:
       - penpot_postgres_storage:/var/lib/postgresql/data
 
     networks:
-      - penpot
+      - dockernet
 
     environment:
       - POSTGRES_INITDB_ARGS=--data-checksums
@@ -225,7 +206,7 @@ services:
     image: redis:7
     restart: always
     networks:
-      - penpot
+      - dockernet
 
   ## A mailcatch service, used as temporal SMTP server. You can access via HTTP to the
   ## port 1080 for read all emails the penpot platform has sent. Should be only used as a
@@ -237,9 +218,9 @@ services:
     expose:
       - '1025'
     ports:
-      - "1080:1080"
+      - '1080:1080'
     networks:
-      - penpot
+      - dockernet
 
   ## Example configuration of MiniIO (S3 compatible object storage service); If you don't
   ## have preference, then just use filesystem, this is here just for the completeness.
@@ -259,5 +240,3 @@ services:
   #   ports:
   #     - 9000:9000
   #     - 9001:9001
-
-
