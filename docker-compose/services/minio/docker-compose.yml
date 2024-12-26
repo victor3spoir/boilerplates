@@ -2,6 +2,10 @@ networks:
   dockernet:
     external: true
 
+volumes:
+  minio_storage:
+    name: minio_storage
+
 services:
   minio:
     image: quay.io/minio/minio
@@ -10,11 +14,13 @@ services:
     networks:
       - dockernet
     ports:
-      - 9000:9000
-      - 9001:9001
+      - 10000:9000 #api
+      - 10001:9001 #webui
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-admin-password}
+    volumes:
+      - minio_storage:/data:rw
     labels:
       - traefik.enable=true
       - traefik.http.routers.minio-rtr.entrypoints=http,https
@@ -22,6 +28,3 @@ services:
       - traefik.http.routers.minio-rtr.tls.certresolver=dev-letsencrypt
       - traefik.http.routers.minio-rtr.rule=Host(`minio.local.kvruntime.com`)
       - traefik.http.services.minio-svc.loadbalancer.server.port=9000
-
-# API: http://172.17.0.2:9000  http://127.0.0.1:9000
-# WebUI: http://172.17.0.2:9001  http://127.0.0.1:9001
