@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgsql-deploy
+  labels:
+    app: pgsql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgsql
+  template:
+    metadata:
+      labels:
+        app: pgsql
+    spec:
+      containers:
+        - name: pgsql
+          image: postgres:17-alpine
+          ports:
+          - containerPort: 5432
+          env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: pgsql-secret
+                key: pgsql-username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pgsql-secret
+                key: pgsql-password
+          - name: POSTGRES_DB
+            value: postgres
+  
+---
+# pgsql svc
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgsql-svc
+spec:
+  selector:
+    app: pgsql
+  ports:
+    - protocol:  TCP
+      port: 5432
+      targetPort: 5432
+
+---
+# # pgadmin deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: demo
+  name: pgadmin-deploy
+  # labels:
+  #   app: pgadmin-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgadmin
+  template:
+    metadata:
+
+      labels:
+        app: pgadmin
+    spec:
+      containers:
+        - name: pgadmin
+          image: dpage/pgadmin4:snapshot
+          resources:
+            requests:
+              memory: "128mi"
+              cpu: "250m"
+            limits:
+              memory: "512mb"
+              cpu: "500m"
+          ports:
+          - containerPort: 80
+          env:
+            - name: PGADMIN_DEFAULT_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: pgsql-secret
+                  key: pgadmin-email  
+            - name: PGADMIN_DEFAULT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgsql-secret
+                  key: pgadmin-password  
+---
+# pgadmin svc
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgadmin-svc
+spec:
+  selector:
+    app: pgadmin
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30001
