@@ -1,0 +1,13 @@
+networks:
+  dockernet:
+    external: true
+
+services:
+  excalidraw:
+    image: excalidraw/excalidraw:latest
+    ports:
+      - 5000:80
+    networks:
+      - dockernet
+    labels:
+      - traefik.enable=true
