@@ -1,0 +1,17 @@
+volumes:
+  homarr_data:
+    name: homarr_data
+services:
+  homarr:
+    image: ghcr.io/ajnart/homarr:dev
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
+      - ./configs:/app/data/configs:rw
+      - ./icons:/app/public/icons:rw
+      - homarr_data:/data:rw
+    ports:
+      - '7575:7575'
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.homarr-svc.loadbalancer.server.port=7575
