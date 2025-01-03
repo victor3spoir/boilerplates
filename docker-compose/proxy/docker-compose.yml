@@ -1,17 +1,34 @@
 networks:
   dockernet:
-    external:
-      true
+    external: true
 
-volumes:
-  traefikproxy_data:
-    name: traefikproxy_data
-      
 services:
   traefikproxy:
-    image: traefik:3.2
+    image: traefik:3.3.0-rc2
+    container_name: traefikproxy
     restart: unless-stopped
-    privileged: true
+    command:
+      - '--global.checknewversion=true'
+      - '--global.sendanonymoususage=false'
+      - '--log.level=DEBUG'
+      - '--api.insecure=true'
+      - '--log.format=common' #common|json
+      - '--accesslog.filepath=/var/lib/traefik/traefik.log'
+      - '--accesslog.format=json'
+      - '--entrypoints.http.address=:80'
+      - '--entrypoints.http.http.redirections.entrypoint.to=https'
+      - '--entrypoints.http.http.redirections.entrypoint.scheme=https'
+      - '--entrypoints.https.address=:443'
+      - '--providers.docker.endpoint=unix://var/run/docker.sock'
+      - '--providers.docker.exposedbydefault=false'
+      - 'certificateresolvers.letsencrypt.acme.email=victorespoir.dev@gmail.com'
+      - 'certificateresolvers.letsencrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory'
+      - 'certificateresolvers.letsencrypt.acme.storage=/var/lib/traefik'
+      - 'certificateresolvers.letsencrypt.acme.httpchallenge.entrypoints=http'
+      - 'certificateresolvers.staging-letsencrypt.acme.email=victorespoir.dev@gmail.com'
+      - 'certificateresolvers.staging-letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory'
+      - 'certificateresolvers.staging-letsencrypt.acme.storage=/var/lib/traefik'
+      - 'certificateresolvers.staging-letsencrypt.acme.httpchallenge.entrypoints=http'
     networks:
       - dockernet
     ports:
@@ -20,13 +37,10 @@ services:
       - 127.0.0.1:8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./traefik.yml:/etc/traefik/traefik.yml:ro
-      - ./config.yml:/etc/traefik/config.yml:ro
-      # - traefikproxy_data:/var/lib/traefik/certs:rw
       - ./acme.json:/var/lib/traefik/acme.json:rw
     environment:
-      - DOMAIN01=${DOMAIN01:-kruntime.com}
-      - SUBDOMAIN01=${SUBDOMAIN01:-local.kruntime.com}
+      - DOMAIN01=${DOMAIN01:-victor3spoir.com}
+      - SUBDOMAIN01=${SUBDOMAIN01:-local.victor3spoir.com}
     labels:
       - traefik.enable=true
       - traefik.http.routers.traefik-rtr.entrypoints=http,https
@@ -36,8 +50,6 @@ services:
       - traefik.http.routers.traefik-rtr.tls.domains[0].main=${DOMAIN01}
       - traefik.http.routers.traefik-rtr.tls.domains[0].sans=${SUBDOMAIN01}
       - traefik.http.services.traefik-svc.loadbalancer.server.port=8080
-
-
 # Add .env file & put DOMAINS in
 # DOMAIN01=
 # SUBDOMAIN01=
