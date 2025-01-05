@@ -18,7 +18,7 @@ volumes:
 
 services:
   wordpress_web:
-    image: wordpress:6-apache
+    image: wordpress:6.7-apache
     restart: unless-stopped
     ports:
       - 30080:80
@@ -46,9 +46,9 @@ services:
 
   wordpress_db:
     image: mysql:8.0
+    cpus: 0.5
+    mem_limit: "528Mib"
     restart: unless-stopped
-    ports:
-      - 3306:3306
     networks:
       - dockernet
     secrets:
@@ -62,4 +62,4 @@ services:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root_password
     volumes:
       - wordpress_db_storage:/var/lib/mysql
-# demo_user : D3m0P@55w0rd]
+# system_admin YZt)Xu$GGcyN2RgtBy
