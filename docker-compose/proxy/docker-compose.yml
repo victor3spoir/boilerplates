@@ -4,10 +4,11 @@ networks:
 
 services:
   traefikproxy:
-    image: traefik:3.3.0-rc2
+    image: traefik:v3.3
     container_name: traefikproxy
     restart: unless-stopped
     command:
+        # Globals 
       - '--global.checknewversion=true'
       - '--global.sendanonymoususage=false'
       - '--log.level=DEBUG'
@@ -15,20 +16,25 @@ services:
       - '--log.format=common' #common|json
       - '--accesslog.filepath=/var/lib/traefik/traefik.log'
       - '--accesslog.format=json'
-      - '--entrypoints.http.address=:80'
-      - '--entrypoints.http.http.redirections.entrypoint.to=https'
-      - '--entrypoints.http.http.redirections.entrypoint.scheme=https'
-      - '--entrypoints.https.address=:443'
+        # entrypoints
+      - '--entryPoints.http.address=:80'
+      - '--entryPoints.https.address=:443'
+      - '--entryPoints.http.http.redirections.entryPoint.to=https'
+      - '--entryPoints.http.http.redirections.entryPoint.scheme=https'
+        # Providers
       - '--providers.docker.endpoint=unix://var/run/docker.sock'
       - '--providers.docker.exposedbydefault=false'
-      - 'certificateresolvers.letsencrypt.acme.email=victorespoir.dev@gmail.com'
-      - 'certificateresolvers.letsencrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory'
-      - 'certificateresolvers.letsencrypt.acme.storage=/var/lib/traefik'
-      - 'certificateresolvers.letsencrypt.acme.httpchallenge.entrypoints=http'
-      - 'certificateresolvers.staging-letsencrypt.acme.email=victorespoir.dev@gmail.com'
-      - 'certificateresolvers.staging-letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory'
-      - 'certificateresolvers.staging-letsencrypt.acme.storage=/var/lib/traefik'
-      - 'certificateresolvers.staging-letsencrypt.acme.httpchallenge.entrypoints=http'
+        # Prod certs resolvers
+      - '--certificatesResolvers.letsencrypt.acme.email=email@gmail.com'
+      - '--certificatesResolvers.letsencrypt.acme.caserver=https://acme-v02.api.letsencrypt.org/directory'
+      - '--certificatesResolvers.letsencrypt.acme.storage=acme.json'
+      - '--certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=http'
+      - '--certificatesResolvers.letsencrypt.acme.dnsChallenge.provider=cloudflare'
+        # Dev certs resolvers
+      - '--certificatesResolvers.dev-letsencrypt.acme.email=email@gmail.com'
+      - '--certificatesResolvers.dev-letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory'
+      - '--certificatesResolvers.dev-letsencrypt.acme.storage=acme.json'
+      - '--certificatesResolvers.dev-letsencrypt.acme.httpChallenge.entrypoint=http'
     networks:
       - dockernet
     ports:
@@ -39,8 +45,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./acme.json:/var/lib/traefik/acme.json:rw
     environment:
-      - DOMAIN01=${DOMAIN01:-victor3spoir.com}
-      - SUBDOMAIN01=${SUBDOMAIN01:-local.victor3spoir.com}
+      - DOMAIN01=${DOMAIN01:-domain.dev}
+      - SUBDOMAIN01=${SUBDOMAIN01:-sub.domain.dev}
+      # - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN:-000000000aaaaaaaaa}
     labels:
       - traefik.enable=true
       - traefik.http.routers.traefik-rtr.entrypoints=http,https

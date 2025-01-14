@@ -33,11 +33,11 @@ x-environment: &environment
 
     # Email Configuration
     # MAIL_FROM:
-    # SMTP_HOST:
-    # SMTP_PORT:
-    # SMTP_USER:
-    # SMTP_PASSWORD:
-    # SMTP_AUTHENTICATED:
+    SMTP_HOST: ${SMTP_HOST}
+    SMTP_PORT: ${SMTP_PORT}
+    SMTP_USER: ${SMTP_USER}
+    SMTP_PASSWORD: ${SMTP_PASSWORD}
+    SMTP_AUTHENTICATED: ${SMTP_AUTHENTICATED}
 
     # (Additional option for TLS (port 465) only)
     # SMTP_SECURE_ENABLED: 1
@@ -146,7 +146,7 @@ x-environment: &environment
     ########################################## OPTIONAL (SERVER CONFIGURATION) ###########################################
 
     # Set the below to 1 to disable Rate Limiting across Formbricks
-    # RATE_LIMITING_DISABLED: 1
+    RATE_LIMITING_DISABLED: 0
 
     # Set the below to send OpenTelemetry data for tracing
     # OPENTELEMETRY_LISTENER_URL: http://localhost:4318/v1/traces
@@ -162,8 +162,8 @@ x-environment: &environment
     # Set the below to automatically assign new users to a specific organization and role within that organization
     # Insert an existing organization id or generate a valid CUID for a new one at https://www.getuniqueid.com/cuid (e.g. cjld2cjxh0000qzrmn831i7rn)
     # (Role Management is an Enterprise feature)
-    # DEFAULT_ORGANIZATION_ID:
-    # DEFAULT_ORGANIZATION_ROLE: owner
+    DEFAULT_ORGANIZATION_ID: to_be_changed_cm5w8zcw5000008kxbwa2eoem
+    DEFAULT_ORGANIZATION_ROLE: owner
 
 services:
   postgres:
@@ -185,6 +185,14 @@ services:
       - 3000:3000
     # volumes:
     #   - formbricks_uploads_storage:/home/nextjs/apps/web/uploads/
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.formbricks-rtr.entrypoints=http,https
+      - traefik.http.routers.formbricks-rtr.ruls=Host(`formbricks.servertest.com`)
+      - traefik.http.routers.tls=true
+      - traefik.http.routers.tls.certresolver=staging-letsencrypt
+      - traces.http.services.formbricks-svc.loadbalancer.server.port=3000
+
 
 volumes:
   formbricks_postgres_storage:
