@@ -1,3 +1,7 @@
+networks:
+  dockernet:
+    external: true
+    
 x-environment: &environment
   environment:
     # The url of your Formbricks instance used in the admin panel
@@ -5,23 +9,23 @@ x-environment: &environment
     WEBAPP_URL:
 
     # Required for next-auth. Should be the same as WEBAPP_URL
-    NEXTAUTH_URL:
+    NEXTAUTH_URL: ${WEBAPP_URL}
 
     # PostgreSQL DB for Formbricks to connect to
-    DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/formbricks?schema=public"
+    DATABASE_URL: 'postgresql://postgres:postgres@postgres:5432/formbricks?schema=public'
 
     # NextJS Auth
     # @see: https://next-auth.js.org/configuration/options#nextauth_secret
     # You can use: `openssl rand -hex 32` to generate one
-    NEXTAUTH_SECRET: "67e88afcad9a597941f1c0075b51e73777dde476fc25a969b04ae99edb3821b6"
+    NEXTAUTH_SECRET: '67e88afcad9a597941f1c0075b51e73777dde476fc25a969b04ae99edb3821b6'
 
     # Encryption Key is used for 2FA & Single use URLs for Link Surveys
     # You can use: $(openssl rand -hex 32) to generate one
-    ENCRYPTION_KEY: "5116ab72166f8b01089ffc40b4e2a2ab15e203f844f4db4cae9c84bd63ec7a10"
+    ENCRYPTION_KEY: '5116ab72166f8b01089ffc40b4e2a2ab15e203f844f4db4cae9c84bd63ec7a10'
 
     # API Secret for running cron jobs.
     # You can use: $(openssl rand -hex 32) to generate a secure one
-    CRON_SECRET: "7d7881dab4f5b5508d7ed3bb76ac7cebd031ea8d56b5889b7e3591194e8a95a9"
+    CRON_SECRET: '7d7881dab4f5b5508d7ed3bb76ac7cebd031ea8d56b5889b7e3591194e8a95a9'
 
     ############################################# OPTIONAL (ENTERPRISE EDITION) #############################################
 
@@ -169,6 +173,8 @@ services:
   postgres:
     restart: unless-stopped
     image: pgvector/pgvector:pg17
+    networks:
+      - dockernet
     # volumes:
     #   - formbricks_postgres_storage:/var/lib/postgresql/data
     environment:
@@ -179,6 +185,8 @@ services:
     restart: unless-stopped
     image: formbricks/formbricks:3.0.0
     # image: ghcr.io/formbricks/formbricks #:3.0.0
+    networks:
+      - dockernet
     depends_on:
       - postgres
     ports:
@@ -188,11 +196,10 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.formbricks-rtr.entrypoints=http,https
-      - traefik.http.routers.formbricks-rtr.ruls=Host(`formbricks.servertest.com`)
-      - traefik.http.routers.tls=true
-      - traefik.http.routers.tls.certresolver=staging-letsencrypt
-      - traces.http.services.formbricks-svc.loadbalancer.server.port=3000
-
+      - traefik.http.routers.formbricks-rtr.rule=Host(`formbricks.domain.com`)
+      - traefik.http.routers.formbricks-rtr.tls=true
+      - traefik.http.routers.formbricks-rtr.tls.certresolver=dev-letsencrypt
+      - traefik.http.services.formbricks-svc.loadbalancer.server.port=3000
 
 volumes:
   formbricks_postgres_storage:
@@ -201,5 +208,4 @@ volumes:
   formbricks_uploads_storage:
     driver: local
     name: formbricks_uploads_storage
-
 # Generate encryption key `openssl rand -hex 32`
