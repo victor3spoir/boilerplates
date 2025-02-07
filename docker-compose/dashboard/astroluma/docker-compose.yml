@@ -1,0 +1,44 @@
+networks:
+  dockernet:
+    external: true
+services:
+  astroluma-app:
+    image: sanjeet990/astroluma:1.0.2
+    restart: unless-stopped
+    mem_limit: 526Mib
+    cpus: .5
+    networks:
+      - dockernet
+    ports:
+      - 8000:8000
+    environment:
+      PORT: 8000
+      NODE_ENV: production
+      SECRET_KEY: a2c5f9a8b2d7e1a7f2c9c8d9b5f7a3d5
+      MONGODB_URI: mongodb://astroluma-mongodb:27017/astroluma
+    # volumes:
+    #   - uploads_data:/app/storage/uploads
+    depends_on:
+      - astroluma-mongodb
+
+  astroluma-mongodb:
+    image: mongo:6.0
+    restart: unless-stopped
+    mem_limit: 526Mib
+    cpus: .5
+    networks:
+      - dockernet
+    # ports:
+    #   - '27017:27017'
+    # volumes:
+    #   - mongo_data:/data/db
+
+volumes:
+  mongo_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+
+# Username: admin (Case Sensitive)
+# Password: 123456
