@@ -35,3 +35,4 @@ services:
     environment:
       - PGADMIN_DEFAULT_EMAIL=user@domain.com
       - PGADMIN_DEFAULT_PASSWORD=SuperSecret
+      - PGADMIN_ENABLE_TLS=false

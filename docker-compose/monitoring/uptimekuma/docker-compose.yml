@@ -10,6 +10,8 @@ services:
   updtime-kuma:
     image: louislam/uptime-kuma:1
     restart: unless-stopped
+    cpus: 0.5
+    mem_limit: "528Mib"
     ports:
       - 3001:3001
     volumes:

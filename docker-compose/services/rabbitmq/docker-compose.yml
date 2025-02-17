@@ -9,7 +9,8 @@ services:
     networks:
       - dockernet
     ports:
-      - 15672:15672
+      - 15672:15672 #ui
+      - 5672:5672 #data stream
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password

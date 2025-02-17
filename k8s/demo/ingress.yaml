@@ -1,20 +1,20 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: minimal-ingress
-  namespace: webapps
+  name: demo-ingress
+  namespace: demo
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/service-upstream: "true"
 spec:
-  ingressClassName: nginx-demo
+  ingressClassName: nginx
   rules:
-  - host: "local.victor3spoir.com"
+  - host: nginx.local.victor3spoir.com
     http:
       paths:
       - path: /
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
-            name: demo-svc
+            name: deamonset-svc
             port:
               number: 80

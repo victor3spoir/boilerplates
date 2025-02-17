@@ -1,0 +1,12 @@
+networks:
+  dockernet:
+    external: true
+    
+services:
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    networks:
+      - dockernet
+    ports:
+      - 1025:1025 # smtp
+      - 8025:8025 # ui
