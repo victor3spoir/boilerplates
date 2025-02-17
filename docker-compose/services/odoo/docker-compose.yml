@@ -16,7 +16,7 @@ secrets:
 
 services:
   odoo_web:
-    image: odoo:17
+    image: odoo:18
     restart: unless-stopped
     privileged: true
     depends_on:
