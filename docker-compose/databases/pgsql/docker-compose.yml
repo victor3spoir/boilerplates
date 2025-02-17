@@ -9,7 +9,7 @@ volumes:
 
 services:
   pgsql:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     restart: unless-stopped
     networks:
       - dockernet
@@ -26,7 +26,7 @@ services:
       - traefik.tcp.services.pgsql-svc.loadbalancer.server.port=5432
     
   pgadmin:
-    image: dpage/pgadmin4:snapshot
+    image: dpage/pgadmin4:9
     restart: unless-stopped
     networks:
       - dockernet

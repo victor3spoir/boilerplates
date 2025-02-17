@@ -1,0 +1,21 @@
+networks:
+  dockernet:
+    external: true
+
+services:
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    restart: unless-stopped
+    mem_limit: 528Mib
+    cpus: 0.5
+    networks:
+      - dockernet
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    ports:
+      - 30080:80
+      - 30443:443
+    # volumes:
+    #   - /path/to/heimdall/config:/config
