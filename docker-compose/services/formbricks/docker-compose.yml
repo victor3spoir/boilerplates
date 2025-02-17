@@ -201,7 +201,7 @@ services:
       - traefik.http.routers.formbricks-rtr.entrypoints=http,https
       - traefik.http.routers.formbricks-rtr.rule=Host(`${WEBAPP_URL}`)
       - traefik.http.routers.formbricks-rtr.tls=true
-      - traefik.http.routers.formbricks-rtr.tls.certresolver=dev-letsencrypt
+      - traefik.http.routers.formbricks-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.formbricks-svc.loadbalancer.server.port=3000
 
 volumes:
