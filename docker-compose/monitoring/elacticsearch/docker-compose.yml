@@ -1,0 +1,180 @@
+networks:
+  dockernet:
+    external: true
+  elastic:
+    external: true
+
+
+volumes:
+  elasticsearch_storage:
+    name: elasticsearch_storage
+  kibana_storage:
+    name: kibana_storage
+  logstash_storage:
+    name: logstash_storage
+  certs:
+    name: certs
+    driver: local
+
+#   logstash:
+#     image: logstash:8.16.1
+#     environment:
+#       - discovery.seed_hosts=logstash
+#       - LS_JAVA_OPTS="-Xms512m -Xmx512m"
+#     volumes:
+#       - ./logstash/pipeline/logstash-nginx.config:/usr/share/logstash/pipeline/logstash-nginx.config
+#       - ./logstash/nginx.log:/home/nginx.log
+#     networks:
+#       - dockernet
+#     ports:
+#       - "5000:5000/tcp"
+#       - "5000:5000/udp"
+#       - "5044:5044"
+#       - "9600:9600"
+#     depends_on:
+#       - elasticsearch
+#     command: logstash -f /usr/share/logstash/pipeline/logstash-nginx.config
+
+# # docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
+# # docker exec -it es01 /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana
+
+services:
+
+  setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+    user: "0"
+    command: >
+      bash -c '
+        if [ x${ELASTIC_PASSWORD} == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        elif [ x${KIBANA_PASSWORD} == x ]; then
+          echo "Set the KIBANA_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: es01\n"\
+          "    dns:\n"\
+          "      - es01\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          "  - name: es02\n"\
+          "    dns:\n"\
+          "      - es02\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          "  - name: es03\n"\
+          "    dns:\n"\
+          "      - es03\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -s --cacert config/certs/ca/ca.crt https://es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
+        echo "Setting kibana_system password";
+        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
+        echo "All done!";
+      '
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+  elasticsearch:
+    depends_on:
+      - setup
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    restart: unless-stopped
+    networks:
+      - elastic
+      - dockernet
+    ports:
+      - 9200:9200
+      - 12201:12201
+    mem_limit: '1GB'
+    cpu_count: 1
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=elk
+      - discovery.type=single-node
+      - xpack.ml.use_auto_machine_memory_percent=true
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-password}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es03/es03.key
+      - xpack.security.http.ssl.certificate=certs/es03/es03.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es03/es03.key
+      - xpack.security.transport.ssl.certificate=certs/es03/es03.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+    volumes:
+      - elasticsearch_storage:/usr/share/elasticsearch/data
+
+  kibana:
+    depends_on:
+      - elasticsearch
+    image: docker.elastic.co/kibana/kibana:8.17.0
+    restart: unless-stopped
+    networks:
+      - elastic
+      - dockernet
+    ports:
+      - 5601:5601
+    environment:
+      # - SERVERNAME=kibana
+      # - server.ssl.enabled=false
+      # - xpack.security.enabled=false
+      # - xpack.security.http.ssl.enabled=false
+      # - xpack.security.transport.ssl.enabled=false
+      - KIBANA_PASSWORD=complex_password
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD:-password}
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+      - kibana_storage:/usr/share/kibana/data
+  # logstash:
+  #   depends_on:
+  #     - elasticsearch
+  #       #  condition: service_healthy
+  #     - kibana
+  #       #  condition: service_healthy
+  #   image: docker.elastic.co/logstash/logstash:8.17.0
+  #   # labels:
+  #   #   co.elastic.logs/module: logstash
+  #   # user: root
+  #   # volumes:
+  #   #   - certs:/usr/share/logstash/certs
+  #   #   - logstashdata01:/usr/share/logstash/data
+  #   #   - './logstash_ingest_data/:/usr/share/logstash/ingest_data/'
+  #   #   - './logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro'
+  #   environment:
+  #     - xpack.monitoring.enabled=false
+  #     - ELASTIC_USER=elastic
+  #     - ELASTIC_PASSWORD=complex_password
+  #     - ELASTIC_HOSTS=http://elasticsearch:9200

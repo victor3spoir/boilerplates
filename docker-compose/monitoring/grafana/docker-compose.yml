@@ -23,7 +23,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.grafana-rtr.entrypoints=http,https
-      - traefik.http.routers.grafana-rtr.rule=Host(`grafana.local.kvruntime.com`)
+      - traefik.http.routers.grafana-rtr.rule=Host(`grafana.${DOMAIN_NAME}`)
       - traefik.http.routers.grafana-rtr.tls=true
       - traefik.http.routers.grafana-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.grafana-svc.loadbalancer.server.port=3000

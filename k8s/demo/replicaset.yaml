@@ -1,7 +1,7 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: ReplicaSet
 metadata:
-  name: demo-deploy
+  name: replica-demo
   namespace: demo
   labels:
     app: guestbook
@@ -9,12 +9,13 @@ metadata:
 spec:
   replicas: 3
   selector:
+    # name: php-redis
     matchLabels:
-      app: demo-app
+      app: guestbook
   template:
     metadata:
       labels:
-        app: demo-app
+        app: guestbook
     spec:
       containers:
       - name: php-redis

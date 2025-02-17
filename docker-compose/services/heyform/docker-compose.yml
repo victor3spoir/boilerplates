@@ -1,75 +1,58 @@
-volumes:
-  heyform_mongo_storage:
-    name: heyform_mongo_storage
-  heyform_keydb_storage:
-    name: heyform_keydb_storage
-
 networks:
   dockernet:
     external: true
-
-
-secrets:
-  session_key:
-    file: ./secrets/session_key
-  form_key:
-    file: ./secrets/form_key
-
+volumes:
+  heyform_mongodb_storage:
+    name: heyform_mongodb_storage
+  heyform_keydb_storage:
+    name: heyform_keydb_storage
 
 services:
   heyform:
-    image: heyform/community-edition:latest
-    restart: unless-stopped
-    networks:
-      - dockernet
+    image: heyform/community-edition:v0.0.15
+    restart: always
     volumes:
-      # Persist uploaded images
       - ./assets:/app/static/upload
     depends_on:
-      - heyform_mongo
-      - heyform_keydb
+      - heyform-mongo
+      - heyform-keydb
+    networks:
+      - dockernet
     ports:
-      - '8000:8000'
-    secrets:
-      - session_key
-      - form_key
+      - '9513:8000'
     environment:
-      - APP_HOMEPAGE_URL=${APP_HOMEPAGE_URL:-http://localhost:8000}
-      # - SESSION_KEY_FILE=/run/secrets/session_key
-      # - FORM_ENCRYPTION_KEY_FILE=/run/secrets/form_key
-      - SESSION_KEY=${SESSION_KEY:-dummy-secret-encryption-key}
-      - FORM_ENCRYPTION_KEY=${FORM_ENCRYPTION_KEY:-dummy-secret-encryption-key}
-      - MONGO_URI='mongodb://heyform_mongo:27017/heyform'
-      - REDIS_HOST=${REDIS_HOST:-heyform_keydb}
+      - APP_HOMEPAGE_URL=${APP_HOMEPAGE_URL:-http://127.0.0.1:9513}
+      - SESSION_KEY=${SESSION_KEY:-hROPNeR9RmiefDJvXYDhsbWpvgf2MNiCgBnNaA5VOWw=}
+      - FORM_ENCRYPTION_KEY=${FORM_ENCRYPTION_KEY:-vnKYWo3L05l5+gtQo1zCcjG8xSmh/WqWhd7Smmfmjew=}
+      - MONGO_URI=${MONGO_URI:-'mongodb://heyform-mongo:27017/heyform'}
+      - REDIS_HOST=${REDIS_HOST:-heyform-keydb}
       - REDIS_PORT=${REDIS_PORT:-6379}
-      - VERIFY_USER_EMAIL=${VERIFY_USER_EMAIL:-false}
-      # SMTP
-      - SMTP_HOST=${SMTP_HOST:-http://localhost}
-      - SMTP_PORT=${SMTP_PORT:-8888}
-      - SMTP_USER=${SMTP_USER:-user}
+      - APP_DISABLE_REGISTRATION=${APP_DISABLE_REGISTRATION:-false}
+      - SMTP_HOST=${SMTP_HOST:-localhost}
+      - SMTP_PORT=${SMTP_PORT:-25}
       - SMTP_SECURE=${SMTP_SECURE:-true}
-      - SMTP_FROM=${SMTP_FROM:-user}
+      - SMTP_USER=${SMTP_USER:-admin}
       - SMTP_PASSWORD=${SMTP_PASSWORD:-password}
+      - SMTP_FROM=${SMTP_FROM:-admin@local.host}
     labels:
       - traefik.enable=true
       - traefik.http.routers.heyform-rtr.entrypoints=http,https
-      - traefik.http.routers.heyform-rtr.rule=Host(`${APP_HOMEPAGE_URL:-http://localhost:8080}`)
+      - traefik.http.routers.heyform-rtr.rule=Host('${APP_URL}')
       - traefik.http.routers.heyform-rtr.tls=true
       - traefik.http.routers.heyform-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.heyform-svc.loadbalancer.server.port=8000
-  heyform_mongo:
+  heyform-mongo:
     image: percona/percona-server-mongodb:4.4
     restart: unless-stopped
-    networks:
-      - dockernet
     # volumes:
-    #   - heyform_mongo_storage:/data/db
-
-  heyform_keydb:
-    image: eqalpha/keydb:latest
-    restart: always
-    command: keydb-server --appendonly yes
+    #   - heyform_mongodb_storage:/data/db
     networks:
       - dockernet
+  heyform-keydb:
+    image: eqalpha/keydb:latest
+    restart: unless-stopped
+    command: keydb-server --appendonly yes --protected-mode no
     # volumes:
     #   - heyform_keydb_storage:/data
+    networks:
+      - dockernet

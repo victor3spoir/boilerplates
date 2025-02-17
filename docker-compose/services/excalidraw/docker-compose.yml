@@ -11,3 +11,9 @@ services:
       - dockernet
     labels:
       - traefik.enable=true
+    logging:
+      driver: gelf
+      options:
+        gelf-address: UDP://elasticsearch:12201
+        tag: excalidraw
+      

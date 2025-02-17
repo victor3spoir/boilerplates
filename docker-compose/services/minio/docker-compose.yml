@@ -26,5 +26,5 @@ services:
       - traefik.http.routers.minio-rtr.entrypoints=http,https
       - traefik.http.routers.minio-rtr.tls=true
       - traefik.http.routers.minio-rtr.tls.certresolver=dev-letsencrypt
-      - traefik.http.routers.minio-rtr.rule=Host(`minio.local.kvruntime.com`)
+      - traefik.http.routers.minio-rtr.rule=Host(`minio.${DOMAIN_NAME}`)
       - traefik.http.services.minio-svc.loadbalancer.server.port=9000
