@@ -6,13 +6,13 @@ x-environment: &environment
   environment:
     # The url of your Formbricks instance used in the admin panel
     # Set this to your public-facing URL, e.g., https://example.com
-    WEBAPP_URL: ${WEBAPP_URL:-http://localhost:3000}
+    WEBAPP_URL: ${WEBAPP_URL}
 
     # Required for next-auth. Should be the same as WEBAPP_URL
     NEXTAUTH_URL: ${WEBAPP_URL}
 
     # PostgreSQL DB for Formbricks to connect to
-    DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/formbricks?schema=public}
+    DATABASE_URL: ${DATABASE_URL}
 
     # NextJS Auth
     # @see: https://next-auth.js.org/configuration/options#nextauth_secret
@@ -150,16 +150,16 @@ x-environment: &environment
     ########################################## OPTIONAL (SERVER CONFIGURATION) ###########################################
 
     # Set the below to 1 to disable Rate Limiting across Formbricks
-    RATE_LIMITING_DISABLED: 1
+    RATE_LIMITING_DISABLED: 0
 
     # Set the below to send OpenTelemetry data for tracing
     # OPENTELEMETRY_LISTENER_URL: http://localhost:4318/v1/traces
 
     # Set the below to use Redis for Next Caching (default is In-Memory from Next Cache)
-    # REDIS_URL:
+    # REDIS_URL: redis://formbricks-redis:6379
 
     # Set the below to use for Rate Limiting (default us In-Memory LRU Cache)
-    # REDIS_HTTP_URL:
+    # REDIS_HTTP_URL: redis://formbricks-redis:6379
 
     ############################################# OPTIONAL (OTHER) #############################################
 
@@ -170,9 +170,11 @@ x-environment: &environment
     # DEFAULT_ORGANIZATION_ROLE: owner
 
 services:
-  postgres:
-    restart: unless-stopped
+  formbricks-pgsql:
     image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    mem_limit: 528Mib
+    cpus: .5
     networks:
       - dockernet
     # volumes:
@@ -180,15 +182,16 @@ services:
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
 
-  formbricks:
+  formbricks-web:
     <<: *environment
     restart: unless-stopped
     image: formbricks/formbricks:3.1.5
-    # image: ghcr.io/formbricks/formbricks #:3.0.0
+    mem_limit: 528Mib
+    cpus: 1
     networks:
       - dockernet
     depends_on:
-      - postgres
+      - formbricks-pgsql
     ports:
       - 3000:3000
     # volumes:
@@ -196,15 +199,11 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.formbricks-rtr.entrypoints=http,https
-      - traefik.http.routers.formbricks-rtr.rule=Host(`formbricks.domain.com`)
+      - traefik.http.routers.formbricks-rtr.rule=Host(`${WEBAPP_URL}`)
       - traefik.http.routers.formbricks-rtr.tls=true
       - traefik.http.routers.formbricks-rtr.tls.certresolver=dev-letsencrypt
       - traefik.http.services.formbricks-svc.loadbalancer.server.port=3000
-  redis:
-    image: redis:7
-    command: redis-server --save 60 1 --loglevel warning
-    restart: unless-stopped
-    
+
 volumes:
   formbricks_postgres_storage:
     driver: local
