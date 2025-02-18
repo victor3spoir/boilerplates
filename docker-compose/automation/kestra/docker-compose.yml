@@ -11,9 +11,8 @@ networks:
 services:
   kestra-pgsql:
     image: postgres:17-alpine
-    pull_policy: if_not_present
-    volumes:
-      - kestra-pgsql-storage:/var/lib/postgresql/data
+    # volumes:
+    #   - kestra-pgsql-storage:/var/lib/postgresql/data
     networks:
       - dockernet
     environment:
@@ -28,7 +27,7 @@ services:
 
   kestra:
     # image: kestra/kestra:develop
-    image: kestra/kestra:${IMAGE_TAG:-v0.19.2}
+    image: kestra/kestra:v0.19.2
     pull_policy: if_not_present
     command: server standalone
     # command: server standalone --worker-thread=128
@@ -40,7 +39,7 @@ services:
     networks:
       - dockernet
     volumes:
-      - kestra-storage:/app/storage
+    #   - kestra-storage:/app/storage
       - /var/run/docker.sock:/var/run/docker.sock
       # - ./application.yaml:/etc/config/application.yaml:ro
       - /tmp:/tmp/

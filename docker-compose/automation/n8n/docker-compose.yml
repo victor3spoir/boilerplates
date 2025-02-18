@@ -33,8 +33,8 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-root}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
       - POSTGRES_DB=${POSTGRES_DB:-n8n}
-    volumes:
-      - n8n_pgsql_storage:/var/lib/postgresql/data
+    # volumes:
+      # - n8n_pgsql_storage:/var/lib/postgresql/data
     healthcheck:
       test:
         [
@@ -63,7 +63,7 @@ services:
     ports:
       - 5678:5678
     volumes:
-      - n8n_storage:/home/node/.n8n
+      # - n8n_storage:/home/node/.n8n
       - ./n8n/backup:/backup
       - ./shared:/data/shared
     depends_on:

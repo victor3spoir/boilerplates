@@ -1,0 +1,50 @@
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  postgres_data:
+    name: postgres_data
+  redis_data:
+    name: redis_data
+
+
+services:
+  activepieces:
+    image: activepieces/activepieces:0.42.0
+    restart: unless-stopped
+    ## Enable the following line if you already use AP_EXECUTION_MODE with SANDBOXED or old activepieces, checking the breaking change documentation for more info.
+    ## privileged: true
+    ports:
+      - 8080:80
+    depends_on:
+      - activepieces-pgsql
+      - activepieces-redis
+    env_file:
+      - .env
+    volumes:
+      - ./cache:/usr/src/app/cache
+    networks:
+      - dockernet
+  activepieces-pgsql:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      - 'POSTGRES_DB=${AP_POSTGRES_DATABASE}'
+      - 'POSTGRES_PASSWORD=${AP_POSTGRES_PASSWORD}'
+      - 'POSTGRES_USER=${AP_POSTGRES_USERNAME}'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - dockernet
+  activepieces-redis:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - dockernet
+    env_file:
+      - .env
