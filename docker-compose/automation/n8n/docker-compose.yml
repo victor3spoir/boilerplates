@@ -34,7 +34,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
       - POSTGRES_DB=${POSTGRES_DB:-n8n}
     # volumes:
-      # - n8n_pgsql_storage:/var/lib/postgresql/data
+    #   - n8n_pgsql_storage:/var/lib/postgresql/data
     healthcheck:
       test:
         [

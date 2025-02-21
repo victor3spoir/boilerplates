@@ -65,3 +65,4 @@ services:
     labels:
       - traefik.enable=true
 # default: admin : admin
+

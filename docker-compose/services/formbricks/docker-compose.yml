@@ -1,31 +1,31 @@
 networks:
   dockernet:
     external: true
-    
+
 x-environment: &environment
   environment:
     # The url of your Formbricks instance used in the admin panel
     # Set this to your public-facing URL, e.g., https://example.com
-    WEBAPP_URL:
+    WEBAPP_URL: ${WEBAPP_URL}
 
     # Required for next-auth. Should be the same as WEBAPP_URL
     NEXTAUTH_URL: ${WEBAPP_URL}
 
     # PostgreSQL DB for Formbricks to connect to
-    DATABASE_URL: 'postgresql://postgres:postgres@postgres:5432/formbricks?schema=public'
+    DATABASE_URL: ${DATABASE_URL}
 
     # NextJS Auth
     # @see: https://next-auth.js.org/configuration/options#nextauth_secret
     # You can use: `openssl rand -hex 32` to generate one
-    NEXTAUTH_SECRET: '67e88afcad9a597941f1c0075b51e73777dde476fc25a969b04ae99edb3821b6'
+    NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
 
     # Encryption Key is used for 2FA & Single use URLs for Link Surveys
     # You can use: $(openssl rand -hex 32) to generate one
-    ENCRYPTION_KEY: '5116ab72166f8b01089ffc40b4e2a2ab15e203f844f4db4cae9c84bd63ec7a10'
+    ENCRYPTION_KEY: ${ENCRYPTION_KEY}
 
     # API Secret for running cron jobs.
     # You can use: $(openssl rand -hex 32) to generate a secure one
-    CRON_SECRET: '7d7881dab4f5b5508d7ed3bb76ac7cebd031ea8d56b5889b7e3591194e8a95a9'
+    CRON_SECRET: ${CRON_SECRET}
 
     ############################################# OPTIONAL (ENTERPRISE EDITION) #############################################
 
@@ -44,7 +44,7 @@ x-environment: &environment
     SMTP_AUTHENTICATED: ${SMTP_AUTHENTICATED}
 
     # (Additional option for TLS (port 465) only)
-    # SMTP_SECURE_ENABLED: 1
+    SMTP_SECURE_ENABLED: 1
 
     # If set to 0, the server will accept connections without requiring authorization from the list of supplied CAs (default is 1).
     # SMTP_REJECT_UNAUTHORIZED_TLS: 0
@@ -61,7 +61,7 @@ x-environment: &environment
     PASSWORD_RESET_DISABLED: 1
 
     # Set the below to 1 to disable logins with email
-    # EMAIL_AUTH_DISABLED:
+    EMAIL_AUTH_DISABLED: ${EMAIL_AUTH_DISABLED:-0}
 
     # Set the below to 1 to disable invites
     # INVITE_DISABLED:
@@ -156,39 +156,42 @@ x-environment: &environment
     # OPENTELEMETRY_LISTENER_URL: http://localhost:4318/v1/traces
 
     # Set the below to use Redis for Next Caching (default is In-Memory from Next Cache)
-    # REDIS_URL:
+    # REDIS_URL: redis://formbricks-redis:6379
 
     # Set the below to use for Rate Limiting (default us In-Memory LRU Cache)
-    # REDIS_HTTP_URL:
+    # REDIS_HTTP_URL: redis://formbricks-redis:6379
 
     ############################################# OPTIONAL (OTHER) #############################################
 
     # Set the below to automatically assign new users to a specific organization and role within that organization
     # Insert an existing organization id or generate a valid CUID for a new one at https://www.getuniqueid.com/cuid (e.g. cjld2cjxh0000qzrmn831i7rn)
     # (Role Management is an Enterprise feature)
-    DEFAULT_ORGANIZATION_ID: to_be_changed_cm5w8zcw5000008kxbwa2eoem
-    DEFAULT_ORGANIZATION_ROLE: owner
+    # DEFAULT_ORGANIZATION_ID: to_be_changed_cm5w8zcw5000008kxbwa2eoem
+    # DEFAULT_ORGANIZATION_ROLE: owner
 
 services:
-  postgres:
-    restart: unless-stopped
+  formbricks-pgsql:
     image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    mem_limit: 528Mib
+    cpus: .5
     networks:
       - dockernet
     # volumes:
     #   - formbricks_postgres_storage:/var/lib/postgresql/data
     environment:
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
 
-  formbricks:
+  formbricks-web:
     <<: *environment
     restart: unless-stopped
-    image: formbricks/formbricks:3.0.0
-    # image: ghcr.io/formbricks/formbricks #:3.0.0
+    image: formbricks/formbricks:3.1.5
+    mem_limit: 528Mib
+    cpus: 1
     networks:
       - dockernet
     depends_on:
-      - postgres
+      - formbricks-pgsql
     ports:
       - 3000:3000
     # volumes:
@@ -196,9 +199,9 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.formbricks-rtr.entrypoints=http,https
-      - traefik.http.routers.formbricks-rtr.rule=Host(`formbricks.domain.com`)
+      - traefik.http.routers.formbricks-rtr.rule=Host(`${WEBAPP_URL}`)
       - traefik.http.routers.formbricks-rtr.tls=true
-      - traefik.http.routers.formbricks-rtr.tls.certresolver=dev-letsencrypt
+      - traefik.http.routers.formbricks-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.formbricks-svc.loadbalancer.server.port=3000
 
 volumes:
