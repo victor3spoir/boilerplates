@@ -1,8 +1,8 @@
 volumes:
-  kestra-pgsql-storage:
-    name: kestra-pgsql-storage
-  kestra-storage:
-    name: kestra-storage
+  kestra_pgsql_storage:
+    name: kestra_pgsql_storage
+  kestra_storage:
+    name: kestra_storage
 
 networks:
   dockernet:
@@ -11,9 +11,8 @@ networks:
 services:
   kestra-pgsql:
     image: postgres:17-alpine
-    pull_policy: if_not_present
-    volumes:
-      - kestra-pgsql-storage:/var/lib/postgresql/data
+    # volumes:
+    #   - kestra_pgsql_storage:/var/lib/postgresql/data
     networks:
       - dockernet
     environment:
@@ -27,49 +26,21 @@ services:
       retries: 10
 
   kestra:
-    # image: kestra/kestra:develop
-    image: kestra/kestra:${IMAGE_TAG:-v0.19.2}
-    pull_policy: if_not_present
-    command: server standalone
-    # command: server standalone --worker-thread=128
-    # command: server local
+    image: kestra/kestra:develop
+    # command: server standalone
+    command: server local
     user: root
     ports:
-      - 8080:8080
-      - 8081:8081
+      - 38080:8080
+      - 38081:8081
     networks:
       - dockernet
-    volumes:
-      - kestra-storage:/app/storage
-      - /var/run/docker.sock:/var/run/docker.sock
+    # volumes:
+      # - /var/run/docker.sock:/var/run/docker.sock
+      # - kestra_storage:/app/storage
       # - ./application.yaml:/etc/config/application.yaml:ro
-      - /tmp:/tmp/
-    environment:
-      KESTRA_CONFIGURATION: |
-        datasources:
-          postgres:
-            url: jdbc:postgresql://kestra-pgsql:5432/kestra
-            driverClassName: org.postgresql.Driver
-            username: kestra
-            password: k3str4
-        kestra:
-          server:
-            basic-auth:
-              enabled: false
-              username: "admin@kestra.io" # it must be a valid email address
-              password: kestra
-          repository:
-            type: postgres
-          storage:
-            type: local
-            local:
-              base-path: "/app/storage"
-          queue:
-            type: postgres
-          tasks:
-            tmp-dir:
-              path: /tmp/kestra-wd/tmp
-          url: http://localhost:8080/
+      # - /tmp:/tmp/
+    # environment:
 
     labels:
       - traefik.enable=true
@@ -78,7 +49,6 @@ services:
       - traefik.http.routers.kestra-rtr.tls=true
       - traefik.http.routers.kestra-rtr.tls.certresolver=dev-letsencrypt
       - traefik.http.services.kestra-svc.loadbalancer.server.port=8080
-
     depends_on:
       kestra-pgsql:
         condition: service_started
