@@ -299,3 +299,5 @@ dist
 
 **/*/config/*
 **/*/app/*
+**/*/stirlingpdf/tessdata/*
+**/*/secrets
