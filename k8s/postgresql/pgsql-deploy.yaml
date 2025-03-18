@@ -1,3 +1,4 @@
+# Deploy: pgsql
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,13 +24,6 @@ spec:
       containers:
         - name: pgsql
           image: postgres:17-alpine
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "120m"
-              memory: "526Mi"
           ports:
           - containerPort: 5432
           env:
@@ -49,12 +43,14 @@ spec:
           - name: pgsql-volume
             mountPath: /var/lib/postgresql/data
 ---
-# pgsql svc
+# Svc pgsql
 apiVersion: v1
 kind: Service
 metadata:
   name: pgsql-svc
+  namespace: dbs
 spec:
+  type: LoadBalancer
   selector:
     app: pgsql
   ports:
@@ -63,11 +59,14 @@ spec:
       targetPort: 5432
 
 ---
+# Deploy: pgadmin
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: dbs
-  name: pgadmin-deploy
+  name: deploy-pgadmin
+  labels:
+    app: deploy-pgadmin
 spec:
   replicas: 1
   selector:
@@ -82,13 +81,6 @@ spec:
       containers:
         - name: pgadmin
           image: dpage/pgadmin4:snapshot
-          resources:
-            requests:
-              memory: "128mi"
-              cpu: "250m"
-            limits:
-              memory: "512mb"
-              cpu: "500m"
           ports:
           - containerPort: 80
           env:
@@ -102,15 +94,18 @@ spec:
                 secretKeyRef:
                   name: pgsql-secret
                   key: pgadmin-password  
+            - name: PGADMIN_CONFIG_WTF_CSRF_CHECK_DEFAULT
+              value: "true"
 ---
+# Service pgadmin
 apiVersion: v1
 kind: Service
 metadata:
   namespace: dbs
-  name: pgadmin-svc
+  name: svc-pgadmin
 spec:
   selector:
-    app: pgadmin
+    app: deploy-pgadmin
   type: LoadBalancer
   ports:
     - protocol: TCP

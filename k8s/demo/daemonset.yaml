@@ -1,3 +1,4 @@
+# Daemonset
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -21,3 +22,19 @@ spec:
           ports:
             - containerPort: 80
 
+---
+# The service
+apiVersion: v1
+kind: Service
+metadata:
+  name: deamonset-svc
+  namespace: demo
+spec:
+  selector:
+    app: deamonset
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30000

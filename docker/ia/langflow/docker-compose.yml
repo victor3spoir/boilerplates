@@ -1,0 +1,61 @@
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  langflow-postgres:
+    name: langflow-postgres
+  langflow-data:
+    name: langflow-data
+
+
+services:
+  init-db:
+    image: langflowai/langflow:latest # or another version tag on https://hub.docker.com/r/langflowai/langflow 
+    environment:
+      - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@langflow-postgres:5432/langflow
+    command: sh -c "echo y | langflow migration --fix"
+    networks:
+      - dockernet
+    depends_on:
+      - langflow-postgres
+    volumes:
+      - langflow-data:/app/langflow
+  langflow:
+    image: langflowai/langflow:latest # or another version tag on https://hub.docker.com/r/langflowai/langflow 
+    restart: unless-stopped
+    networks:
+      - dockernet
+    ports:
+      - "7860:7860"
+    depends_on:
+      # - langflow-postgres
+      - init-db
+    environment:
+      # - LANGFLOW_CONFIG_DIR
+      # - LANGFLOW_DATABASE_URL=${LANGFLOW_DATABASE_URL:-postgresql://langflow:langflow@langflow-postgres:5432/langflow}
+      - LANGFLOW_AUTO_LOGIN=${LANGFLOW_AUTO_LOGIN:-False}
+      - LANGFLOW_SUPERUSER=${LANGFLOW_SUPERUSER:-admin}
+      - LANGFLOW_SUPERUSER_PASSWORD=${LANGFLOW_SUPERUSER_PASSWORD:-securepassword}
+      - LANGFLOW_SECRET_KEY=${LANGFLOW_SECRET_KEY:-randomly_generated_secure_key}
+      - LANGFLOW_NEW_USER_IS_ACTIVE=${LANGFLOW_NEW_USER_IS_ACTIVE:-False}
+      - LANGFLOW_WORKERS=${LANGFLOW_WORKERS:-3}
+      # This variable defines where the logs, file storage, monitor data and secret keys are stored.
+    volumes:
+      - langflow-data:/app/langflow
+
+  langflow-postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    networks:
+      - dockernet
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-langflow}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-langflow}
+      - POSTGRES_ROOT_PASSWORD=${POSTGRES_ROOT_PASSWORD:-langflow}
+      - POSTGRES_DB=${POSTGRES_DB:-langflow}
+    # ports:
+    #   - "5432:5432"
+    volumes:
+      - langflow-postgres:/var/lib/postgresql/data
+

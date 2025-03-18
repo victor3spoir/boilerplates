@@ -1,15 +1,14 @@
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
-  name: replica-demo
+  name: rs-guestbook
   namespace: demo
   labels:
-    app: guestbook
+    app: rs-guestbook
     tier: frontend
 spec:
   replicas: 3
   selector:
-    # name: php-redis
     matchLabels:
       app: guestbook
   template:
@@ -20,3 +19,18 @@ spec:
       containers:
       - name: php-redis
         image: gcr.io/google_samples/gb-frontend:v3
+---
+# The service
+apiVersion: v1
+kind: Service
+metadata:
+  name: rs-guestbook-svc
+  namespace: demo
+spec:
+  selector:
+    app: rs-guestbook
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

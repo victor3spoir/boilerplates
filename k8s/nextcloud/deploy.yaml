@@ -1,12 +1,11 @@
+# Deploy
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nextcloud-deploy
+  name: deploy-nextcloud-app
   namespace: nextcloud
-  annotations:
-    description: lorem ipsum dolor.
   labels:
-    app: nextcloud-deploy
+    app: deploy-nextcloud-app
 spec:
   replicas: 2
   selector:
@@ -18,8 +17,6 @@ spec:
       labels:
         app: nextcloud-app
     spec:
-      securityContext:
-        runAsUser: 1000
       containers:
         - name: nextcloud-app
           image: nextcloud:28
@@ -35,20 +32,24 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
 ---
+# Svc nextcloud
 apiVersion: v1
 kind: Service
 metadata:
   name: nextcloud-svc
   namespace: nextcloud
+  labels:
+    app: nextcloud-svc
 spec:
   selector:
-    app: nextcloud-app
+    app: deploy-nextcloud-app
   type: LoadBalancer
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
 ---
+# Ingress (nginx) nextcloud
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -60,7 +61,7 @@ metadata:
     nginx.ingress.kubernetes.io/service-upstream: "true"
 spec:
   rules:
-    - host: nextcloud.local.victor3spoir.com
+    - host: nextcloud.home.victor3spoir.com
       http:
         paths:
           - path: /

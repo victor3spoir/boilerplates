@@ -296,3 +296,6 @@ dist
 **/*/acme.json
 **/*/etc-pihole/*
 **/*/etc-dnsmasq.d/*
+
+**/*/config/*
+**/*/app/*

@@ -1,0 +1,63 @@
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  ollama_data:
+    name: ollama_data
+
+x-ollama: &service-ollama
+  image: ollama/ollama:rocm
+  restart: unless-stopped
+  # container_name: ollama
+  networks:
+    - dockernet
+  # ports:
+  #   - 11434:11434
+  volumes:
+    - ollama_data:/root/.ollama
+
+x-init-ollama: &init-ollama
+  image: ollama/ollama:rocm
+  networks:
+    - dockernet
+  container_name: ollama-pull-llama
+  volumes:
+    - ollama_data:/root/.ollama
+  entrypoint: /bin/sh
+  command:
+    - '-c'
+    - 'sleep 3; OLLAMA_HOST=ollama:11434 ollama pull llama3.2:1b'
+
+services:
+  ollama:
+    profiles:
+      - 'cpu'
+    <<: *service-ollama
+    volumes:
+      - ${HOME}/.ollama:/root/.ollama:rw
+
+  ollama-gpu:
+    profiles: ['gpu-nvidia']
+    <<: *service-ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  ollama-pull-llama-cpu:
+    <<: *init-ollama
+    profiles:
+      - 'cpu'
+    depends_on:
+      - ollama
+
+  ollama-pull-llama-gpu:
+    <<: *init-ollama
+    profiles:
+      - 'gpu-nvidia'
+    depends_on:
+      - ollama-gpu

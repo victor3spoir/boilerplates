@@ -1,11 +1,23 @@
+---
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-configmap
+  labels:
+    app: mongodb-configmap
+data:
+  database_url: deploy-mongodb-svc
+---
+# Deploy mongodb
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongodb-deploy
+  name: deploy-mongodb
   labels:
-    app: mongodb
+    app: deploy-mongodb
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: mongodb
@@ -15,32 +27,87 @@ spec:
         app: mongodb
     spec:
       containers:
-      - name: mongodb
-        image: mongo
-        ports:
-        - containerPort: 27017
-        env:
-        - name: MONGO_INITDB_ROOT_USERNAME 
-          # value:
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: mongo-root-username
-        - name: MONGO_INITDB_ROOT_PASSWORD 
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: mongo-root-password
+        - name: mongodb
+          image: mongo
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: secret-mongodb
+                  key: mongo-root-username
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: secret-mongodb
+                  key: mongo-root-password
 
 ---
+# Svc: mongodb
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb-service
+  name: deploy-mongodb-svc
 spec:
   selector:
-    app: mongodb
+    app: deploy-mongodb
   ports:
     - protocol: TCP
       port: 27017
       targetPort: 27017
+---
+# Deploy: mongoexpress
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-me
+  labels:
+    app: deploy-me
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mongoexpress
+  template:
+    metadata:
+      labels:
+        app: mongoexpress
+    spec:
+      containers:
+        - name: mongoexpress
+          image: mongo-express
+          ports:
+            - containerPort: 8081
+          env:
+            - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: secret-mongodb
+                  key: mongo-root-username
+            - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: secret-mongodb
+                  key: mongo-root-password
+            - name: ME_CONFIG_MONGODB_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-configmap
+                  key: database_url
+            - name: ME_CONFIG_BASICAUTH
+              value: "false"
+---
+# Svc: mongoexpress
+apiVersion: v1
+kind: Service
+metadata:
+  name: deploy-me-svc
+spec:
+  selector:
+    app: deploy-me
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081

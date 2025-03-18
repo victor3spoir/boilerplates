@@ -1,0 +1,83 @@
+volumes:
+  kestra-pgsql-storage:
+    name: kestra-pgsql-storage
+  kestra-storage:
+    name: kestra-storage
+
+networks:
+  dockernet:
+    external: true
+
+services:
+  kestra-pgsql:
+    image: postgres:17-alpine
+    # volumes:
+    #   - kestra-pgsql-storage:/var/lib/postgresql/data
+    networks:
+      - dockernet
+    environment:
+      - POSTGRES_DB=kestra
+      - POSTGRES_USER=kestra
+      - POSTGRES_PASSWORD=k3str4
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}']
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  kestra:
+    # image: kestra/kestra:develop
+    image: kestra/kestra:v0.19.2
+    pull_policy: if_not_present
+    command: server standalone
+    # command: server standalone --worker-thread=128
+    # command: server local
+    user: root
+    ports:
+      - 8080:8080
+      - 8081:8081
+    networks:
+      - dockernet
+    volumes:
+    #   - kestra-storage:/app/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+      # - ./application.yaml:/etc/config/application.yaml:ro
+      - /tmp:/tmp/
+    environment:
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://kestra-pgsql:5432/kestra
+            driverClassName: org.postgresql.Driver
+            username: kestra
+            password: k3str4
+        kestra:
+          server:
+            basic-auth:
+              enabled: false
+              username: "admin@kestra.io" # it must be a valid email address
+              password: kestra
+          repository:
+            type: postgres
+          storage:
+            type: local
+            local:
+              base-path: "/app/storage"
+          queue:
+            type: postgres
+          tasks:
+            tmp-dir:
+              path: /tmp/kestra-wd/tmp
+          url: http://localhost:8080/
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kestra-rtr.entrypoints=http,https
+      - traefik.http.routers.kestra-rtr.rule=Host(`kestra.homestack.me`)
+      - traefik.http.routers.kestra-rtr.tls=true
+      - traefik.http.routers.kestra-rtr.tls.certresolver=dev-letsencrypt
+      - traefik.http.services.kestra-svc.loadbalancer.server.port=8080
+
+    depends_on:
+      kestra-pgsql:
+        condition: service_started

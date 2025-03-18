@@ -5,14 +5,14 @@ metadata:
   namespace: demo
 spec:
   containers:
-  - name: nginx-pod
-    image: nginx:alpine
-    ports:
-    - containerPort: 80
-    resources:
-      requests:
-        memory: "128Mi"
-        cpu: "100m"
-      limits:
-        memory: "128Mi"
-        cpu: "100m"
+    - name: nginx-pod
+      image: nginx:alpine
+      ports:
+      - containerPort: 80
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
