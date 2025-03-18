@@ -1,18 +1,22 @@
 networks:
   dockernet:
-    external:
-      true
+    external: true
+
+volumes:
+  authentik_db_pgsql:
+    name: authentik_db_pgsql
+  authentik_db_redis:
+    name: authentik_db_redis
 
 
 services:
-  authentik.psql:
-    image: docker.io/library/postgres:16-alpine
+  authentik_pgsql:
+    image: postgres:17-alpine
     restart: unless-stopped
-    container_name: authentik.psql
     networks:
       - dockernet
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      test: ['CMD-SHELL', 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}']
       start_period: 20s
       interval: 30s
       retries: 5
@@ -24,39 +28,31 @@ services:
       - POSTGRES_PASSWORD=${PG_PASS}
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_DB=${PG_DB}
-    env_file:
-      - .env
-    labels:
-      - traefik.enable=true
 
-  authentik.redis:
-    image: docker.io/library/redis:alpine
-    container_name: authentik.redis
+  authentik_redis:
+    image: redis:alpine
     command: --save 60 1 --loglevel warning
     restart: unless-stopped
     networks:
       - dockernet
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
       start_period: 20s
       interval: 30s
       retries: 5
       timeout: 3s
     volumes:
       - authentik_db_redis:/data
-    # labels:
-    #   - traefik.enable=true
 
-  authentik.server:
-    image: ghcr.io/goauthentik/server:2024.4.0
+  authentik_server:
+    image: ghcr.io/goauthentik/server:2025.2.1
     restart: unless-stopped
-    container_name: authentik.server
     networks:
       - dockernet
     command: server
     environment:
-      - AUTHENTIK_REDIS__HOST=authentik.redis
-      - AUTHENTIK_POSTGRESQL__HOST=authentik.psql
+      - AUTHENTIK_REDIS__HOST=authentik_redis
+      - AUTHENTIK_POSTGRESQL__HOST=authentik_pgsql
       - AUTHENTIK_POSTGRESQL__USER=${PG_USER}
       - AUTHENTIK_POSTGRESQL__NAME=${PG_DB}
       - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
@@ -65,51 +61,37 @@ services:
     volumes:
       - ./media:/media
       - ./templates:/templates
-    env_file:
-      - .env
-    # ports:
-    #   - "9000:9000"
-    #   - "9443:9443"
     depends_on:
-      - authentik.psql
-      - authentik.redis
+      - authentik_pgsql
+      - authentik_redis
     labels:
       - traefik.enable=true
+      # - (routers)
       - traefik.http.routers.authentik-rtr.entrypoints=http,https
-      - traefik.http.routers.authentik-rtr.rule=Host(`authentik.homestack.me`)
+      - traefik.http.routers.authentik-rtr.rule=Host(`authentik.domain.com`)
       - traefik.http.routers.authentik-rtr.tls=true
-      - traefik.http.routers.authentik-rtr.tls.certresolver=development
+      - traefik.http.routers.authentik-rtr.tls.certresolver=cloudflare
+      # - (service)
       - traefik.http.routers.authentik-rtr.service=authentik-svc
       - traefik.http.services.authentik-svc.loadbalancer.server.port=9000
-  
-  authentik.worker:
-    image: ghcr.io/goauthentik/server:2024.4.0
+
+  authentik_worker:
+    image: ghcr.io/goauthentik/server:2025.2.1
     restart: unless-stopped
-    container_name: authentik.worker
     command: worker
     networks:
       - dockernet
     environment:
-      - AUTHENTIK_REDIS__HOST=authentik.redis
-      - AUTHENTIK_POSTGRESQL__HOST=authentik.psql
+      - AUTHENTIK_REDIS__HOST=authentik_redis
+      - AUTHENTIK_POSTGRESQL__HOST=authentik_pgsql
       - AUTHENTIK_POSTGRESQL__USER=${PG_USER}
       - AUTHENTIK_POSTGRESQL__NAME=${PG_DB}
       - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
-    # user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./media:/media
-      # - ./certs:/certs
       - ./templates:/templates
-    env_file:
-      - .env
     depends_on:
-      - authentik.psql
-      - authentik.redis
-    # labels:
-    #   - traefik.enable=true
-
-volumes:
-  authentik_db_pgsql:
-  authentik_db_redis:
+      - authentik_pgsql
+      - authentik_redis
 
