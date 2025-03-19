@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: pgsql-deploy
+  name: deploy-pgsql
   namespace: dbs
   labels:
     app: pgsql
@@ -47,7 +47,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: pgsql-svc
+  name: service-pgsql
   namespace: dbs
 spec:
   type: LoadBalancer
@@ -66,7 +66,7 @@ metadata:
   namespace: dbs
   name: deploy-pgadmin
   labels:
-    app: deploy-pgadmin
+    app: pgadmin
 spec:
   replicas: 1
   selector:
@@ -95,17 +95,17 @@ spec:
                   name: pgsql-secret
                   key: pgadmin-password  
             - name: PGADMIN_CONFIG_WTF_CSRF_CHECK_DEFAULT
-              value: "true"
+              value: "True"
 ---
 # Service pgadmin
 apiVersion: v1
 kind: Service
 metadata:
   namespace: dbs
-  name: svc-pgadmin
+  name: service-pgadmin
 spec:
   selector:
-    app: deploy-pgadmin
+    app: pgadmin
   type: LoadBalancer
   ports:
     - protocol: TCP
