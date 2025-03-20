@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-appname
+  namespace: namespace
+  labels:
+    app: appname
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: appname
+  template:
+    metadata:
+      namespace: dbs
+      labels:
+        app: appname
+    spec:
+      automountServiceAccountToken: false
+      volumes:
+        - name: appname-v1
+          hostPath:
+            path: /path/to/data
+        - name: appname-v2
+          persistentVolumeClaim:
+            claimName: pvc0
+      containers:
+        - name: container-name
+          image: image:tag
+          ports:
+            - containerPort: 0000
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+              ephemeral-storage: 1Gi
+            limits:
+              memory: 256Mi
+              cpu: "0.5"
+              ephemeral-storage: 2Gi
+          env:
+            - name: ENV_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: secret-name
+                  key: key-name
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: secret-name
+                  key: key-name
+            - name: POSTGRES_DB
+              value: env_value
+          volumeMounts:
+            - name: appname-v1
+              mountPath: /var/lib/postgresql/data

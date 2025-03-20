@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: deploy-appname
+spec:
+  selector:
+    matchLabels:
+      app: appname
+  serviceName: appname-service
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: appname
+    spec:
+      containers:
+        - name: appname
+          image: registry.k8s.io/nginx-slim:0.8
+          ports:
+            - containerPort: 80
+              name: web
+          resources:
+            requests:
+              cpus: "0.2"
+              memory: "128Mi"
+            limits:
+              cpus: "0.2"
+              memory: "128Mi"
+          volumeMounts:
+            - name: www
+              mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+    - metadata:
+        name: www
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
