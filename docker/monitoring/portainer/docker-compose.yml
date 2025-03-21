@@ -21,6 +21,6 @@ services:
       - traefik.enable=true
       - traefik.http.routers.portainer-rtr.entrypoints=http,https
       - traefik.http.routers.portainer-rtr.tls=true
-      - traefik.http.routers.portainer-rtr.tls.certresolver=dev-letsencrypt
+      - traefik.http.routers.portainer-rtr.tls.certresolver=letsencrypt
       - traefik.http.routers.portainer-rtr.rule=Host(`portainer.${DOMAIN_NAME}`)
       - traefik.http.services.portainer-svc.loadbalancer.server.port=9000

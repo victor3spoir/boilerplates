@@ -1,28 +1,26 @@
 volumes:
   nextcloud-web-data:
     name: nextcloud-web-data
-  nextcloud-mariadb-data:
-    name: nextcloud-mariadb-data
+  nextcloud-db-data:
+    name: nextcloud-db-data
 
 networks:
   dockernet:
     external: true
 
 services:
-  nextcloud-mariadb:
-    image: mariadb:10.6
+  nextcloud-db:
+    image: postgres:17-alpine
     restart: unless-stopped
-    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
     cpus: .5
     networks:
       - dockernet
     # volumes:
-    #   - nextcloud-mariadb-data:/var/lib/mysql
+    #   - nextcloud-db-data:/var/lib/postgresql/
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root_password}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-nextcloud}
-      - MYSQL_DATABASE=${MYSQL_DATABASE:-nextcloud}
-      - MYSQL_USER=${MYSQL_USER:-nextcloud}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nextcloud}
+      - POSTGRES_DB=${POSTGRES_DB:-nextcloud}
+      - POSTGRES_USER=${POSTGRES_USER:-nextcloud}
 
   nextcloud-web:
     image: nextcloud:29-apache
@@ -32,15 +30,15 @@ services:
       - dockernet
     ports:
       - 30879:80
-    volumes:
-      - ./apps:/var/www/html/custom_apps
-      - ./config:/var/www/html/config
+    # volumes:
+    #   - ./apps:/var/www/html/custom_apps
+    #   - ./config:/var/www/html/config
       # - nextcloud-web-data:/var/www/html
     environment:
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-nextcloud}
-      - MYSQL_DATABASE=${MYSQL_DATABASE:-nextcloud}
-      - MYSQL_USER=${MYSQL_USER:-nextcloud}
-      - MYSQL_HOST=${MYSQL_HOST:-nextcloud-mariadb}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-nextcloud}
+      - POSTGRES_HOST=${POSTGRES_HOST:-nextcloud-db}
+      - POSTGRES_DB=${POSTGRES_DB:-nextcloud}
+      - POSTGRES_USER=${POSTGRES_USER:-nextcloud}
       - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER:-admin}
       - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD:-password}
       - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_TRUSTED_DOMAINS:-localhost.com local.host} # space-separated list of domains

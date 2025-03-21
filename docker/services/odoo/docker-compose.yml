@@ -39,9 +39,9 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.odoo-rtr.entrypoints=http,https
-      - traefik.http.routers.odoo-rtr.rule=Host(`odoo.${DOMAIN_NAME}`)
+      - traefik.http.routers.odoo-rtr.rule=Host(`odoo.domain.com`)
       - traefik.http.routers.odoo-rtr.tls=true
-      - traefik.http.routers.odoo-rtr.tls.certresolver=dev-letsencrypt
+      - traefik.http.routers.odoo-rtr.tls.certresolver=letsencrypt
       - traefik.http.routers.odoo-admin-rtr.entrypoints=http,https
       - traefik.http.routers.odoo-admin-rtr.rule=PathPrefix(`/web`)
       - traefik.http.services.odoo-svc.loadbalancer.server.port=8069
@@ -55,7 +55,6 @@ services:
     environment:
       - POSTGRES_USER_FILE=/run/secrets/db_user
       - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
-      - PGDATA=/var/lib/postgresql/data
       - POSTGRES_DB=postgres
     secrets:
       - db_user

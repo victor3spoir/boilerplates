@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: deploy-appname
+  name: appname-deploy
 spec:
   selector:
     matchLabels:
@@ -26,14 +26,4 @@ spec:
             limits:
               cpus: "0.2"
               memory: "128Mi"
-          volumeMounts:
-            - name: www
-              mountPath: /usr/share/nginx/html
-  volumeClaimTemplates:
-    - metadata:
-        name: www
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        resources:
-          requests:
-            storage: 1Gi
+
