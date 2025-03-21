@@ -1,0 +1,26 @@
+volumes:
+  homarr_data:
+    name: homarr_data
+networks:
+  dockernet:
+    external: true
+services:
+  homarr:
+    image: ghcr.io/ajnart/homarr:dev
+    restart: unless-stopped
+    networks:
+      - dockernet
+    volumes:
+      - ./configs:/app/data/configs:rw
+      - ./icons:/app/public/icons:rw
+      - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
+      # - homarr_data:/data:rw
+    environment:
+      - SECRET_ENCRYPTION_KEY=secret-key
+    ports:
+      - 7575:7575
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.homarr-svc.loadbalancer.server.port=7575
+
+# echo $TOKEN | docker login -u victor3spoir --password-stdin

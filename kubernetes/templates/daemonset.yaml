@@ -1,0 +1,39 @@
+# Daemonset
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: appname-daemon
+  namespace: demo
+  labels:
+    app: appname
+spec:
+  selector:
+    matchLabels:
+      app: appname
+  template:
+    metadata:
+      namespace: demo
+      labels:
+        app: appname
+    spec:
+      containers:
+        - name: daemonset-nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 0000
+
+---
+# The service
+apiVersion: v1
+kind: Service
+metadata:
+  name: appname-service
+  namespace: demo
+spec:
+  selector:
+    app: appname
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 0000
+      targetPort: 0000

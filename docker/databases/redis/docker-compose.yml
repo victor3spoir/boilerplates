@@ -1,0 +1,25 @@
+networks:
+  dockernet:
+   external: true 
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    mem_limit: 528Mib
+    cpus: .5
+    command: redis-server --save 60 1 --loglevel warning 
+    networks:
+      - dockernet
+  redisinsight:
+    image: redis/redisinsight:2.66
+    restart: unless-stopped
+    mem_limit: 528Mib
+    cpus: .5
+    networks:
+      - dockernet
+    ports:
+      - 5540:5540
+    # volume:
+    #   - redisinsight:/data
+

@@ -1,0 +1,17 @@
+networks:
+  dockernet:
+    external: true
+
+services:
+  dashy:
+    image: lissy93/dashy
+    restart: unless-stopped
+    networks:
+      - dockernet
+    ports:
+      - 38080:8080
+    volumes:
+      - ./config/conf.yml:/app/user-data/conf.yml
+    environment:
+      - VUE_APP_BASIC_AUTH_USERNAME=username
+      - VUE_APP_BASIC_AUTH_PASSWORD=password

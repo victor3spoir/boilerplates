@@ -1,0 +1,3 @@
+volume1:/path/in/container1
+volume2:/path/in/container2
+volume3:/path/in/container3

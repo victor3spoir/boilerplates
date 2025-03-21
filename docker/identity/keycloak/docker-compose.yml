@@ -1,0 +1,35 @@
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  keycloack_storage:
+    name: keycloack_storage
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.7
+    # command: start
+    command: start-dev
+    restart: unless-stopped
+    cpus: 0.6
+    mem_limit: 528Mib
+    networks:
+      - dockernet
+    ports:
+      - 30005:8080
+    environment:
+      - KC_HEALTH_ENABLED=true
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD:-password}
+    # volumes:
+    #   - keycloack_storage:/opt/keycloak/data
+    labels:
+      - traefik.enable=true
+      # - -- (services)
+      - traefik.http.services.keycloak-svc.loadbalancer.server.port=8080
+      # - -- (routers)
+      - traefik.http.routers.keycloak-rtr.entrypoints=http,https
+      - traefik.http.routers.keycloak-rtr.rule=Host(`keycloak.domain.com`)
+      - traefik.http.routers.keycloak-rtr.tls=true
+      - traefik.http.routers.keycloak-rtr.tls.certresolver=letsencrypt

@@ -1,0 +1,102 @@
+services:
+  myapp:
+    # image: nginxdemos/nginx-hello
+    image: nginx:alpine
+    networks:
+      - bw-services
+    labels:
+      - bunkerweb.SERVER_NAME=app1.victor3spoir.com
+      - bunkerweb.USE_REVERSE_PROXY=yes
+      - bunkerweb.REVERSE_PROXY_URL=/
+      - bunkerweb.REVERSE_PROXY_HOST=http://myapp:80
+
+  bunkerweb:
+    image: bunkerity/bunkerweb:rc
+    ports:
+      - 30080:80
+      - 30443:8443
+    labels:
+      - 'bunkerweb.INSTANCE=yes'
+    environment:
+      - SERVER_NAME=app1.victor3spoir.com app2.victor3spoir.com
+      - API_WHITELIST_IP=127.0.0.0/8 10.20.30.0/24
+      - USE_REVERSE_PROXY=yes
+      - REVERSE_PROXY_URL=/
+      - REVERSE_PROXY_HOST=http://myapp:8080
+      - AUTO_LETS_ENCRYPT=yes
+      - USE_ANTIBOT=captcha
+      - REFERRER_POLICY=no-referrer
+      - USE_MODSECURITY=no
+      - USE_GZIP=yes
+      - USE_BROTLI=no
+      - MULTISITE=yes
+      # - AUTOCONF_MODE=yes
+      - DATABASE_URI=postgresql://bunkerweb:changeme@bw-pgsql:5432/bwdb
+      # Behind reverse proxy like (traefik) or loadbalancer 
+      - USE_REAL_IP=yes
+      - USE_PROXY_PROTOCOL=yes 
+      # - REAL_IP_FROM 
+      - REAL_IP_HEADER=proxy_protocol 
+    networks:
+      - bw-universe
+      - bw-services
+  # bw-autoconf:
+  #   image: bunkerity/bunkerweb-autoconf:rc
+  #   depends_on:
+  #     - bunkerweb
+  #     - bw-docker
+  #   environment:
+  #     - DATABASE_URI=postgresql://bunkerweb:changeme@bw-pgsql:5432/bwdb
+  #     - AUTOCONF_MODE=yes
+  #     - DOCKER_HOST=tcp://bw-docker:2375
+  #   networks:
+  #     - bw-universe
+  #     - bw-docker
+  bw-pgsql:
+    image: postgres:17-alpine
+    networks:
+      - bw-universe
+      - bw-services
+    environment:
+      - POSTGRES_USER=bunkerweb
+      - POSTGRES_PASSWORD=changeme
+      - POSTGRES_DB=bwdb
+
+  bw-scheduler:
+    image: bunkerity/bunkerweb-scheduler:rc
+    depends_on:
+      - bunkerweb
+      - bw-docker
+    # volumes:
+    #   - bw-data:/data
+    environment:
+      - DOCKER_HOST=tcp://bw-docker:2375
+      - API_WHITELIST_IP=127.0.0.0/8 10.20.30.0/24
+    networks:
+      - bw-universe
+      - bw-docker
+
+  bw-docker:
+    image: tecnativa/docker-socket-proxy:nightly
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - CONTAINERS=1
+      - LOG_LEVEL=warning
+    networks:
+      - bw-docker
+
+volumes:
+  bw-data:
+
+networks:
+  bw-universe:
+    name: bw-universe
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.20.30.0/24
+  bw-services:
+    name: bw-services
+  bw-docker:
+    name: bw-docker
