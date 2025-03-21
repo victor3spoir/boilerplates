@@ -2,39 +2,38 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: daemonset
+  name: appname-daemon
   namespace: demo
   labels:
-    app: deamonset
+    app: appname
 spec:
   selector:
     matchLabels:
-      app: deamonset
+      app: appname
   template:
     metadata:
       namespace: demo
       labels:
-        app: deamonset
+        app: appname
     spec:
       containers:
         - name: daemonset-nginx
           image: nginx:alpine
           ports:
-            - containerPort: 80
+            - containerPort: 0000
 
 ---
 # The service
 apiVersion: v1
 kind: Service
 metadata:
-  name: deamonset-svc
+  name: appname-service
   namespace: demo
 spec:
   selector:
-    app: deamonset
+    app: appname
   type: LoadBalancer
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 80
-      nodePort: 30000
+      port: 0000
+      targetPort: 0000

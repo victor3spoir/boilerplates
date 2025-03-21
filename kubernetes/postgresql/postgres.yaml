@@ -78,9 +78,17 @@ spec:
       labels:
         app: pgadmin
     spec:
+      automountServiceAccountToken: false
       containers:
         - name: pgadmin
           image: dpage/pgadmin4:snapshot
+          resources:
+            requests:
+              cpu: "0.2"
+              memory: "256Mi"
+            limits:
+              cpu: "0.5"
+              memory: "512Mi"
           ports:
           - containerPort: 80
           env:

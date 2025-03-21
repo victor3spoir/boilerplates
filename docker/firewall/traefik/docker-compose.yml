@@ -24,14 +24,12 @@ services:
         # Providers
       - '--providers.docker.endpoint=unix://var/run/docker.sock'
       - '--providers.docker.exposedbydefault=false'
-
-        # Prod certs resolvers
+        # http challenge
       - '--certificatesResolvers.letsencrypt.acme.email=user@domain.com'
       - '--certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory'
       - '--certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json'
       - '--certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=http'
-
-      # Cloudflare resolvers
+      # dns challenge
       - '--certificatesResolvers.cloudflare.acme.email=user@domain.com'
       - '--certificatesResolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory'
       - '--certificatesResolvers.cloudflare.acme.storage=/var/traefik/certs/cloudflare-acme.json'

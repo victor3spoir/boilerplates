@@ -34,7 +34,7 @@ services:
       - traefik.http.routers.pihole-rtr.entrypoints=http,https
       - traefik.http.routers.pihole-rtr.rule=Host(`pihole.${DOMAIN_NAME}`)
       - traefik.http.routers.pihole-rtr.tls=true
-      - traefik.http.routers.pihole-rtr.tls.certresolver=dev-letsencrypt
+      - traefik.http.routers.pihole-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.pihole-svc.loadbalancer.server.port=80
 
 

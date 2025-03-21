@@ -18,8 +18,8 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=demodb
       - PGDATA=/var/lib/postgresql/data
-    volumes:
-      - pgsql_data:/var/lib/postgresql/data
+    # volumes:
+    #   - pgsql_data:/var/lib/postgresql/data
     labels:
       - traefik.enable=true
       - traefik.tcp.routers.pgsql-rtr.entrypoints=postgres

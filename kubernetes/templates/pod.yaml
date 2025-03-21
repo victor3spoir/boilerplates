@@ -1,18 +1,18 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: nginx-pod
+  name: appname
   namespace: demo
 spec:
   containers:
-    - name: nginx-pod
-      image: nginx:alpine
+    - name: appname
+      image: <Image:tag>
       ports:
-      - containerPort: 80
+        - containerPort: 0000
       resources:
         requests:
           memory: "128Mi"
           cpu: "100m"
         limits:
-          memory: "128Mi"
-          cpu: "100m"
+          memory: "256Mi"
+          cpu: "200m"
