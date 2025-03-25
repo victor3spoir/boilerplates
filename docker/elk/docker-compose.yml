@@ -1,0 +1,20 @@
+networks:
+  dockernet:
+    external: true
+
+services:
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.4
+    hostname: es01
+    networks:
+      - dockernet
+    ports:
+      - 9200:9200
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-password}
+  kibana01:
+    image: docker.elastic.co/kibana/kibana:8.17.4
+    networks:
+      - dockernet
+    ports:
+      - 5601:5601

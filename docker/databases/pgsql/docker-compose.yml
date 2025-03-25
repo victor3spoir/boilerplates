@@ -1,7 +1,6 @@
 networks:
   dockernet:
-    external:
-      true
+    external: true
 
 volumes:
   pgsql_data:
@@ -17,14 +16,13 @@ services:
       - POSTGRES_USER=username
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=demodb
-      - PGDATA=/var/lib/postgresql/data
     # volumes:
     #   - pgsql_data:/var/lib/postgresql/data
     labels:
       - traefik.enable=true
       - traefik.tcp.routers.pgsql-rtr.entrypoints=postgres
       - traefik.tcp.services.pgsql-svc.loadbalancer.server.port=5432
-    
+
   pgadmin:
     image: dpage/pgadmin4:9
     restart: unless-stopped

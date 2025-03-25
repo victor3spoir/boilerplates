@@ -3,14 +3,13 @@ networks:
     external: true
 
 volumes:
-  keycloack_storage:
-    name: keycloack_storage
+  keycloack-data:
+    name: keycloack-data
 
 services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.7
-    # command: start
-    command: start-dev
+    command: start-dev # start
     restart: unless-stopped
     cpus: 0.6
     mem_limit: 528Mib
@@ -23,7 +22,7 @@ services:
       - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
       - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_BOOTSTRAP_ADMIN_PASSWORD:-password}
     # volumes:
-    #   - keycloack_storage:/opt/keycloak/data
+    #   - keycloack-data:/opt/keycloak/data
     labels:
       - traefik.enable=true
       # - -- (services)

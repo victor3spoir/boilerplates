@@ -1,0 +1,32 @@
+# install loki plugin
+# docker plugin install grafana/loki-docker-driver:3.3.2-arm64 --alias loki --grant-all-permissions
+
+networks:
+  dockernet:
+    external: true
+
+services:
+  grafana-loki:
+    image: grafana/loki:latest
+    ports:
+      - '30031:3100'
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config.yaml
+      # - loki-data:/loki:rw
+    networks:
+      - dockernet
+
+  # test-web:
+  #   image: nginx:alpine
+  #   networks:
+  #     - dockernet
+  #   logging:
+  #     driver: loki
+  #     options:
+  #       loki-url: 'http://<user>:<password>@<loki-url>/loki/api/v1/push'
+  #       loki-retries: 2
+  #       loki-max-backoff: 800ms
+  #       loki-timeout: 2s
+  #       keep-file: 'true'
+  #       mode: 'non-blocking'
