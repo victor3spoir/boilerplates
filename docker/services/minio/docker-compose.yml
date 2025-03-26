@@ -19,6 +19,12 @@ services:
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-admin-password}
+      - MINIO_SERVER_URL=${MINIO_SERVER_URL:-http://localhost:9000}
+      # - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-access_key"}
+      # - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-secret_key"}
+      # - MINIO_KMS_SECRET_KEY=${MINIO_KMS_SECRET_KEY:-kms_master_key"}
+      # - MINIO_UPDATE_MINISIGN_PUBKEY=${MINIO_UPDATE_MINISIGN_PUBKEY:-RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav"}
+      # - MINIO_CONFIG_ENV=${MINIO_CONFIG_ENV:-config.env"}
     volumes:
       - minio_storage:/data:rw
     labels:
