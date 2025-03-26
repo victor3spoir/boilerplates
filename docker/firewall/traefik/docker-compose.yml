@@ -6,9 +6,8 @@ networks:
     external: true
 
 services:
-  traefikproxy:
+  traefik-proxy:
     image: traefik:v3.3
-    container_name: traefikproxy
     restart: unless-stopped
     command:
       # Globals

@@ -1,0 +1,13 @@
+networks:
+  dockernet:
+    external: true
+
+services:
+  grafana-promtail:
+    image: grafana/promtail:latest
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - dockernet
+    volumes:
+      - ./config.yaml:/etc/promtail/config.yml
+      - /var/log:/var/log

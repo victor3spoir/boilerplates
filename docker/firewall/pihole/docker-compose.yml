@@ -3,15 +3,11 @@ networks:
     external: true
 
 volumes:
-  pihole_data:
-    name: pihole_data
-
-secrets:
-  web_password:
-    file: ./secrets/web_password
+  pihole-web-data:
+    name: pihole-web-data
 
 services:
-  pihole:
+  pihole-web:
     image: pihole/pihole:nightly
     restart: unless-stopped
     networks:
@@ -20,15 +16,14 @@ services:
       - 53:53/tcp
       - 53:53/udp
       - 67:67/udp
-      - 40080:80/tcp #ui
-    secrets:
-      - web_password
     environment:
       - TZ=America/Chicago
-      - WEBPASSWORD_FILE=/run/secrets/web_password
-    volumes:
-      - ./etc-pihole:/etc/pihole:rw
-      # - pihole_data:/etc/pihole:rw
+      - WEBPASSWORD=${WEBPASSWORD:-password}
+      - DNS1=1.1.1.1
+      - DNS2=8.8.8.8
+    # volumes:
+    # - ./etc-pihole:/etc/pihole:rw
+    # - pihole-web-data:/etc/pihole:rw
     labels:
       - traefik.enable=true
       - traefik.http.routers.pihole-rtr.entrypoints=http,https
@@ -36,10 +31,12 @@ services:
       - traefik.http.routers.pihole-rtr.tls=true
       - traefik.http.routers.pihole-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.pihole-svc.loadbalancer.server.port=80
-
-
 # Configuration on os
 # Disable system self resolving system
 # sudo systemctl stop systemd-resolve
 # sudo systemctl disable systemd-resolve
 # Edit  /etc/resolv.conf file & set `nameserver 1.1.1.1`
+
+# /etc/resolv.conf
+# nameserver 127.0.0.1
+# options edns0 trust-ad

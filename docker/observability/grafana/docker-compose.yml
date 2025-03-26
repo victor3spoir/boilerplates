@@ -6,7 +6,7 @@ volumes:
     name: grafana_data
 
 services:
-  grafana:
+  grafana-grafana:
     image: grafana/grafana-oss
     restart: unless-stopped
     networks:
@@ -18,6 +18,9 @@ services:
       # - GF_INSTALL_PLUGINS=plug01,plug02,plug03,...
       # - GF_INSTALL_PLUGINS=https://github.com/VolkovLabs/custom-plugin.zip
       - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-true}
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_FEATURE_TOGGLES_ENABLE=alertingSimplifiedRouting,alertingQueryAndExpressionsStepMode
     volumes:
       - grafana_data:/var/lib/grafana
     labels:
@@ -27,4 +30,3 @@ services:
       - traefik.http.routers.grafana-rtr.tls=true
       - traefik.http.routers.grafana-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.grafana-svc.loadbalancer.server.port=3000
-# grafana-cli plugins install
