@@ -1,0 +1,36 @@
+networks:
+  net:
+    external: true
+
+volumes:
+  volume-name:
+    name: volume-name
+    driver: local
+    driver_opts:
+      type: nfs
+      device: :/path/to/volume
+      o: "addr=0.0.0.0,rw"
+
+services:
+  service-name:
+    image: <image>:<tag>
+    restart: unless-stopped
+    mem_limit: 128Mib
+    cpus: 0.1
+    networks:
+      - net
+    ports:
+      - '<0000>:<0000>'
+    volumes:
+      - volume-name:/path/to/data:rw
+    environment:
+      - ENV_1=${ENV_NAME:-value}
+      - ENV_2=${ENV_NAME:-value}
+    labels:
+      - traefik.enable=true
+      # - services
+      - traefik.http.services.appname.loadbalancer.server.port=<0000>
+      # - routers
+      - traefik.http.routers.appname.rule=Host(`<appname.domain.com>`)
+      - traefik.http.routers.appname.tls=true
+      - traefik.http.routers.appname.tls.certresolver=<certresolver>
