@@ -2,38 +2,39 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: appname-daemon
-  namespace: demo
+  name: <appname>
+  namespace: <namespace>
   labels:
-    app: appname
+    app: <appname>
 spec:
   selector:
     matchLabels:
-      app: appname
+      app: <appname>
   template:
     metadata:
-      namespace: demo
+      namespace: <namespace>
       labels:
-        app: appname
+        app: <appname>
     spec:
+      volumes:
+        - name: <appname-v0>
+          persistentVolumeClaim:
+            claimName: appname-pvc
+        - name: <appname-v1>
+          hostPath:
+            path: /path/to/data
+        - name: <appname-v2-config-file>
+          configMap:
+            name: appname-configmap
+            key: appname-config-file
+        - name: <appname-v2-config-file>
+          secretKeyRef:
+            name: appname-secret
+            key: appname-secret-file
       containers:
-        - name: daemonset-nginx
-          image: nginx:alpine
+        - name: <appname>
+          image: <image:tag>
           ports:
-            - containerPort: 0000
+            - containerPort: <targetPort>
 
----
-# The service
-apiVersion: v1
-kind: Service
-metadata:
-  name: appname-service
-  namespace: demo
-spec:
-  selector:
-    app: appname
-  type: LoadBalancer
-  ports:
-    - protocol: TCP
-      port: 0000
-      targetPort: 0000
+

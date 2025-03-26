@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: appname-ingress
+  # annotations:
+    #   traefik.ingress.kubernetes.io/router.entrypoints: https
+    #   traefik.ingress.kubernetes.io/router.tls: "true"
+    #   traefik.ingress.kubernetes.io/certificatesresolvers: letsencrypt
+    # Middlewares
+    #   traefik.ingress.kubernetes.io/routes.middleware: letsencrypt
+spec:
+  rules:
+    - host: "hostname.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: 
+                name: odoo-web-service
+                port:
+                  number: 0000
+                  name: "port-name"
