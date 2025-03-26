@@ -1,18 +1,18 @@
 volumes:
-  kestra_pgsql_storage:
-    name: kestra_pgsql_storage
-  kestra_storage:
-    name: kestra_storage
+  kestra-db-storage:
+    name: kestra-db-storage
+  kestra-web-data:
+    name: kestra-web-data
 
 networks:
   dockernet:
     external: true
 
 services:
-  kestra-pgsql:
+  kestra-db:
     image: postgres:17-alpine
     # volumes:
-    #   - kestra_pgsql_storage:/var/lib/postgresql/data
+    #   - kestra-db-storage:/var/lib/postgresql/data
     networks:
       - dockernet
     environment:
@@ -25,7 +25,7 @@ services:
       timeout: 10s
       retries: 10
 
-  kestra:
+  kestra-web:
     image: kestra/kestra:develop
     # command: server standalone
     command: server local
@@ -36,10 +36,10 @@ services:
     networks:
       - dockernet
     # volumes:
-      # - /var/run/docker.sock:/var/run/docker.sock
-      # - kestra_storage:/app/storage
-      # - ./application.yaml:/etc/config/application.yaml:ro
-      # - /tmp:/tmp/
+    # - /var/run/docker.sock:/var/run/docker.sock
+    # - kestra-web-data:/app/storage
+    # - ./application.yaml:/etc/config/application.yaml:ro
+    # - /tmp:/tmp/
     # environment:
 
     labels:
@@ -50,5 +50,5 @@ services:
       - traefik.http.routers.kestra-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.kestra-svc.loadbalancer.server.port=8080
     depends_on:
-      kestra-pgsql:
+      kestra-db:
         condition: service_started

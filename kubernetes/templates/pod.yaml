@@ -4,6 +4,16 @@ metadata:
   name: appname
   namespace: demo
 spec:
+  volumes:
+    - name: nfs-volume
+      nfs:
+        path: "/path/to/nfs"
+        server: "0.0.0.0"
+        readOnly: false
+    - name: hostpath-volume
+      hostPath:
+        type: DirectoryOrCreate
+        path: "/path/to/dir"
   containers:
     - name: appname
       image: <Image:tag>

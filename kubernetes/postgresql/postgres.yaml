@@ -1,70 +1,68 @@
-# Deploy: pgsql
-apiVersion: apps/v1
-kind: Deployment
+---
+apiVersion: v1
+kind: Secret
 metadata:
-  name: deploy-pgsql
+  name: pgsql-secret
+  namespace: dbs
+type: Opaque
+stringData:
+  pgsql-username: postgres
+  pgsql-password: postgres
+  pgadmin-email: postgres@gmail.com
+  pgadmin-password: postgres
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
   namespace: dbs
   labels:
-    app: pgsql
+    app: postgres
 spec:
+  serviceName: postgres-service
   replicas: 1
   selector:
     matchLabels:
-      app: pgsql
+      app: postgres
   template:
     metadata:
       namespace: dbs
       labels:
-        app: pgsql
+        app: postgres
     spec:
       volumes:
-        - name: pgsql-volume
+        - name: postgres-volume
           hostPath:
-            path: /var/lib/docker/volumes/pgsql-volume
+            path: /usr/backend/postgres
       containers:
-        - name: pgsql
+        - name: postgres
           image: postgres:17-alpine
           ports:
-          - containerPort: 5432
+            - containerPort: 5432
           env:
-          - name: POSTGRES_USER
-            valueFrom:
-              secretKeyRef:
-                name: pgsql-secret
-                key: pgsql-username
-          - name: POSTGRES_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: pgsql-secret
-                key: pgsql-password
-          - name: POSTGRES_DB
-            value: postgres
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pgsql-secret
+                  key: pgsql-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgsql-secret
+                  key: pgsql-password
+            - name: POSTGRES_DB
+              value: postgres
           volumeMounts:
-          - name: pgsql-volume
-            mountPath: /var/lib/postgresql/data
----
-# Svc pgsql
-apiVersion: v1
-kind: Service
-metadata:
-  name: service-pgsql
-  namespace: dbs
-spec:
-  type: LoadBalancer
-  selector:
-    app: pgsql
-  ports:
-    - protocol:  TCP
-      port: 5432
-      targetPort: 5432
+            - name: postgres-volume
+              mountPath: /var/lib/postgresql/data
 
 ---
-# Deploy: pgadmin
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: dbs
-  name: deploy-pgadmin
+  name: pgadmin
   labels:
     app: pgadmin
 spec:
@@ -90,27 +88,43 @@ spec:
               cpu: "0.5"
               memory: "512Mi"
           ports:
-          - containerPort: 80
+            - containerPort: 80
           env:
             - name: PGADMIN_DEFAULT_EMAIL
               valueFrom:
                 secretKeyRef:
                   name: pgsql-secret
-                  key: pgadmin-email  
+                  key: pgadmin-email
             - name: PGADMIN_DEFAULT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: pgsql-secret
-                  key: pgadmin-password  
+                  key: pgadmin-password
             - name: PGADMIN_CONFIG_WTF_CSRF_CHECK_DEFAULT
-              value: "True"
+              value: "False"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: dbs
+spec:
+  type: LoadBalancer
+  selector:
+    app: pgsql
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
 ---
 # Service pgadmin
 apiVersion: v1
 kind: Service
 metadata:
   namespace: dbs
-  name: service-pgadmin
+  name: pgadmin-service
 spec:
   selector:
     app: pgadmin

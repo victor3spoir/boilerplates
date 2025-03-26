@@ -6,7 +6,7 @@ metadata:
   labels:
     app: appname
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: appname
@@ -18,12 +18,20 @@ spec:
     spec:
       automountServiceAccountToken: false
       volumes:
+        - name: appname-v0
+          persistentVolumeClaim:
+            claimName: appname-pvc
         - name: appname-v1
           hostPath:
             path: /path/to/data
-        - name: appname-v2
-          persistentVolumeClaim:
-            claimName: pvc0
+        - name: appname-v2-config-file
+          configMap:
+            name: appname-configmap
+            key: appname-config-file
+        - name: appname-v2-config-file
+          secretKeyRef:
+            name: appname-secret
+            key: appname-secret-file
       containers:
         - name: container-name
           image: image:tag
@@ -44,13 +52,13 @@ spec:
                 secretKeyRef:
                   name: secret-name
                   key: key-name
-            - name: POSTGRES_PASSWORD
+            - name: ENV_DATA
               valueFrom:
                 secretKeyRef:
                   name: secret-name
                   key: key-name
-            - name: POSTGRES_DB
-              value: env_value
+            - name: ENV_ELSE
+              value: value
           volumeMounts:
-            - name: appname-v1
-              mountPath: /var/lib/postgresql/data
+            - name: appname-volume
+              mountPath: /path/to/data
