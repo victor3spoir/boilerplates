@@ -3,8 +3,13 @@ networks:
     external: true
 
 volumes:
-  pihole-web-data:
-    name: pihole-web-data
+  pihole-data:
+    name: pihole-data
+    driver: local
+    driver_opts:
+      type: nfs
+      o: 'addr=0.0.0.0'
+      device: ':/mnt/data/pihole-data'
 
 services:
   pihole-web:
@@ -16,6 +21,7 @@ services:
       - 53:53/tcp
       - 53:53/udp
       - 67:67/udp
+      - 30080:80
     environment:
       - TZ=America/Chicago
       - WEBPASSWORD=${WEBPASSWORD:-password}
@@ -23,7 +29,7 @@ services:
       - DNS2=8.8.8.8
     # volumes:
     # - ./etc-pihole:/etc/pihole:rw
-    # - pihole-web-data:/etc/pihole:rw
+    # - pihole-data:/etc/pihole:rw
     labels:
       - traefik.enable=true
       - traefik.http.routers.pihole-rtr.entrypoints=http,https
