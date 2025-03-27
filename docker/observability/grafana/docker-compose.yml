@@ -4,29 +4,35 @@ networks:
 volumes:
   grafana_data:
     name: grafana_data
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=127.0.0.1,rw"
+      device: ":/mnt/data/grafana"
 
 services:
   grafana-grafana:
-    image: grafana/grafana-oss
+    image: grafana/grafana-oss:main
     restart: unless-stopped
     networks:
       - dockernet
-    # ports:
-    #   - 3000:3000
+    ports:
+      - 3000:3000
     environment:
-      - GF_LOG_LEVEL=debug
+      - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
       # - GF_INSTALL_PLUGINS=plug01,plug02,plug03,...
       # - GF_INSTALL_PLUGINS=https://github.com/VolkovLabs/custom-plugin.zip
       - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
-      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-true}
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-false}
+      # - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE:-Admin}
       - GF_FEATURE_TOGGLES_ENABLE=alertingSimplifiedRouting,alertingQueryAndExpressionsStepMode
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-http://grafana:3000}
     volumes:
       - grafana_data:/var/lib/grafana
     labels:
       - traefik.enable=true
       - traefik.http.routers.grafana-rtr.entrypoints=http,https
-      - traefik.http.routers.grafana-rtr.rule=Host(`grafana.${DOMAIN_NAME}`)
+      - traefik.http.routers.grafana-rtr.rule=Host(`grafana.<domain.com>`)
       - traefik.http.routers.grafana-rtr.tls=true
       - traefik.http.routers.grafana-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.grafana-svc.loadbalancer.server.port=3000

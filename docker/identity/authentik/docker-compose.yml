@@ -1,19 +1,29 @@
 networks:
-  <dockernet>:
+  dockernet:
     external: true
 
 volumes:
-  authentik-db-data:
-    name: authentik-db-data
-  authentik-redis-data:
-    name: authentik-redis-data
+  authentik_db_data:
+    name: authentik_db_data
+    driver: local
+    driver_opts:
+      type: nfs4
+      o: "addr=127.0.0.1,rw"
+      device: ":/mnt/storage/authentik/db"
+  authentik_redis_data:
+    name: authentik_redis_data
+    driver: local
+    driver_opts:
+      type: nfs4
+      o: "addr=127.0.0.1,rw"
+      device: ":/mnt/storage/authentik/redis"
 
 services:
   authentik-db:
     image: postgres:17-alpine
     restart: unless-stopped
     networks:
-      - <dockernet>
+      - dockernet
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}']
       start_period: 20s
@@ -21,19 +31,19 @@ services:
       retries: 5
       timeout: 5s
     volumes:
-      - authentik-db-data:/var/lib/postgresql/data/pgdata
+      - authentik_db_data:/var/lib/postgresql/data/pgdata
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_PASSWORD=${PG_PASS}
-      - POSTGRES_USER=${PG_USER}
-      - POSTGRES_DB=${PG_DB}
+      - POSTGRES_PASSWORD=${PG_PASS:-authentik}
+      - POSTGRES_USER=${PG_USER:-authentik}
+      - POSTGRES_DB=${PG_DB:-authentik}
 
   authentik-redis:
     image: redis:alpine
     command: --save 60 1 --loglevel warning
     restart: unless-stopped
     networks:
-      - <dockernet>
+      - dockernet
     healthcheck:
       test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
       start_period: 20s
@@ -41,22 +51,22 @@ services:
       retries: 5
       timeout: 3s
     volumes:
-      - authentik-redis-data:/data
+      - authentik_redis_data:/data
 
   authentik-server:
     image: ghcr.io/goauthentik/server:2025.2.1
     restart: unless-stopped
     networks:
-      - <dockernet>
+      - dockernet
     command: server
     environment:
       - AUTHENTIK_REDIS__HOST=authentik-redis
       - AUTHENTIK_POSTGRESQL__HOST=authentik-db
-      - AUTHENTIK_POSTGRESQL__USER=${PG_USER}
-      - AUTHENTIK_POSTGRESQL__NAME=${PG_DB}
-      - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
-      - AUTHENTIK_ERROR_REPORTING__ENABLED=${AUTHENTIK_ERROR_REPORTING__ENABLED}
-      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      - AUTHENTIK_POSTGRESQL__USER=${PG_USER:-authentik}
+      - AUTHENTIK_POSTGRESQL__NAME=${PG_DB:-authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS:-authentik}
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=${AUTHENTIK_ERROR_REPORTING__ENABLED:-true}
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY:-V4PeA5cu9dKFiZMt8rYgVBZ5wIcXpRktO00erN0Qx91O8TCiYxQ0ZthfvdSaESmRmoyrVaseadyKnOzJ}
     volumes:
       - ./media:/media
       - ./templates:/templates
@@ -79,13 +89,14 @@ services:
     restart: unless-stopped
     command: worker
     networks:
-      - <dockernet>
+      - dockernet
     environment:
       - AUTHENTIK_REDIS__HOST=authentik-redis
       - AUTHENTIK_POSTGRESQL__HOST=authentik-db
       - AUTHENTIK_POSTGRESQL__USER=${PG_USER}
       - AUTHENTIK_POSTGRESQL__NAME=${PG_DB}
       - AUTHENTIK_POSTGRESQL__PASSWORD=${PG_PASS}
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY:-V4PeA5cu9dKFiZMt8rYgVBZ5wIcXpRktO00erN0Qx91O8TCiYxQ0ZthfvdSaESmRmoyrVaseadyKnOzJ}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./media:/media
