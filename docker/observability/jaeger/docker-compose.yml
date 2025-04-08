@@ -1,0 +1,21 @@
+# Jaeger: for opentelemetry logging
+# https://www.jaegertracing.io/
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.67.0
+    ports:
+      # Read
+      - 16686:16686 #ui
+      # Write
+      - 5775:5775/udp
+      - 6831:6831/udp # raw port
+      - 6832:6832/udp # raw port
+      - 5778:5778
+      - 14268:14268 # api/traces
+      - 14250:14250 # gRPC services collectors
+      - 9411:9411 # http /api/v1/spans
+      - 4318:4318 # v1/traces
+      - 4317:4317 # gRPC
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411

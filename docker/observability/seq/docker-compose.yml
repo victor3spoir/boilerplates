@@ -1,0 +1,35 @@
+# Use seq for OpenTelemetry Logs
+# https://datalust.co/seq
+# data sending url : http://seq:port/ingest/oltp/v1/logs
+# echo password | docker run --rm -i datalust/seq:2024 config hash
+
+networks:
+  dockernet:
+    external: true
+
+# volumes:
+#   seq-data:
+#     name: seq-data
+#     driver: local
+#     driver_opts:
+#       type: nfs5
+#       o: "addr=127.0.0.1,rw"
+#       device: ":/tmp/data/seq-data"
+
+services:
+  seq:
+    image: datalust/seq:2024.3
+    restart: unless-stopped
+    networks:
+      - dockernet
+    ports:
+      - 30080:80 
+      - 5341:5341 
+    environment:
+      - ACCEPT_EULA=${ACCEPT_EULA:-Y}
+      # - SEQ_API_CANONICALURI=https://seq.example.com
+      # - SEQ_FIRSTRUN_ADMINUSERNAME=${SEQ_FIRSTRUN_ADMINUSERNAME:-admin}
+      # - SEQ_FIRSTRUN_ADMINPASSWORDHASH="${SEQ_FIRSTRUN_ADMINPASSWORDHASH:-QFwGOjSxyUxy/MysFP4fnAG8NAYfB9J7qOdB+2zlO+3NvwKe9jQvUJ1iIG7QmOMIwCc8yPhVpySxuWHQPNjRWpgQK5ibb4mNA5qiEnKJcF1T}"
+    # volumes: 
+    #   - seq-data:/data
+  
