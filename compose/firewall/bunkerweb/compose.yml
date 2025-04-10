@@ -1,0 +1,47 @@
+x-bw-api-env: &bw-api-env
+  # We use an anchor to avoid repeating the same settings for both containers
+  API_HTTP_PORT: "5000" # Default value
+  API_LISTEN_IP: "0.0.0.0" # Default value
+  API_SERVER_NAME: "bwapi" # Default value
+  API_WHITELIST_IP: "127.0.0.0/24 10.20.30.0/24"
+
+services:
+  bunkerweb:
+    image: bunkerity/bunkerweb:1.6.1
+    ports:
+      - "80:8080/tcp"
+      - "443:8443/tcp"
+      - "443:8443/udp" # QUIC
+    environment:
+      <<: *bw-api-env
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+      - bw-services
+
+  bw-scheduler:
+    image: bunkerity/bunkerweb-scheduler:1.6.1
+    depends_on:
+      - bunkerweb
+    environment:
+      <<: *bw-api-env
+      BUNKERWEB_INSTANCES: "bunkerweb" # This setting is mandatory to specify the BunkerWeb instance
+      SERVER_NAME: "www.example.com"
+    volumes:
+      - bw-storage:/data # This is used to persist the cache and other data like the backups
+    restart: "unless-stopped"
+    networks:
+      - bw-universe
+
+volumes:
+  bw-storage:
+
+networks:
+  bw-universe:
+    name: bw-universe
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.20.30.0/24 # Static subnet so only authorized sources can access the BunkerWeb API
+  bw-services:
+    name: bw-services

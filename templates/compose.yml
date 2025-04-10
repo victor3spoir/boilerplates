@@ -1,0 +1,59 @@
+networks:
+  network-name:
+    external: true
+
+configs:
+  app.conf:
+    content: |
+      appname: elementor
+      version: 1.0.0
+      backend_url: http://localhost:9090
+  config.yml:
+    file: ./path/to/file.conf
+
+volumes:
+  volume-name:
+    name: volume-name
+    driver: local
+    driver_opts:
+      type: nfs
+      device: :/path/to/volume
+      o: 'addr=0.0.0.0,rw'
+
+services:
+  service-name:
+    image: <image>:<tag>
+    restart: unless-stopped
+    # mem_limit: 128Mib
+    # cpus: 0.1
+    deploy:
+      replicas: 5
+      resources:
+        reservations:
+          memory: 80Mib
+          cpus: .05
+        limits:
+          memory: 126Mib
+          cpus: .1
+    networks:
+      - network-name
+    ports:
+      - '<0000>:<0000>'
+    configs:
+      - source: app.conf
+        target: /path/to/config.conf
+        uid: '101'
+        gid: '101'
+    volumes:
+      - volume-name:/path/to/data:rw
+    environment:
+      - ENV_1=${ENV_NAME:-value}
+      - ENV_2=${ENV_NAME:-value}
+    labels:
+      - traefik.enable=true
+      # - services
+      - traefik.http.services.appname-svc.loadbalancer.server.port=<0000>
+      # - routers
+      - traefik.http.routers.appname-rtr.rule=Host(`<appname.domain.com>`)
+      - traefik.http.routers.appname-rtr.tls=true
+      - traefik.http.routers.appname-rtr.tls.certresolver=<certresolver>
