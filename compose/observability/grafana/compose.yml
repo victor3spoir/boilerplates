@@ -1,6 +1,7 @@
 networks:
   dockernet:
     external: true
+
 volumes:
   grafana_data:
     name: grafana_data
@@ -64,12 +65,3 @@ services:
       - traefik.http.routers.loki.tls=true
       - traefik.http.routers.loki.tls.certresolver=letsencrypt
 
-
-  grafana-promtail:
-    image: grafana/promtail:latest
-    command: -config.file=/etc/promtail/config.yml
-    networks:
-      - dockernet
-    volumes:
-      - ./promtail-config.yaml:/etc/promtail/config.yml
-      - /var/log:/var/log

@@ -60,13 +60,16 @@ services:
       # - --metrics.otlp.addServicesLabels=true
       # - --metrics.otlp.pushInterval=10s
       # - --metrics.otlp.serviceName=traefik-svc
-      # - --metrics.otlp.http.endpoint=http://localhost:4318/v1/metrics
+      # - --metrics.otlp.http.endpoint=http://alloy:4318/v1/metrics
       # - --metrics.otlp.http.headers.x-api-key=sdf78s1sdsAs7
 
       # - --tracing.addinternals
       # - --tracing.serviceName=traefik-svc
-      # - --tracing.otlp.http.endpoint=http://localhost:4318/v1/traces
+      # - --tracing.otlp.http.endpoint=http://alloy:4318/v1/traces
       # - --tracing.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
+      
+      # - --log.otlp.http.endpoint=http://alloy:4318/v1/traces
+      # - --log.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
 
     networks:
       - dockernet

@@ -3,20 +3,51 @@ networks:
     external: true
 
 volumes:
-  qdrant_storage:
-    name: qdrant_storage
+  qdrant-01-vol:
+    name: qdrant-01-vol
+  qdrant-02-vol:
+    name: qdrant-02-vol
+  qdrant-03-vol:
+    name: qdrant-03-vol
 
 services:
-  qdrant:
+  qdrant-01:
     image: qdrant/qdrant:master
-    container_name: qdrant
+    container_name: qdrant-01
+    command: ./qdrant --uri http://qdrant-01:6335
     networks:
       - dockernet
     restart: unless-stopped
     environment:
       - RUN_MODE=production # development
+      - QDRANT__CLUSTER__ENABLED=true
+      # - QDRANT__SERVICE__API_KEY=${QDRANT__SERVICE__API_KEY}
     ports:
       - 6333:6333
-      # - 6334:6334 # GRPC endpoint
+      - 6334:6334 # GRPC endpoint
     volumes:
-      - qdrant_storage:/qdrant/storage
+      - qdrant-01-vol:/qdrant/storage
+  qdrant-02:
+    image: qdrant/qdrant:master
+    container_name: qdrant-02
+    command: ./qdrant --bootstrap http://qdrant-01:6335 --uri http://qdrant-02:6335
+    networks:
+      - dockernet
+    restart: unless-stopped
+    environment:
+      - RUN_MODE=production # development
+      - QDRANT__CLUSTER__ENABLED=true
+    volumes:
+      - qdrant-02-vol:/qdrant/storage
+  qdrant-03:
+    image: qdrant/qdrant:master
+    container_name: qdrant-03
+    command: ./qdrant --bootstrap http://qdrant-01:6335 --uri http://qdrant-03:6335
+    networks:
+      - dockernet
+    restart: unless-stopped
+    environment:
+      - RUN_MODE=production # development
+      - QDRANT__CLUSTER__ENABLED=true
+    volumes:
+      - qdrant-03-vol:/qdrant/storage
