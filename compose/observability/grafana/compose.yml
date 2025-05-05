@@ -2,66 +2,111 @@ networks:
   dockernet:
     external: true
 
-volumes:
-  grafana_data:
-    name: grafana_data
-    driver: local
-    driver_opts:
-      type: nfs
-      o: 'addr=127.0.0.1,rw'
-      device: ':/mnt/data/grafana'
+configs:
+  grafana.conf:
+    content: |
+      # nginx.config
+      events {
+          worker_connections 1024;
+      }
+      http {
+          upstream backend {
+              server grafana-01:3000 max_fails=1 fail_timeout=1s;
+              server grafana-02:3000 max_fails=1 fail_timeout=1s;
+              server grafana-03:3000 max_fails=1 fail_timeout=1s backup;
+          }
+          server {
+              listen 3000;
+              access_log /dev/null;
+              location / {
+                  proxy_pass http://backend;
+                  proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+                  proxy_set_header Host $$http_host;
+              }
+          }
+      }
 
-  loki_data:
-    name: loki_data
-    driver: local
-    driver_opts:
-      type: nfs4
-      o: 'addr=127.0.0.1,rw'
-      device: ':/mnt/data/loki'
+volumes:
+  grafana-vol:
+    name: grafana-vol
 
 services:
-  grafana-grafana:
-    image: grafana/grafana-oss:main
-    restart: unless-stopped
+  grafana:
+    image: nginx:alpine
+    expose:
+      - 3000
+    ports:
+      - 33000:3000
     networks:
       - dockernet
-    ports:
-      - 3000:3000
-    environment:
-      - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
-      # - GF_INSTALL_PLUGINS=plug01,plug02,plug03,...
-      # - GF_INSTALL_PLUGINS=https://github.com/VolkovLabs/custom-plugin.zip
-      - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
-      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-false}
-      # - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE:-Admin}
-      - GF_FEATURE_TOGGLES_ENABLE=alertingSimplifiedRouting,alertingQueryAndExpressionsStepMode
-      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-http://grafana:3000}
-    volumes:
-      - grafana_data:/var/lib/grafana
+    configs:
+      - source: grafana.conf
+        target: /etc/nginx/nginx.conf
+        mode: 0
+        uid: '0'
+        gid: '0'
+    depends_on:
+      - grafana-01
+      - grafana-02
+      - grafana-03
     labels:
+      - alloy.logs.enable=true
+      - alloy.metrics.enable=true
+      - alloy.traces.enable=true
+
       - traefik.enable=true
       - traefik.http.routers.grafana-rtr.entrypoints=http,https
       - traefik.http.routers.grafana-rtr.rule=Host(`grafana.<domain.com>`)
       - traefik.http.routers.grafana-rtr.tls=true
       - traefik.http.routers.grafana-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.grafana-svc.loadbalancer.server.port=3000
-
-  grafana-loki:
-    image: grafana/loki:main-3a68bc4
-    restart: unless-stopped
-    ports:
-      - '30031:3100'
-    command: -config.file=/etc/loki/config.yaml
-    volumes:
-      - ./loki-config.yaml:/etc/loki/config.yaml
-      - loki_data:/loki:rw
+  grafana-01:
+    image: grafana/grafana-enterprise:main
     networks:
       - dockernet
+    environment:
+      - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-false}
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-http://grafana:3000}
+      - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME:-light}
+    volumes:
+      - grafana-vol:/var/lib/grafana:rw
     labels:
-      - traefik.enable=true
-      - traefik.http.services.loki.loadbalancer.server.port=3100
-      - traefik.http.routers.loki.entrypoints=http,https
-      - traefik.http.routers.loki.rule=Host(`loki.<domain.com>`)
-      - traefik.http.routers.loki.tls=true
-      - traefik.http.routers.loki.tls.certresolver=letsencrypt
+      - alloy.logs.enable=true
+      - alloy.metrics.enable=true
+      - alloy.traces.enable=true
 
+  grafana-02:
+    image: grafana/grafana-enterprise:main
+    networks:
+      - dockernet
+    environment:
+      - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-false}
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-http://grafana:3000}
+      - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME:-light}
+    volumes:
+      - grafana-vol:/var/lib/grafana:rw
+    labels:
+      - alloy.logs.enable=true
+      - alloy.traces.enable=true
+      - alloy.metrics.enable=true
+
+  grafana-03:
+    image: grafana/grafana-enterprise:main
+    networks:
+      - dockernet
+    environment:
+      - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-false}
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-http://grafana:3000}
+      - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME:-light}
+    volumes:
+      - grafana-vol:/var/lib/grafana:rw
+    labels:
+      - alloy.logs.enable=true
+      - alloy.metrics.enable=true
+      - alloy.traces.enable=true
