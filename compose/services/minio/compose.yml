@@ -3,8 +3,8 @@ networks:
     external: true
 
 volumes:
-  minio_storage:
-    name: minio_storage
+  minio-vol:
+    name: minio-vol
     driver: local
     driver_opts:
       type: nfs4
@@ -15,7 +15,7 @@ services:
   minio:
     image: quay.io/minio/minio:RELEASE.2025-03-12T18-04-18Z-cpuv1
     restart: unless-stopped
-    command: server /data --console-address ":9001"
+    command: server /data --address ":9000" --console-address ":9001"
     networks:
       - dockernet
     ports:
@@ -31,7 +31,7 @@ services:
       # - MINIO_UPDATE_MINISIGN_PUBKEY=${MINIO_UPDATE_MINISIGN_PUBKEY:-RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav"}
       # - MINIO_CONFIG_ENV=${MINIO_CONFIG_ENV:-config.env"}
     volumes:
-      - minio_storage:/data:rw
+      - minio-vol:/data:rw
     labels:
       - traefik.enable=true
         # services
@@ -41,3 +41,11 @@ services:
       - traefik.http.routers.minio.tls=true
       - traefik.http.routers.minio.tls.certresolver=letsencrypt
       - traefik.http.routers.minio.rule=Host(`minio.<domain.com>`)
+  minio-client:
+    image: minio/mc
+    networks:
+      - dockernet
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc --help
+      "

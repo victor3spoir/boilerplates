@@ -31,9 +31,15 @@ x-init-ollama: &init-ollama
 
 services:
   ollama:
+    image: ollama/ollama:rocm
+    restart: unless-stopped
+    hostname: ollama
+    networks:
+      - dockernet
+    ports:
+      - 11434:11434
     profiles:
       - 'cpu'
-    <<: *service-ollama
     volumes:
       - ${HOME}/.ollama:/root/.ollama:rw
 
