@@ -3,18 +3,18 @@ networks:
     external: true
 
 volumes:
-  n8n_storage:
-    name: n8n_storage
-  n8n_pgsql_storage:
-    name: n8n_pgsql_storage
+  n8n-vol:
+    name: n8n-vol
+  n8n-db-vol:
+    name: n8n-db-vol
 
 x-n8n: &service-n8n
-  image: n8nio/n8n:nightly
+  image: n8nio/n8n:next
   networks:
     - dockernet
   environment:
     - DB_TYPE=postgresdb
-    - DB_POSTGRESDB_HOST=n8n_pgsql
+    - DB_POSTGRESDB_HOST=n8n-db
     - DB_POSTGRESDB_USER=${POSTGRES_USER:-root}
     - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD:-password}
     - DB_POSTGRESDB_DATABASE=${POSTGRES_DB:-n8n}
@@ -24,7 +24,7 @@ x-n8n: &service-n8n
     - N8N_USER_MANAGEMENT_JWT_SECRET=${N8N_USER_MANAGEMENT_JWT_SECRET:-not-secure-sdfkjdhfkjdshf}
 
 services:
-  n8n_pgsql:
+  n8n-db:
     image: postgres:17-alpine
     networks:
       - dockernet
@@ -34,13 +34,11 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
       - POSTGRES_DB=${POSTGRES_DB:-n8n}
     # volumes:
-    #   - n8n_pgsql_storage:/var/lib/postgresql/data
+    #   - n8n-db-vol:/var/lib/postgresql/data
     healthcheck:
       test:
-        [
-          'CMD-SHELL',
-          'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}',
-        ]
+        - 'CMD-SHELL'
+        - 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}'
       interval: 5s
       timeout: 5s
       retries: 10
@@ -54,7 +52,7 @@ services:
     volumes:
       - ./n8n/backup:/backup
     depends_on:
-      n8n_pgsql:
+      n8n-db:
         condition: service_healthy
 
   n8n:
@@ -63,11 +61,11 @@ services:
     ports:
       - 5678:5678
     volumes:
-      # - n8n_storage:/home/node/.n8n
+      # - n8n-vol:/home/node/.n8n
       - ./n8n/backup:/backup
-      - ./shared:/data/shared
+      - ./n8n/shared:/data/shared
     depends_on:
-      n8n_pgsql:
+      n8n-db:
         condition: service_healthy
       n8n-import:
         condition: service_completed_successfully
