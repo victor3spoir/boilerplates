@@ -5,9 +5,15 @@ networks:
 services:
   traefik-proxy:
     image: traefik:v3.3
-    mem_limit: 128Mib
     restart: unless-stopped
-    cpus: .2
+    deploy:
+      resources:
+        reservations:
+          memory: 65Mib
+          cpus: .25
+        limits:
+          memory: 126Mib
+          cpus: .5
     command:
       # Globals
       - --global.checknewversion=true
@@ -24,8 +30,8 @@ services:
       - --entryPoints.http.http.redirections.entryPoint.scheme=https
 
       # (Providers)
-      # - --providers.docker.endpoint=unix://var/run/docker.sock
-      # - --providers.docker.exposedbydefault=false
+      - --providers.docker.endpoint=unix://var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
       # - --providers.file.filename=/var/traefik/dynamic.yaml
       # - --providers.file.watch=true
 
@@ -51,7 +57,7 @@ services:
 
       # - --accesslog.filepath=/var/lib/traefik/traefik.log
       # - --accesslog.otlp.http=true
-      # - --accesslog.otlp.http.endpoint=http://localhost:30080/ingest/otlp/v1/logs
+      # - --accesslog.otlp.http.endpoint=http://localhost:4318/v1/logs
       # - --accesslog.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
       # - --accesslog.format=json
 
@@ -73,14 +79,13 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 127.0.0.1:8080:8080
+      # - 127.0.0.1:8080:8080
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./dynamic.yaml:/var/traefik/dynamic.yaml:ro
-      - ./data/certs:/var/traefik/certs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - ./dynamic.yaml:/var/traefik/dynamic.yaml:ro
+      # - ./certs:/var/traefik/certs:rw
     environment:
       - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
-      # - OTEL_PROPAGATORS =${OTEL_PROPAGATORS:-b3,jaeger}
     labels:
       - traefik.enable=true
       # - -- (services)
@@ -90,8 +95,14 @@ services:
       - traefik.http.routers.traefik-rtr.rule=Host(`traefik.domain.com`)
       - traefik.http.routers.traefik-rtr.tls=true
       - traefik.http.routers.traefik-rtr.tls.certresolver=letsencrypt
-      - traefik.http.routers.traefik-rtr.tls.domains[0].main=domain.com
-      - traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.domain.com
+      - traefik.http.routers.traefik-rtr.tls.domains[0].main=domain-1.com
+      - traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.domain-1.com
+      - traefik.http.routers.traefik-rtr.tls.domains[1].main=domain-2.com
+      - traefik.http.routers.traefik-rtr.tls.domains[1].sans=*.domain-2.com
+      - traefik.http.routers.traefik-rtr.service=traefik-svc
+      - traefik.http.routers.traefik-rtr.observability.accesslog=true
+      - traefik.http.routers.traefik-rtr.observability.metrics=true
+      - traefik.http.routers.traefik-rtr.observability.traces=true
       # - -- (defines middlewares)
       # - traefik.http.middlewares.demo-headers.headers.frameDeny=true
       # - traefik.http.middlewares.demo-headers.headers.browserxssfilter=true

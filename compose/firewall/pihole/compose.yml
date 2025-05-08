@@ -3,13 +3,13 @@ networks:
     external: true
 
 volumes:
-  pihole-data:
-    name: pihole-data
+  pihole-vol:
+    name: pihole-vol
     driver: local
     driver_opts:
       type: nfs
       o: 'addr=0.0.0.0'
-      device: ':/mnt/data/pihole-data'
+      device: ':/mnt/data/pihole'
 
 services:
   pihole-web:
@@ -21,7 +21,7 @@ services:
       - 53:53/tcp
       - 53:53/udp
       - 67:67/udp
-      - 30080:80
+      # - 30080:80
     environment:
       - TZ=America/Chicago
       - WEBPASSWORD=${WEBPASSWORD:-password}
@@ -29,14 +29,14 @@ services:
       - DNS2=8.8.8.8
     # volumes:
     # - ./etc-pihole:/etc/pihole:rw
-    # - pihole-data:/etc/pihole:rw
+    # - pihole-vol:/etc/pihole:rw
     labels:
       - traefik.enable=true
+      - traefik.http.services.pihole-svc.loadbalancer.server.port=80
       - traefik.http.routers.pihole-rtr.entrypoints=http,https
       - traefik.http.routers.pihole-rtr.rule=Host(`pihole.${DOMAIN_NAME}`)
       - traefik.http.routers.pihole-rtr.tls=true
       - traefik.http.routers.pihole-rtr.tls.certresolver=letsencrypt
-      - traefik.http.services.pihole-svc.loadbalancer.server.port=80
 # Configuration on os
 # Disable system self resolving system
 # sudo systemctl stop systemd-resolve

@@ -9,7 +9,7 @@ configs:
       version: 1.0.0
       backend_url: http://localhost:9090
   config.yml:
-    file: ./path/to/file.conf
+    file: /path/to/file.yaml
 
 volumes:
   volume-name:
@@ -18,23 +18,18 @@ volumes:
     driver_opts:
       type: nfs
       device: :/path/to/volume
-      o: 'addr=0.0.0.0,rw'
+      o: 'addr=127.0.0.1,rw'
 
 services:
   service-name:
     image: <image>:<tag>
     restart: unless-stopped
-    # mem_limit: 128Mib
-    # cpus: 0.1
     deploy:
       replicas: 5
       resources:
-        reservations:
-          memory: 80Mib
-          cpus: .05
         limits:
-          memory: 126Mib
-          cpus: .1
+          memory: 200Mb
+          cpus: 0.2
     networks:
       - network-name
     ports:
@@ -50,6 +45,9 @@ services:
       - ENV_1=${ENV_NAME:-value}
       - ENV_2=${ENV_NAME:-value}
     labels:
+      - alloy.logs.enable=true
+      - alloy.metrics.enable=true
+      - alloy.traces.enable=true
       - traefik.enable=true
       # - services
       - traefik.http.services.appname-svc.loadbalancer.server.port=<0000>
@@ -57,3 +55,7 @@ services:
       - traefik.http.routers.appname-rtr.rule=Host(`<appname.domain.com>`)
       - traefik.http.routers.appname-rtr.tls=true
       - traefik.http.routers.appname-rtr.tls.certresolver=<certresolver>
+      - traefik.http.routers.appname-rtr.service=appname-svc
+      - traefik.http.routers.appname-rtr.observability.accesslogs=true
+      - traefik.http.routers.appname-rtr.observability.metrics=true
+      - traefik.http.routers.appname-rtr.observability.tracing=true
