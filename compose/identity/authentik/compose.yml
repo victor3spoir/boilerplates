@@ -3,20 +3,20 @@ networks:
     external: true
 
 volumes:
-  authentik_db_data:
-    name: authentik_db_data
-    driver: local
-    driver_opts:
-      type: nfs4
-      o: "addr=127.0.0.1,rw"
-      device: ":/mnt/storage/authentik/db"
-  authentik_redis_data:
-    name: authentik_redis_data
-    driver: local
-    driver_opts:
-      type: nfs4
-      o: "addr=127.0.0.1,rw"
-      device: ":/mnt/storage/authentik/redis"
+  authentik-db-vol:
+    name: authentik-db-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/authentik/db"
+  authentik-redis-vol:
+    name: authentik-redis-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/authentik/redis"
 
 services:
   authentik-db:
@@ -31,7 +31,7 @@ services:
       retries: 5
       timeout: 5s
     volumes:
-      - authentik_db_data:/var/lib/postgresql/data/pgdata
+      - authentik-db-vol:/var/lib/postgresql/data/pgdata
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_PASSWORD=${PG_PASS:-authentik}
@@ -51,7 +51,7 @@ services:
       retries: 5
       timeout: 3s
     volumes:
-      - authentik_redis_data:/data
+      - authentik-redis-vol:/data
 
   authentik-server:
     image: ghcr.io/goauthentik/server:2025.2.1

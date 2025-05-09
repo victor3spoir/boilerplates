@@ -1,8 +1,8 @@
 volumes:
-  kestra-db-storage:
-    name: kestra-db-storage
-  kestra-web-data:
-    name: kestra-web-data
+  kestra-db-vol:
+    name: kestra-db-vol
+  kestra-web-vol:
+    name: kestra-web-vol
 
 networks:
   dockernet:
@@ -12,43 +12,54 @@ services:
   kestra-db:
     image: postgres:17-alpine
     # volumes:
-    #   - kestra-db-storage:/var/lib/postgresql/data
+    #   - kestra-db-vol:/var/lib/postgresql/data
     networks:
       - dockernet
     environment:
-      - POSTGRES_DB=kestra
-      - POSTGRES_USER=kestra
-      - POSTGRES_PASSWORD=k3str4
+      - POSTGRES_DB=${POSTGRES_DB:-kestra}
+      - POSTGRES_USER=${POSTGRES_USER:-kestra}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-k3str4}
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}']
+      test:
+        - 'CMD-SHELL'
+        - 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}'
       interval: 30s
       timeout: 10s
       retries: 10
 
   kestra-web:
     image: kestra/kestra:develop
-    # command: server standalone
-    command: server local
+    command: server standalone --config /etc/kestra/config.yaml
     user: root
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 1024Mb
+          cpus: 0.2
     ports:
-      - 38080:8080
-      - 38081:8081
+      - 8080:8080
+      # - 38081:8081
     networks:
       - dockernet
-    # volumes:
-    # - /var/run/docker.sock:/var/run/docker.sock
-    # - kestra-web-data:/app/storage
-    # - ./application.yaml:/etc/config/application.yaml:ro
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./kestra.yaml:/etc/kestra/config.yaml
+    # - kestra-web-vol:/app/storage
     # - /tmp:/tmp/
     # environment:
 
     labels:
       - traefik.enable=true
-      - traefik.http.routers.kestra-rtr.entrypoints=http,https
-      - traefik.http.routers.kestra-rtr.rule=Host(`kestra.homestack.me`)
-      - traefik.http.routers.kestra-rtr.tls=true
-      - traefik.http.routers.kestra-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.kestra-svc.loadbalancer.server.port=8080
+      - traefik.http.routers.kestra-rtr.entrypoints=http,https
+      # - traefik.http.routers.kestra-rtr.rule=Host(`<kestra.domain.com>`)
+      # - traefik.http.routers.kestra-rtr.tls=true
+      # - traefik.http.routers.kestra-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.kestra-rtr.service=kestra-svc
+      - traefik.http.routers.kestra-rtr.observability.accesslogs=true
+      - traefik.http.routers.kestra-rtr.observability.metrics=true
+      - traefik.http.routers.kestra-rtr.observability.tracing=true
     depends_on:
       kestra-db:
         condition: service_started
