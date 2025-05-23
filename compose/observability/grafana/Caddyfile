@@ -1,0 +1,25 @@
+{
+  admin :2019
+  servers {
+    metrics {
+			per_host
+		}
+    trace
+  }
+}
+:80 {
+	reverse_proxy {
+		to grafana-01:3000 grafana-01:3000
+		lb_policy least_conn
+
+		health_path /api/health
+		health_interval 5s
+		health_timeout 2s
+		health_status 200
+
+		# Forward standard headers
+		header_up X-Forwarded-For {http.request.remote}
+		header_up X-Forwarded-Proto {http.request.scheme}
+		header_up Host {http.request.host}
+	}
+}

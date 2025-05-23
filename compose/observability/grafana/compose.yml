@@ -2,111 +2,141 @@ networks:
   dockernet:
     external: true
 
+volumes:
+  grafana-01-vol:
+    name: grafana-01-vol
+  grafana-02-vol:
+    name: grafana-02-vol
+  grafana-db-vol:
+    name: grafana-db-vol
+
 configs:
-  grafana.conf:
+  Caddylfile:
     content: |
-      # nginx.config
-      events {
-          worker_connections 1024;
+      {
+        admin :2019
+        servers {
+          metrics {
+            per_host
+          }
+          trace
+        }
       }
-      http {
-          upstream backend {
-              server grafana-01:3000 max_fails=1 fail_timeout=1s;
-              server grafana-02:3000 max_fails=1 fail_timeout=1s;
-              server grafana-03:3000 max_fails=1 fail_timeout=1s backup;
-          }
-          server {
-              listen 3000;
-              access_log /dev/null;
-              location / {
-                  proxy_pass http://backend;
-                  proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-                  proxy_set_header Host $$http_host;
-              }
-          }
+      :80 {
+        reverse_proxy {
+          to grafana-01:3000 grafana-01:3000
+          lb_policy least_conn
+
+          # Forward standard headersa
+          header_up X-Forwarded-For {http.request.remote}
+          header_up X-Forwarded-Proto {http.request.scheme}
+          header_up Host {http.request.host}
+        }
       }
 
-volumes:
-  grafana-vol:
-    name: grafana-vol
+x-grafana: &grafana
+  image: grafana/grafana-enterprise:main
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 500Mib
+        cpus: 0.5
+  networks:
+    - dockernet
+  environment:
+    - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
+    - GF_FEATURE_TOGGLES_ENABLE=${GF_FEATURE_TOGGLES_ENABLE}
+    - GF_INSTALL_PLUGINS=${GF_INSTALL_PLUGINS}
+    - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
+    - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE} #Viewer, Editor, Admin
+    - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+    - GF_SECURITY_ADMIN_EMAIL=${GF_SECURITY_ADMIN_EMAIL}
+    - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    - GF_SECURITY_LOGIN_REMEMBER_DAYS=${GF_SECURITY_LOGIN_REMEMBER_DAYS}
+    - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
+    - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME:-light}
+    # DB
+    - GF_DATABASE_TYPE=${GF_DATABASE_TYPE}
+    - GF_DATABASE_HOST=${GF_DATABASE_HOST}
+    - GF_DATABASE_NAME=${GF_DATABASE_NAME}
+    - GF_DATABASE_USER=${GF_DATABASE_USER}
+    - GF_DATABASE_PASSWORD=${GF_DATABASE_PASSWORD}
+    - GF_SESSION_PROVIDER=${GF_SESSION_PROVIDER}
+    # LABELS
+    - GF_WHITE_LABELING_FOOTER_LINKS=support guides extracustom
+    - GF_WHITE_LABELING_FOOTER_LINKS_SUPPORT_TEXT=Support
+    - GF_WHITE_LABELING_FOOTER_LINKS_SUPPORT_URL=http://your.support.site
+    - GF_WHITE_LABELING_FOOTER_LINKS_GUIDES_TEXT=Guides
+    - GF_WHITE_LABELING_FOOTER_LINKS_GUIDES_URL=http://your.guides.site
+    - GF_WHITE_LABELING_FOOTER_LINKS_EXTRACUSTOM_TEXT=Custom Text
+    - GF_WHITE_LABELING_FOOTER_LINKS_EXTRACUSTOM_URL=http://your.custom.site
+    # - SMTP
+    - GF_SMTP_ENABLED=${GF_SMTP_ENABLED}
+    - GF_SMTP_HOST=${GF_SMTP_HOST}
+    - GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}
+    - GF_SMTP_USER=${GF_SMTP_USER}
+    - GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS}
+    - GF_SMTP_FROM_NAME=${GF_SMTP_FROM_NAME}
+    - GF_SMTP_SKIP_VERIFY=${GF_SMTP_SKIP_VERIFY}
+  healthcheck:
+    test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
+    interval: 10s
+    timeout: 10s
+    retries: 10
+    start_period: 10s
+  labels:
+    - alloy.logs.enable=true
+    - alloy.metrics.enable=true
+    - alloy.traces.enable=true
+
 
 services:
-  grafana:
-    image: nginx:alpine
-    expose:
-      - 3000
-    ports:
-      - 33000:3000
+  grafana-db:
+    image: postgres:17-alpine
     networks:
       - dockernet
-    configs:
-      - source: grafana.conf
-        target: /etc/nginx/nginx.conf
-        mode: 0
-        uid: '0'
-        gid: '0'
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - grafana-db-vol:/var/lib/postgres:data
+  grafana-01:
+    <<: *grafana
+    depends_on:
+      grafana-db:
+        condition: service_started
+    volumes:
+      - grafana-01-vol:/var/lib/grafana:rw
+  grafana-02:
+    <<: *grafana
+    depends_on:
+      grafana-db:
+        condition: service_started
+      grafana-01:
+        condition: service_healthy
+    volumes:
+      - grafana-02-vol:/var/lib/grafana:rw
+
+  grafana:
     depends_on:
       - grafana-01
       - grafana-02
-      - grafana-03
+    image: caddy:2-alpine
+    networks:
+      - dockernet
+    configs:
+      - source: Caddylfile
+        target: /etc/caddy/Caddyfile
+        uid: '0'
+        gid: '0'
+        mode: 0700
     labels:
-      - alloy.logs.enable=true
-      - alloy.metrics.enable=true
-      - alloy.traces.enable=true
-
       - traefik.enable=true
-      - traefik.http.routers.grafana-rtr.entrypoints=http,https
-      - traefik.http.routers.grafana-rtr.rule=Host(`grafana.<domain.com>`)
-      - traefik.http.routers.grafana-rtr.tls=true
-      - traefik.http.routers.grafana-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.grafana-svc.loadbalancer.server.port=3000
-  grafana-01:
-    image: grafana/grafana-enterprise:main
-    networks:
-      - dockernet
-    environment:
-      - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
-      - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
-      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-false}
-      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-http://grafana:3000}
-      - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME:-light}
-    volumes:
-      - grafana-vol:/var/lib/grafana:rw
-    labels:
-      - alloy.logs.enable=true
-      - alloy.metrics.enable=true
-      - alloy.traces.enable=true
-
-  grafana-02:
-    image: grafana/grafana-enterprise:main
-    networks:
-      - dockernet
-    environment:
-      - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
-      - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
-      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-false}
-      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-http://grafana:3000}
-      - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME:-light}
-    volumes:
-      - grafana-vol:/var/lib/grafana:rw
-    labels:
-      - alloy.logs.enable=true
-      - alloy.traces.enable=true
-      - alloy.metrics.enable=true
-
-  grafana-03:
-    image: grafana/grafana-enterprise:main
-    networks:
-      - dockernet
-    environment:
-      - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
-      - GF_INSTALL_PLUGINS=grafana-clock-panel, grafana-simple-json-datasource
-      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-false}
-      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-http://grafana:3000}
-      - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME:-light}
-    volumes:
-      - grafana-vol:/var/lib/grafana:rw
-    labels:
-      - alloy.logs.enable=true
-      - alloy.metrics.enable=true
-      - alloy.traces.enable=true
+      - traefik.http.routers.grafana-rtr.entrypoints=http,https
+      - traefik.http.routers.grafana-rtr.rule=Host(`grafana.<domain.com`)
+      - traefik.http.routers.grafana-rtr.tls=true
+      - traefik.http.routers.grafana-rtr.tls.certresolver=<resolver>
+      - traefik.http.routers.grafana-rtr.service=grafana-svc
