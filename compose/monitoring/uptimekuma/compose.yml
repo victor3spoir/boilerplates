@@ -3,16 +3,18 @@ networks:
     external: true
 
 volumes:
-  uptime_kuma_storage:
-    name: uptime_kuma_storage
+  uptimekuma-vol:
+    name: uptimekuma-vol
+    driver: local
 
 services:
-  updtime-kuma:
+  updtimekuma:
     image: louislam/uptime-kuma:1
     restart: unless-stopped
-    cpus: 0.5
-    mem_limit: "128Mib"
+    
+    # cpus: 0.5
+    # mem_limit: "128Mib"
     ports:
       - 3001:3001
     volumes:
-      - uptime_kuma_storage:/app/data
+      - uptimekuma-vol:/app/data

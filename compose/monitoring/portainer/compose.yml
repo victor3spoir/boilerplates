@@ -3,20 +3,23 @@ networks:
     external: true
 
 volumes:
-  portainer-data:
-    name: portainer-data
+  portainer-vol:
+    name: portainer-vol
     driver: local
-    driver_opts:
-      type: nfs4
-      o: "addr=127.0.0.1,rw"
-      device: ":/mnt/storage/portainer"
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/portainer"
 
 services:
   portainer:
     image: portainer/portainer-ce:sts
     restart: unless-stopped
-    mem_limit: 128Mib
-    cpus: 0.1
+    deploy:
+      resources:
+        limits:
+          memory: 200Mib
+          cpus: 0.2
     networks:
       - dockernet
     ports:
@@ -24,11 +27,12 @@ services:
       - 9000:9000 # ui
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - portainer-data:/data:rw
+      - portainer-vol:/data:rw
     labels:
       - traefik.enable=true
+      - traefik.http.services.portainer-svc.loadbalancer.server.port=9000
       - traefik.http.routers.portainer-rtr.entrypoints=http,https
       - traefik.http.routers.portainer-rtr.tls=true
       - traefik.http.routers.portainer-rtr.tls.certresolver=letsencrypt
       - traefik.http.routers.portainer-rtr.rule=Host(`portainer.<domain.com>`)
-      - traefik.http.services.portainer-svc.loadbalancer.server.port=9000
+      - traefik.http.routers.portainer-rtr.service=portainer-svc
