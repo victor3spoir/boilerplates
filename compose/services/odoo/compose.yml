@@ -1,67 +1,79 @@
+name: odoo
+
+# info:
+# default: admin : admin
+
 networks:
   dockernet:
     external: true
 
 volumes:
-  odoo_web_data:
-    name: odoo_web_data
-  odoo_db_data:
-    name: odoo_db_data
+  odoo-web-vol:
+    name: odoo-web-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   o: 'addr=127.0.0.1,rw'
+    #   device: ':/mnt/storage/odoo/web'
+  odoo-db-vol:
+    name: odoo-db-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   o: 'addr=127.0.0.1,rw'
+    #   device: ':/mnt/storage/odoo/db'
 
 secrets:
-  db_user:
-    file: ./db_user
   db_password:
     file: ./db_password
 
 services:
-  odoo_web:
-    image: odoo:18
+  odoo-db:
+    image: postgres:17-alpine
     restart: unless-stopped
-    privileged: true
-    depends_on:
-      - odoo_db
+    deploy:
+      resources:
+        limits:
+          memory: 200Mib
+          cpus: 0.2
     networks:
       - dockernet
-    ports:
-      - 28069:8069
     environment:
-      - HOST=odoo_db
-      - USER_FILE=/run/secrets/db_user
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      - POSTGRES_DB=${POSTGRES_DB}
+    secrets:
+      - db_password
+    volumes:
+      - odoo-db-vol:/var/lib/postgresql/data:rw
+
+  odoo-web:
+    image: odoo:18
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 400Mib
+          cpus: 0.2
+    depends_on:
+      odoo-db:
+        condition: service_started
+    networks:
+      - dockernet
+    environment:
+      - HOST=odoo-db
+      - USER=${POSTGRES_USER}
       - PASSWORD_FILE=/run/secrets/db_password
     secrets:
-      - db_user
       - db_password
     volumes:
       - ./odoo.conf:/etc/odoo/odoo.conf:ro
-      # - odoo_web_data:/var/lib/odoo:rw
-      # - odoo_web_data:/mnt/extra-addons:rw
+      - odoo-web-vol:/var/lib/odoo:rw
+      # - odoo-web-vol:/mnt/extra-addons:rw
     labels:
       - traefik.enable=true
-      - traefik.http.routers.odoo-rtr.entrypoints=http,https
-      - traefik.http.routers.odoo-rtr.rule=Host(`odoo.domain.com`)
-      - traefik.http.routers.odoo-rtr.tls=true
-      - traefik.http.routers.odoo-rtr.tls.certresolver=letsencrypt
-      - traefik.http.routers.odoo-admin-rtr.entrypoints=http,https
-      - traefik.http.routers.odoo-admin-rtr.rule=PathPrefix(`/web`)
       - traefik.http.services.odoo-svc.loadbalancer.server.port=8069
-
-  odoo_db:
-    image: postgres:17-alpine
-    restart: unless-stopped
-    privileged: true
-    networks:
-      - dockernet
-    environment:
-      - POSTGRES_USER_FILE=/run/secrets/db_user
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
-      - POSTGRES_DB=postgres
-    secrets:
-      - db_user
-      - db_password
-    # volumes:
-    #   - odoo_db_data:/var/lib/postgresql/data:rw
-    labels:
-      - traefik.enable=true
-# default: admin : admin
-
+      - traefik.http.routers.odoo-rtr.entrypoints=http,https
+      - traefik.http.routers.odoo-rtr.rule=Host(`odoo.<domain.com>`)
+      - traefik.http.routers.odoo-rtr.tls=true
+      - traefik.http.routers.odoo-rtr.tls.certresolver=<resolver>

@@ -5,11 +5,27 @@ networks:
 services:
   excalidraw:
     image: excalidraw/excalidraw:latest
-    ports:
-      - 5000:80
+    deploy:
+      resources:
+        limits:
+          memory: 200Mib
+          cpus: 0.2
+    # ports:
+    #   - 80:80
     networks:
       - dockernet
     labels:
+      - alloy.logs.enable=true
+      - alloy.metrics.enable=true
+      - alloy.traces.enable=true
       - traefik.enable=true
+      # - services
+      - traefik.http.services.appname-svc.loadbalancer.server.port=80
+      # - routers
+      - traefik.http.routers.excalidraw-rtr.rule=Host(`<excalidraw.domain.com>`)
+      - traefik.http.routers.excalidraw-rtr.tls=true
+      - traefik.http.routers.excalidraw-rtr.tls.certresolver=<certresolver>
+      - traefik.http.routers.excalidraw-rtr.service=excalidraw-svc
+
 
       

@@ -1,10 +1,11 @@
 networks:
   dockernet:
     external: true
-    
+
 services:
-  mailhog:
-    image: mailhog/mailhog:v1.0.1
+  inbucket:
+    image: inbucket/inbucket:main
+    restart: unless-stopped
     deploy:
       resources:
         limits:
@@ -13,5 +14,6 @@ services:
     networks:
       - dockernet
     ports:
-      - 1025:1025 # smtp
-      - 8025:8025 # ui
+      # - 1100:1100 # pop3
+      # - 2500:2500 # smtp
+      - 49000:9000 # http webui
