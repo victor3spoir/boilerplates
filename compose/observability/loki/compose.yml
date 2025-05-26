@@ -1,0 +1,71 @@
+networks:
+  dockernet:
+    external: true
+
+configs:
+  mimir.yaml:
+    content: |
+      auth_enabled: false
+
+      server:
+        http_listen_port: 3100
+
+      common:
+        ring:
+          instance_addr: 127.0.0.1
+          kvstore:
+            store: inmemory
+        replication_factor: 1
+        path_prefix: /loki
+
+      schema_config:
+        configs:
+        - from: 2020-05-15
+          store: tsdb
+          object_store: s3
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+
+      storage_config:
+        tsdb_shipper:
+          active_index_directory: /loki/index
+          cache_location: /loki/index_cache
+          cache_ttl: 24h
+        aws:
+          s3: http://admin:password@minio:9000/loki
+          s3forcepathstyle: true
+
+
+services:
+  loki:
+    image: grafana/loki:main
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500Mib
+          cpus: 0.5
+    ports:
+      - 33100:3100
+    command: 
+      - -config.file=/etc/loki/loki.yaml
+      - -config.expand-env=true
+    networks:
+      - dockernet
+    configs:
+      - source: mimir.yaml
+        target: /etc/loki/loki.yaml
+        uid: "10001"
+        gid: "10001"
+        mode: 0644
+    labels:
+      - alloy.logs.enable=true
+      - alloy.metrics.enable=true
+      - traefik.enable=true
+      - traefik.http.services.loki-srv.loadbalancer.server.port=3100
+      - traefik.http.routers.loki-rtr.rule=Host(`<loki.domain.com>`)
+      - traefik.http.routers.loki-rtr.tls=true
+      - traefik.http.routers.loki-rtr.tls.certresolver=<certresolver>
+      - traefik.http.routers.loki-rtr.service=loki-svc

@@ -4,7 +4,7 @@ networks:
 
 services:
   jaeger:
-    image: jaegertracing/all-in-one:1.68.0
+    image: jaegertracing/all-in-one:1.69.0
     # command:
     #   - --collector.otlp.enabled
     deploy:

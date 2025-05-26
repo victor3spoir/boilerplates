@@ -1,0 +1,27 @@
+// local.file_match "applogs" {
+//     path_targets = [{"__path__" = "/var/**/*.log"}]
+//     sync_period = "5s"
+// }
+
+// loki.source.file "local_files" {
+//     targets    = local.file_match.applogs.targets
+//     forward_to = [loki.process.add_new_label.receiver]
+// }
+
+// loki.process "add_new_label" {
+//     stage.logfmt {
+//         mapping = {
+//             "extracted_level" = "level",
+//         }
+//     }
+
+//     stage.labels {
+//         values = {
+//             "level" = "extracted_level",
+//         }
+//     }
+
+//     forward_to = [loki.write.loki_srv.receiver]
+// }
+
+

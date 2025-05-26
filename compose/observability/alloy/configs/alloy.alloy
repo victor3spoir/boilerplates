@@ -1,0 +1,42 @@
+livedebugging {
+  enabled = true
+}
+
+// logging {
+  // level  = "public-preview"
+  // format = "logfmt"
+  // write_to = [loki.write.loki_srv.receiver]
+// }
+
+// tracing {
+//   sampling_fraction = 0.1
+//   write_to = [otelcol.exporter.otlp.tempo.input]
+// }
+
+
+// prometheus.exporter.self "alloy" {
+// }
+
+// prometheus.scrape "alloy" {
+//   targets    = prometheus.exporter.self.alloy.targets
+//   forward_to = [prometheus.relabel.alloy.receiver]
+// }
+
+// prometheus.relabel "alloy" {
+//   forward_to = [prometheus.remote_write.mimir.receiver]
+//   rule {
+//     action        = "replace"
+//     source_labels = ["__address__", "instance"]
+//     separator     = "/"
+//     target_label  = "host"
+//   }
+//   rule{
+//     action = "replace"
+//     target_label="os"
+//     replacement = constants.os
+//   }
+// }
+
+
+
+

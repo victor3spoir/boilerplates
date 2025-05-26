@@ -56,6 +56,3 @@ services:
       - traefik.http.routers.appname-rtr.tls=true
       - traefik.http.routers.appname-rtr.tls.certresolver=<certresolver>
       - traefik.http.routers.appname-rtr.service=appname-svc
-      - traefik.http.routers.appname-rtr.observability.accesslogs=true
-      - traefik.http.routers.appname-rtr.observability.metrics=true
-      - traefik.http.routers.appname-rtr.observability.tracing=true

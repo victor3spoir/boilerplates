@@ -1,0 +1,22 @@
+otelcol.processor.batch "oltp" {
+  output {
+      metrics = [otelcol.exporter.prometheus.otlp_metrics.input]
+      logs    = [otelcol.exporter.loki.otlp_logs.input]
+      traces  = [otelcol.exporter.otlp.tempo.input]
+    }
+}
+
+
+otelcol.exporter.loki "otlp_logs" {
+  forward_to = [
+    loki.write.loki_srv.receiver,
+  ]
+}
+
+
+otelcol.exporter.prometheus "otlp_metrics" {
+  forward_to = [
+    prometheus.remote_write.mimir.receiver,
+  ]
+}
+
