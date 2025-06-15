@@ -1,0 +1,50 @@
+name: pihole
+
+# Configuration on os
+# Disable system self resolving system
+# sudo systemctl stop systemd-resolve
+# sudo systemctl disable systemd-resolve
+
+# /etc/resolv.conf
+# nameserver 127.0.0.1
+# options edns0 trust-ad
+
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  pihole-vol:
+    name: pihole-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   o: 'addr=0.0.0.0'
+    #   device: ':/mnt/data/pihole'
+
+services:
+  pihole-web:
+    image: pihole/pihole:nightly
+    restart: unless-stopped
+    networks:
+      - dockernet
+    ports:
+      - 53:53/tcp
+      - 53:53/udp
+      - 67:67/udp
+      # - 127.0.0.1:30080:80
+    environment:
+      - TZ=UTC
+      - WEBPASSWORD=${WEBPASSWORD:-password}
+      - DNS1=1.1.1.1
+      - DNS2=8.8.8.8
+    # volumes:
+    # - pihole-vol:/etc/pihole:rw
+    # - ./etc-pihole:/etc/pihole:rw
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.pihole-svc.loadbalancer.server.port=80
+      - traefik.http.routers.pihole-rtr.entrypoints=http,https
+      - traefik.http.routers.pihole-rtr.rule=Host(`pihole.<domain.com>`)
+      - traefik.http.routers.pihole-rtr.tls=true
+      - traefik.http.routers.pihole-rtr.tls.certresolver=letsencrypt

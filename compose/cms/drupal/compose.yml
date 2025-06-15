@@ -1,0 +1,64 @@
+name: drupal
+
+networks:
+  dockernet:
+    external: true
+  drupalnet: {}
+
+volumes:
+  drupal-db-vol:
+    name: drupal-db-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
+  drupal-web-vol:
+    name: drupal-web-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
+services:
+  drupal-postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 528Mib
+          cpus: .5
+    networks:
+      - drupalnet
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
+
+  drupal-web:
+    image: drupal:10-apache
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 528Mib
+          cpus: .5
+    networks:
+      - dockernet
+      - drupalnet
+    ports:
+      - 127.0.0.1:8085:80
+    volumes:
+      - /var/www/html/modules
+      - /var/www/html/profiles
+      - /var/www/html/themes
+      - /var/www/html/sites
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.drupal-svc.loadbalancer.server.port=80
+      - traefik.http.routers.drupal-rtr.entrypoints=http,https
+      - traefik.http.routers.drupal-rtr.rule=Host(`drupal.<domain.com>`)
+      - traefik.http.routers.drupal-rtr.tls=true
+      - traefik.http.routers.drupal-rtr.tls.certresolver=<letsencrypt>
+      - traefik.http.routers.drupal-rtr.service=drupal-svc

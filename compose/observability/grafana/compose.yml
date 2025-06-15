@@ -1,0 +1,147 @@
+name: grafana
+
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  grafana-01-vol:
+    name: grafana-01-vol
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/grafana/web01"
+  grafana-02-vol:
+    name: grafana-02-vol
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/grafana/web02"
+  grafana-db-vol:
+    name: grafana-db-vol
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/grafana/db"
+
+configs:
+  Caddylfile:
+    content: |
+      {
+        admin :2019
+        servers {
+          metrics {
+            per_host
+          }
+          trace
+        }
+      }
+      :80 {
+        reverse_proxy {
+          to grafana-01:3000 grafana-01:3000
+          lb_policy least_conn
+
+          # Forward standard headersa
+          header_up X-Forwarded-For {http.request.remote}
+          header_up X-Forwarded-Proto {http.request.scheme}
+          header_up Host {http.request.host}
+        }
+      }
+
+x-grafana: &grafana
+  image: grafana/grafana-enterprise:main
+  restart: unless-stopped
+  deploy:
+    resources:
+      limits:
+        memory: 500Mib
+        cpus: 0.5
+  networks:
+    - dockernet
+  environment:
+    - GF_LOG_LEVEL=debug
+    - GF_FEATURE_TOGGLES_ENABLE
+    - GF_INSTALL_PLUGINS
+    - GF_AUTH_ANONYMOUS_ENABLED
+    - GF_AUTH_ANONYMOUS_ORG_ROLE
+    - GF_SECURITY_ADMIN_USER
+    - GF_SECURITY_ADMIN_EMAIL
+    - GF_SECURITY_ADMIN_PASSWORD
+    - GF_SECURITY_LOGIN_REMEMBER_DAYS
+    - GF_SERVER_ROOT_URL
+    - GF_USERS_DEFAULT_THEME=light
+    # DB
+    - GF_DATABASE_TYPE
+    - GF_DATABASE_HOST
+    - GF_DATABASE_NAME
+    - GF_DATABASE_USER
+    - GF_DATABASE_PASSWORD
+    - GF_SESSION_PROVIDER
+    # - SMTP
+    - GF_SMTP_ENABLED
+    - GF_SMTP_HOST
+    - GF_SMTP_PASSWORD
+    - GF_SMTP_USER
+    - GF_SMTP_FROM_ADDRESS
+    - GF_SMTP_FROM_NAME
+    - GF_SMTP_SKIP_VERIFY
+  healthcheck:
+    test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
+    interval: 10s
+    timeout: 10s
+    retries: 10
+    start_period: 10s
+  labels:
+    - alloy.logs.enable=true
+    - alloy.metrics.enable=true
+    - alloy.traces.enable=true
+
+services:
+  grafana-db:
+    image: postgres:17-alpine
+    networks:
+      - dockernet
+    environment:
+      - POSTGRES_PASSWORD
+      - POSTGRES_USER
+      - POSTGRES_DB
+    volumes:
+      - grafana-db-vol:/var/lib/postgres:data
+  grafana-01:
+    <<: *grafana
+    depends_on:
+      grafana-db:
+        condition: service_started
+    volumes:
+      - grafana-01-vol:/var/lib/grafana:rw
+  grafana-02:
+    <<: *grafana
+    depends_on:
+      grafana-db:
+        condition: service_started
+      grafana-01:
+        condition: service_healthy
+    volumes:
+      - grafana-02-vol:/var/lib/grafana:rw
+
+  grafana:
+    depends_on:
+      - grafana-01
+      - grafana-02
+    image: caddy:2-alpine
+    networks:
+      - dockernet
+    configs:
+      - source: Caddylfile
+        target: /etc/caddy/Caddyfile
+        uid: '0'
+        gid: '0'
+        mode: 0700
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.grafana-svc.loadbalancer.server.port=3000
+      - traefik.http.routers.grafana-rtr.entrypoints=http,https
+      - traefik.http.routers.grafana-rtr.rule=Host(`grafana.<domain.com`)
+      - traefik.http.routers.grafana-rtr.tls=true
+      - traefik.http.routers.grafana-rtr.tls.certresolver=<resolver>
+      - traefik.http.routers.grafana-rtr.service=grafana-svc

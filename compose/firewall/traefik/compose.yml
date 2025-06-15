@@ -1,0 +1,112 @@
+name: traefik
+
+networks:
+  dockernet:
+    external: true
+
+services:
+  traefik-proxy:
+    image: traefik:v3.3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200Mib
+          cpus: 0.5
+    command:
+      # Globals
+      - --global.checknewversion=true
+      - --global.sendanonymoususage=false
+      # - Logs
+      - --log.level=TRACE # TRACE - INFO - DEBUG - WARN - ERROR - FATAL - PANIC
+      - --log.format=json #common|json
+      # - Api
+      - --api.insecure=true
+      # (entrypoints)
+      - --entryPoints.http.address=:80
+      - --entryPoints.https.address=:443
+      - --entryPoints.http.http.redirections.entryPoint.to=https
+      - --entryPoints.http.http.redirections.entryPoint.scheme=https
+
+      # (Providers)
+      - --providers.docker.endpoint=unix://var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
+      # - --providers.file.filename=/var/traefik/dynamic.yaml
+      # - --providers.file.watch=true
+
+      # (http challenge)
+      # - --certificatesResolvers.letsencrypt.acme.email=${CF_DNS_EMAIL}
+      # - --certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      # - --certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json
+      # - --certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=http
+
+      # (dns challenge)
+      # - --certificatesResolvers.cloudflare.acme.email=${CF_DNS_EMAIL}
+      # - --certificatesResolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      # - --certificatesResolvers.cloudflare.acme.storage=/var/traefik/certs/cloudflare-acme.json
+      # - --certificatesResolvers.cloudflare.acme.keyType=EC256
+      # - --certificatesResolvers.cloudflare.acme.dnsChallenge.provider=cloudflare
+      # - --certificatesResolvers.cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,8.8.8.8:53
+
+      # (Observability)
+      # - --accessLog=true
+      # - --metrics.otlp=true
+      # - --tracing=true
+      # - --experimental.otlpLogs=true
+
+      # - --accesslog.filepath=/var/lib/traefik/traefik.log
+      # - --accesslog.otlp.http=true
+      # - --accesslog.otlp.http.endpoint=http://localhost:4318/v1/logs
+      # - --accesslog.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
+      # - --accesslog.format=json
+
+      # - --metrics.otlp.addEntryPointsLabels=true
+      # - --metrics.otlp.addRoutersLabels=true
+      # - --metrics.otlp.addServicesLabels=true
+      # - --metrics.otlp.pushInterval=10s
+      # - --metrics.otlp.serviceName=traefik-svc
+      # - --metrics.otlp.http.endpoint=http://alloy:4318/v1/metrics
+      # - --metrics.otlp.http.headers.x-api-key=sdf78s1sdsAs7
+
+      # - --tracing.addinternals
+      # - --tracing.serviceName=traefik-svc
+      # - --tracing.otlp.http.endpoint=http://alloy:4318/v1/traces
+      # - --tracing.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
+
+      # - --log.otlp.http.endpoint=http://alloy:4318/v1/traces
+      # - --log.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
+
+    networks:
+      - dockernet
+    ports:
+      - 80:80
+      - 443:443
+      # - 127.0.0.1:8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - ./dynamic.yaml:/var/traefik/dynamic.yaml:ro
+      # - ./certs:/var/traefik/certs:rw
+    environment:
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    labels:
+      - traefik.enable=true
+      # - -- (services)
+      - traefik.http.services.traefik-svc.loadbalancer.server.port=8080
+      # - -- (routers)
+      - traefik.http.routers.traefik-rtr.entrypoints=http,https
+      - traefik.http.routers.traefik-rtr.rule=Host(`traefik.<domain.com>`)
+      - traefik.http.routers.traefik-rtr.tls=true
+      - traefik.http.routers.traefik-rtr.tls.certresolver=<letsencrypt>
+      - traefik.http.routers.traefik-rtr.tls.domains[0].main=domain-1.com
+      - traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.domain-1.com
+      - traefik.http.routers.traefik-rtr.tls.domains[1].main=domain-2.com
+      - traefik.http.routers.traefik-rtr.tls.domains[1].sans=*.domain-2.com
+      - traefik.http.routers.traefik-rtr.service=traefik-svc
+      # - -- (defines middlewares)
+      # - traefik.http.middlewares.demo-headers.headers.frameDeny=true
+      # - traefik.http.middlewares.demo-headers.headers.browserxssfilter=true
+      - traefik.http.middlewares.authentik.forwardAuth.address=http://outpost.company:9000/outpost.goauthentik.io/auth/traefik
+      - traefik.http.middlewares.authentik.forwardAuth.trustForwardHeader=true
+      - traefik.http.middlewares.authentik.forwardAuth.authResponseHeaders=X-authentik-username,X-authentik-groups,X-authentik-entitlements,X-authentik-email,X-authentik-name,X-authentik-uid,X-authentik-jwt,X-authentik-meta-jwks,X-authentik-meta-outpost,X-authentik-meta-provider,X-authentik-meta-app,X-authentik-meta-version
+      # - -- (use middlewares)
+      - traefik.http.routers.traefik-rtr.middlewares=traefik-auth@file

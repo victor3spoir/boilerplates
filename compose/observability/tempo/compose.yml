@@ -1,0 +1,98 @@
+name: tempo
+
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  tempo-vol:
+    name: tempo-vol
+    driver: local
+
+configs:
+  tempo.yaml:
+    content: |
+      stream_over_http_enabled: true
+      server:
+        http_listen_port: 3200
+        log_level: info
+
+      query_frontend:
+        search:
+          duration_slo: 5s
+          throughput_bytes_slo: 1.073741824e+09
+          metadata_slo:
+            duration_slo: 5s
+            throughput_bytes_slo: 1.073741824e+09
+        trace_by_id:
+          duration_slo: 5s
+
+      distributor:
+        receivers:
+          otlp:
+            protocols:
+              http:
+                endpoint: "0.0.0.0:4318"
+              grpc:
+                endpoint: "0.0.0.0:4317"
+
+      ingester:
+        max_block_duration: 5m
+
+      compactor:
+        compaction:
+          block_retention: 1h
+
+      metrics_generator:
+        registry:
+          external_labels:
+            source: tempo
+            cluster: docker
+        storage:
+          path: /var/tempo/generator/wal
+          remote_write:
+            - url: http://prometheus:9090/api/v1/write
+              send_exemplars: true
+        traces_storage:
+          path: /var/tempo/generator/traces
+
+      storage:
+        trace:
+          backend: local # backend configuration to use
+          wal:
+            path: /var/tempo/wal # where to store the wal locally
+          local:
+            path: /var/tempo/blocks
+
+      overrides:
+        defaults:
+          metrics_generator:
+            processors: [service-graphs, span-metrics, local-blocks]
+            generate_native_histograms: both
+
+
+services:
+  tempo:
+    image: grafana/tempo:main-aa4cc36
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 500Mib
+          cpus: .5
+    command:
+      - -config.file=/etc/tempo.yaml
+    networks:
+      - dockernet
+    # volumes:
+      # - ./tempo-vol:/var/tempo
+    configs:
+      - source: tempo.yaml
+        target: /etc/tempo.yaml
+        uid: "0"
+        gid: "0"
+        mode: 0660
+    # ports:
+      # - 3200:3200 # tempo
+      # - 4318:4318 # otlp grpc
+      # - 4317:4317 # otlp grpc

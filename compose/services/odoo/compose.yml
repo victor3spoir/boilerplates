@@ -1,0 +1,71 @@
+name: odoo
+
+networks:
+  dockernet:
+    external: true
+  odoonet: {}
+
+volumes:
+  odoo-web-vol:
+    name: odoo-web-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   o: 'addr=127.0.0.1,rw'
+    #   device: ':/mnt/storage/odoo/web'
+  odoo-db-vol:
+    name: odoo-db-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   o: 'addr=127.0.0.1,rw'
+    #   device: ':/mnt/storage/odoo/db'
+
+services:
+  odoo-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 300Mib
+          cpus: 0.4
+    networks:
+      - odoonet
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    volumes:
+      - odoo-db-vol:/var/lib/postgresql/data:rw
+
+  odoo-web:
+    depends_on:
+      - odoo-db
+    image: odoo:18
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 400Mib
+          cpus: 0.8
+    networks:
+      - dockernet
+      - odoonet
+    environment:
+      - HOST=odoo-db
+      - USER
+      - PASSWORD
+    ports:
+      - 127.0.0.1:8069:8069
+    volumes:
+      - ./odoo.conf:/etc/odoo/odoo.conf:ro
+      - odoo-web-vol:/var/lib/odoo:rw
+      # - odoo-web-vol:/mnt/extra-addons:rw
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.odoo-svc.loadbalancer.server.port=8069
+      - traefik.http.routers.odoo-rtr.entrypoints=http,https
+      - traefik.http.routers.odoo-rtr.rule=Host(`odoo.<domain.com>`)
+      - traefik.http.routers.odoo-rtr.tls=true
+      - traefik.http.routers.odoo-rtr.tls.certresolver=<resolver>

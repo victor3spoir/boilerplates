@@ -1,0 +1,43 @@
+name: ollama
+
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  ollama_data:
+    name: ollama_data
+
+services:
+  ollama:
+    image: ollama/ollama:rocm
+    restart: unless-stopped
+    hostname: ollama
+    deploy:
+      resources:
+        limits:
+          memory: 2000Mib
+          cpus: 1.2
+        # reservations:
+        #   devices:
+        #     - driver: nvidia
+        #       count: 1
+        #       capabilities: [gpu]
+    networks:
+      - dockernet
+    ports:
+      - 127.0.0.1:11434:11434
+    profiles:
+      - 'cpu'
+      - 'gpu'
+    volumes:
+      - ${HOME}/.ollama:/root/.ollama:rw
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.ollama-svc.loadbalancer.server.port=11434
+      - traefik.http.routers.ollama-rtr.entrypoints=http,https
+      - traefik.http.routers.ollama-rtr.tls=true
+      - traefik.http.routers.ollama-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.ollama-rtr.rule=Host(`ollama.<domain.com>`)
+      - traefik.http.routers.ollama-rtr.service=ollama-svc

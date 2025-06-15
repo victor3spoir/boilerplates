@@ -1,0 +1,129 @@
+networks:
+  dockernet:
+    external: true
+
+configs:
+  alloy.alloy:
+    content: |
+      livedebugging {
+        enabled = true
+      }
+
+      // OUTBOUNDS
+      loki.write "loki_srv" {
+          endpoint {
+              url = "http://loki:3100/loki/api/v1/push"
+          }
+      }
+      prometheus.remote_write "mimir" {
+        endpoint {
+          url = "http://mimir/api/v1/push"
+          headers = {
+            "X-Scope-OrgId" = "demo",
+          }
+          // basic_auth {
+          //   username = sys.env("MIMIR_USER")
+          //   password = sys.env("MIMIR_PASSWORD")
+          // }
+        }
+      }
+      prometheus.remote_write "prometheus" {
+        endpoint {
+          url = "http://prometheus:9090/api/v1/write"
+          // basic_auth {
+          //   username = sys.env("PROMETHEUS_USER")
+          //   password = sys.env("PROMETHEUS_PASSWORD")
+          // }
+        }
+      }
+      pyroscope.write "backend" {
+        endpoint {
+            url = "http://pyroscope:4040"
+        }
+      }
+      otelcol.exporter.otlp "tempo" {
+        client {
+          // endpoint = sys.env("TEMPO_OTLP_ENDPOINT")
+          endpoint = "tempo:4318"
+          tls {
+            insecure = true
+          }
+      }
+      }
+      // INBOUNDS
+
+volumes:
+  alloy-vol:
+    name: alloy-vol
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/alloy"
+
+services:
+  alloy:
+    image: grafana/alloy:v1.8.2
+    hostname: alloy-srv
+    expose:
+      - 9090 #prometheus
+      - 4317 #otlp-gprc
+      - 4318 #otlp-http
+      - 3100 #loki
+      # --storage.path=/var/lib/alloy/data
+    command: |
+      run 
+      --server.http.listen-addr=0.0.0.0:12345
+      --stability.level=public-preview
+      --storage.path=/var/lib/alloy/data
+      /etc/alloy/alloy.alloy
+    ports:
+      - 127.0.0.1:12345:12345
+      # - 127.0.0.1:4318:4318
+      # - 127.0.0.1:4317:4317
+      # - 127.0.0.1:3100:3100
+    networks:
+      - dockernet
+    environment:
+      - HOSTNAME=alloy-srv
+    configs:
+      - source: alloy.alloy
+        target: /etc/alloy/alloy.alloy
+        uid: '0'
+        gid: '0'
+        mode: 0660
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - alloy.logs.enable=true
+      - alloy.metrics.enable=true
+
+      - traefik.enable=true
+      - traefik.http.services.alloy-ui-svc.loadbalancer.server.port=12345
+      - traefik.http.services.alloy-loki-svc.loadbalancer.server.port=3100
+      - traefik.http.services.alloy-prometheus-svc.loadbalancer.server.port=9090
+      - traefik.http.services.alloy-otlp-http-svc.loadbalancer.server.port=4318
+
+      - traefik.http.routers.alloy-ui-rtr.entrypoints=http,https
+      - traefik.http.routers.alloy-ui-rtr.rule=Host(`alloyui.<domain.com>`)
+      - traefik.http.routers.alloy-ui-rtr.tls=true
+      - traefik.http.routers.alloy-ui-rtr.tls.certresolver=<resolver>
+      - traefik.http.routers.alloy-ui-rtr.service=alloy-ui-svc
+      
+      - traefik.http.routers.alloy-loki-rtr.entrypoints=http,https
+      - traefik.http.routers.alloy-loki-rtr.rule=Host(`alloyloki.<domain.com>`)
+      - traefik.http.routers.alloy-loki-rtr.tls=true
+      - traefik.http.routers.alloy-loki-rtr.tls.certresolver=<resolver>
+      - traefik.http.routers.alloy-loki-rtr.service=alloy-loki-svc
+      
+      - traefik.http.routers.alloy-prometheus-rtr.entrypoints=http,https
+      - traefik.http.routers.alloy-prometheus-rtr.rule=Host(`alloyprom.<domain.com>`)
+      - traefik.http.routers.alloy-prometheus-rtr.tls=true
+      - traefik.http.routers.alloy-prometheus-rtr.tls.certresolver=<resolver>
+      - traefik.http.routers.alloy-prometheus-rtr.service=alloy-prometheus-svc
+      
+      - traefik.http.routers.alloy-otlp-http-rtr.entrypoints=http,https
+      - traefik.http.routers.alloy-otlp-http-rtr.rule=Host(`alloyprom.<domain.com>`)
+      - traefik.http.routers.alloy-otlp-http-rtr.tls=true
+      - traefik.http.routers.alloy-otlp-http-rtr.tls.certresolver=<resolver>
+      - traefik.http.routers.alloy-otlp-http-rtr.service=alloy-otlp-http-svc
+

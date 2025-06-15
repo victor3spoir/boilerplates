@@ -1,0 +1,37 @@
+service:
+  # Check user HTTPS client certificate against CA file specified in tls config
+  verify_https_client_certificate: false
+  enable_tls: true
+
+# tls:
+#   # Server certificate chain file
+#   cert: ./tls/cert.pem
+
+#   # Server private key file
+#   key: ./tls/key.pem
+
+cluster:
+  # Configuration of the inter-cluster communication
+  p2p:
+    # Use TLS for communication between peers
+    enable_tls: true
+
+storage:
+  # Where to store all the data
+  storage_path: ./storage
+
+  # Where to store snapshots
+  snapshots_path: ./snapshots
+
+  snapshots_config:
+    # "local" or "s3" - where to store snapshots
+    snapshots_storage: 
+      s3_config:
+        bucket: "qdrant"
+        region: "minio:9000"
+        access_key: "admin"
+        secret_key: "password"
+
+  # Where to store temporary files
+  # If null, temporary snapshots are stored in: storage/snapshots_temp/
+  temp_path: null

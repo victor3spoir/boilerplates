@@ -1,0 +1,12 @@
+http:
+  middlewares:
+    traefik-auth:
+      basicAuth:
+        users:
+          - admin:$2y$10$kEVFNRbhZ/xdIk80/Ga3aurT82zO86UhPPPvjz4jzAQNFy2hbPYqy # admin:password
+    ratelimiter:
+      rateLimit:
+        average: 10
+        period: 1m
+        burst: 50
+

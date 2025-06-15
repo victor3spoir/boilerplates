@@ -1,0 +1,30 @@
+name: vaultwarden
+
+networks:
+  dockernet:
+    external: true
+
+volumes:
+  vaultwarden-vol:
+    name: vaultwarden-vol
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    restart: unless-stopped
+    networks:
+      - dockernet
+    ports:
+      - 127.0.0.1:80:80
+    environment:
+      - DOMAIN
+    volumes:
+      - vaultwarden-vol:/data:rw
+    labels:
+      - traefik.enable=true
+      # - services
+      - traefik.http.services.vaultwarden-svc.loadbalancer.server.port=80
+      # - routers
+      - traefik.http.routers.vaultwarden-rtr.rule=Host(`<vaultwarden.domain.com>`)
+      - traefik.http.routers.vaultwarden-rtr.tls=true
+      - traefik.http.routers.vaultwarden-rtr.tls.certresolver=<certresolver>
+      - traefik.http.routers.vaultwarden-rtr.service=vaultwarden-svc

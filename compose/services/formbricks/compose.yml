@@ -1,0 +1,95 @@
+name: formbricks
+
+networks:
+  dockernet:
+    external: true
+  formbricksnet: {}
+
+volumes:
+  formbricks-db-vol:
+    name: formbricks-db-vol
+    driver: local
+  formbricks-web-vol:
+    name: formbricks-web-vol
+    driver: local
+
+services:
+  formbricks-db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200Mb
+          cpus: 0.2
+    networks:
+      - formbricksnet
+    volumes:
+      - formbricks-db-vol:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_DB
+      - POSTGRES_PASSWORD
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  formbricks-web:
+    depends_on:
+      formbricks-db:
+        condition: service_healthy
+    restart: unless-stopped
+    image: ghcr.io/formbricks/formbricks:v3.13.1
+    deploy:
+      resources:
+        limits:
+          memory: 1000Mb
+          cpus: 0.6
+    networks:
+      - dockernet
+      - formbricksnet
+    expose:
+      - 3000
+      - 9464
+    ports:
+      - 127.0.0.1:3000:3000 #ui
+      - 127.0.0.1:9464:9464 #prometheus
+    volumes:
+      - formbricks-web-vol:/home/nextjs/apps/web/uploads/
+    environment:
+      # APP
+      - WEBAPP_URL
+      - NEXTAUTH_URL
+      - DATABASE_URL
+      - NEXTAUTH_SECRET
+      - ENCRYPTION_KEY
+      - CRON_SECRET
+        # SMTP
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_USER
+      - SMTP_PASSWORD
+      - SMTP_AUTHENTICATED
+      - SMTP_SECURE_ENABLED=1
+      - SMTP_REJECT_UNAUTHORIZED_TLS=1
+        # AUTH
+      - EMAIL_VERIFICATION_DISABLED=1
+      - PASSWORD_RESET_DISABLED=1
+      - EMAIL_AUTH_DISABLED=1
+      - INVITE_DISABLED=1
+        # OTEL
+      - OTEL_ENABLED
+      - OTEL_ENDPOINT
+      - OTEL_SERVICE_NAME
+      - NEXT_OTEL_VERBOSE
+      - PROMETHEUS_ENABLED
+      - PROMETHEUS_EXPORTER_PORT
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.formbricks-rtr.entrypoints=http,https
+      - traefik.http.routers.formbricks-rtr.rule=Host(`formbricks.<domain.com>`)
+      - traefik.http.routers.formbricks-rtr.tls=true
+      - traefik.http.routers.formbricks-rtr.tls.certresolver=letsencrypt
+      - traefik.http.services.formbricks-svc.loadbalancer.server.port=3000

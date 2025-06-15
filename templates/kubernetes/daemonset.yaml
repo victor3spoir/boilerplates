@@ -1,0 +1,40 @@
+# Daemonset
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: <appname>
+  namespace: <namespace>
+  labels:
+    app: <appname>
+spec:
+  selector:
+    matchLabels:
+      app: <appname>
+  template:
+    metadata:
+      namespace: <namespace>
+      labels:
+        app: <appname>
+    spec:
+      volumes:
+        - name: <appname-v0>
+          persistentVolumeClaim:
+            claimName: appname-pvc
+        - name: <appname-v1>
+          hostPath:
+            path: /path/to/data
+        - name: <appname-v2-config-file>
+          configMap:
+            name: appname-configmap
+            key: appname-config-file
+        - name: <appname-v2-config-file>
+          secretKeyRef:
+            name: appname-secret
+            key: appname-secret-file
+      containers:
+        - name: <appname>
+          image: <image:tag>
+          ports:
+            - containerPort: <targetPort>
+
+

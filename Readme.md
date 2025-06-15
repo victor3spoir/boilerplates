@@ -1,40 +1,37 @@
-# Boilerplates
+<div align="center">
+ <img alt="hero-image" src="./imgs/hero.png">
+</div>
 
-## How backup docker volume
+<h1 align="center">🚀 Production-Ready Docker & Kubernetes Boilerplates</h1>
 
-### backup volume
+<p align="center">
+  <img src="https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/kubernetes-326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes">
+  <img src="https://img.shields.io/github/last-commit/victor3spoir/boilerplates?style=for-the-badge" alt="Last Commit">
+</p>
 
-```bash
-  docker run --rm --mount source=<volume_name>,target=<volume_path_inside_target_container> \
-    -v $(pwd):<path_inside_busybox_container> \
-    busybox \
-    tar -czvf <path_inside_busybox_container/backup_name.tar.gz> <volume_path_inside_target_container>
-```
+<div align="center">
+  A comprehensive collection of battle-tested Docker Compose and Kubernetes configurations for various production services.
+  <br/>
+  These configs are thoses I use in my everyday works for my deployments. I hope you'll will find something helpfull.
+</div>
 
-For sake of exemple
+<br>
 
-```bash
-  docker run --rm --mount source=uptime_kuma_storage,target=/app/data \
-    -v $(pwd):/backups \
-    busybox \
-    tar -cvzf /backups/uptime_kuma_storage.tar.gz /app/data
-```
-
-### restore volume
+## 🚀 Getting Started
 
 ```bash
- docker run --rm \ 
-    --mount source=<volume_name>,target=<volume_path_inside_target_container> \
-    -v $(pwd):<path_inside_busybox_container> \
-    busybox \
-    tar -xzvf <path_inside_busybox_container/backup_name.tar.gz> -C /
+# For Docker deployments
+docker-compose up -d
+
+# For Kubernetes deployments
+kubectl apply -f /path/to/config.yml
 ```
 
-For sake of exemple
+## 📦 Services categories
 
-```bash
-  docker run --rm --mount source=uptime_kuma_storage,target=/app/data \
-    -v $(pwd):/backups \
-    busybox \
-    tar -xvzf /backups/uptime_kuma_storage.tar.gz /
-```
+- 🤖 Automation Tools
+- 🌐 CMS
+- 🔒 Security
+- 👤 dentity Providers
+- 🌐 Services

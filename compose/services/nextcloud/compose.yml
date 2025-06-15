@@ -1,0 +1,75 @@
+name: nextcloud
+
+networks:
+  dockernet:
+    external: true
+  nextcloudnet: {}
+
+volumes:
+  nextcloud-web-vol:
+    name: nextcloud-web-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
+  nextcloud-web-apps-vol:
+    name: nextcloud-web-apps-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
+  nextcloud-db-vol:
+    name: nextcloud-db-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
+
+services:
+  nextcloud-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    cpus: .5
+    networks:
+      - nextcloudnet
+    # volumes:
+    #   - nextcloud-db-vol:/var/lib/postgresql/
+    environment:
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+
+  nextcloud-web:
+    image: nextcloud:29-apache
+    restart: unless-stopped
+    cpus: .5
+    networks:
+      - nextcloudnet
+      - dockernet
+    ports:
+      - 30879:80
+    # volumes:
+    # - nextcloud-web-vol:/var/www/html
+    # - nextcloud-web-apps-vol:/var/www/html/custom_apps
+    #   - ./config:/var/www/html/config
+    environment:
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD
+      - POSTGRES_HOST=nextcloud-db
+      - NEXTCLOUD_ADMIN_USER
+      - NEXTCLOUD_ADMIN_PASSWORD
+      - NEXTCLOUD_TRUSTED_DOMAINS
+      - SMTP_SECURE
+      - SMTP_HOST
+      - SMTP_PORT
+      - SMTP_AUTHTYPE
+      - SMTP_NAME
+      - SMTP_PASSWORD
+      - MAIL_FROM_ADDRESS
+      - MAIL_DOMAIN
+      - PHP_MEMORY_LIMIT
+      - PHP_UPLOAD_LIMIT
