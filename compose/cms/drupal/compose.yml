@@ -32,8 +32,8 @@ services:
     networks:
       - drupalnet
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-example}
-      - POSTGRES_DB=${POSTGRES_DB:-example}
+      - POSTGRES_USER
+      - POSTGRES_DB
       - POSTGRES_PASSWORD
 
   drupal-web:

@@ -6,10 +6,10 @@ volumes:
   minio-vol:
     name: minio-vol
     driver: local
-    driver_opts:
-      type: nfs4
-      o: addr=0.0.0.0,rw,nolock,hard,nointr,nfsvers=4.1
-      device: :/mnt/storage/minio
+    # driver_opts:
+    #   type: nfs4
+    #   o: addr=0.0.0.0,rw,nolock,hard,nointr,nfsvers=4.1
+    #   device: :/mnt/storage/minio
 
 services:
   minio:
@@ -19,17 +19,17 @@ services:
     networks:
       - dockernet
     ports:
-      - 9000:9000 # api
-      - 9001:9001 # webui
+      - 127.0.0.1:9000:9000 # api
+      - 127.0.0.1:9001:9001 # webui
     environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-password}
-      - MINIO_SERVER_URL=${MINIO_SERVER_URL:-http://localhost:9000}
-      # - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-access_key"}
-      # - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-secret_key"}
-      # - MINIO_KMS_SECRET_KEY=${MINIO_KMS_SECRET_KEY:-kms_master_key"}
-      # - MINIO_UPDATE_MINISIGN_PUBKEY=${MINIO_UPDATE_MINISIGN_PUBKEY:-RWTx5Zr1tiHQLwG9keckT0c45M3AGeHD6IvimQHpyRywVWGbP1aVSGav"}
-      # - MINIO_CONFIG_ENV=${MINIO_CONFIG_ENV:-config.env"}
+      - MINIO_ROOT_USER
+      - MINIO_ROOT_PASSWORD
+      - MINIO_SERVER_URL
+      # - MINIO_ACCESS_KEY
+      # - MINIO_SECRET_KEY
+      # - MINIO_KMS_SECRET_KEY
+      # - MINIO_UPDATE_MINISIGN_PUBKEY
+      # - MINIO_CONFIG_ENV
     volumes:
       - minio-vol:/data:rw
     labels:
@@ -45,7 +45,5 @@ services:
     image: minio/mc
     networks:
       - dockernet
-    entrypoint: >
-      /bin/sh -c "
-      /usr/bin/mc --help
-      "
+    entrypoint: |
+      /bin/sh -c "/usr/bin/mc --help"

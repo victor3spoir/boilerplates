@@ -30,10 +30,16 @@ services:
       - POSTGRES_USER
       - POSTGRES_DB
       - POSTGRES_PASSWORD
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   formbricks-web:
     depends_on:
-      - formbricks-db
+      formbricks-db:
+        condition: service_healthy
     restart: unless-stopped
     image: ghcr.io/formbricks/formbricks:v3.13.1
     deploy:
