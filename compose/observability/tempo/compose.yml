@@ -1,7 +1,13 @@
+name: tempo
+
 networks:
   dockernet:
     external: true
 
+volumes:
+  tempo-vol:
+    name: tempo-vol
+    driver: local
 
 configs:
   tempo.yaml:
@@ -52,13 +58,6 @@ configs:
 
       storage:
         trace:
-          # backend: s3
-          # s3:
-          #   bucket: tempo
-          #   endpoint: minio:9000
-          #   access_key: admin
-          #   secret_key: password
-          #   insecure: true
           backend: local # backend configuration to use
           wal:
             path: /var/tempo/wal # where to store the wal locally
@@ -86,8 +85,7 @@ services:
     networks:
       - dockernet
     # volumes:
-    #   - ./tempo.yaml:/etc/tempo.yaml
-      # - ./tempo-data:/var/tempo
+      # - ./tempo-vol:/var/tempo
     configs:
       - source: tempo.yaml
         target: /etc/tempo.yaml

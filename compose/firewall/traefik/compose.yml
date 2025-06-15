@@ -1,3 +1,5 @@
+name: traefik
+
 networks:
   dockernet:
     external: true
@@ -8,19 +10,16 @@ services:
     restart: unless-stopped
     deploy:
       resources:
-        reservations:
-          memory: 65Mib
-          cpus: .25
         limits:
-          memory: 126Mib
-          cpus: .5
+          memory: 200Mib
+          cpus: 0.5
     command:
       # Globals
       - --global.checknewversion=true
       - --global.sendanonymoususage=false
       # - Logs
       - --log.level=TRACE # TRACE - INFO - DEBUG - WARN - ERROR - FATAL - PANIC
-      - --log.format=common #common|json
+      - --log.format=json #common|json
       # - Api
       - --api.insecure=true
       # (entrypoints)
@@ -36,13 +35,13 @@ services:
       # - --providers.file.watch=true
 
       # (http challenge)
-      # - --certificatesResolvers.letsencrypt.acme.email=user@domain.com
+      # - --certificatesResolvers.letsencrypt.acme.email=${CF_DNS_EMAIL}
       # - --certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
       # - --certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json
       # - --certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=http
 
       # (dns challenge)
-      # - --certificatesResolvers.cloudflare.acme.email=user@domain.com
+      # - --certificatesResolvers.cloudflare.acme.email=${CF_DNS_EMAIL}
       # - --certificatesResolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
       # - --certificatesResolvers.cloudflare.acme.storage=/var/traefik/certs/cloudflare-acme.json
       # - --certificatesResolvers.cloudflare.acme.keyType=EC256
@@ -73,7 +72,7 @@ services:
       # - --tracing.serviceName=traefik-svc
       # - --tracing.otlp.http.endpoint=http://alloy:4318/v1/traces
       # - --tracing.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
-      
+
       # - --log.otlp.http.endpoint=http://alloy:4318/v1/traces
       # - --log.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
 
@@ -95,17 +94,14 @@ services:
       - traefik.http.services.traefik-svc.loadbalancer.server.port=8080
       # - -- (routers)
       - traefik.http.routers.traefik-rtr.entrypoints=http,https
-      - traefik.http.routers.traefik-rtr.rule=Host(`traefik.domain.com`)
+      - traefik.http.routers.traefik-rtr.rule=Host(`traefik.<domain.com>`)
       - traefik.http.routers.traefik-rtr.tls=true
-      - traefik.http.routers.traefik-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik-rtr.tls.certresolver=<letsencrypt>
       - traefik.http.routers.traefik-rtr.tls.domains[0].main=domain-1.com
       - traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.domain-1.com
       - traefik.http.routers.traefik-rtr.tls.domains[1].main=domain-2.com
       - traefik.http.routers.traefik-rtr.tls.domains[1].sans=*.domain-2.com
       - traefik.http.routers.traefik-rtr.service=traefik-svc
-      - traefik.http.routers.traefik-rtr.observability.accesslog=true
-      - traefik.http.routers.traefik-rtr.observability.metrics=true
-      - traefik.http.routers.traefik-rtr.observability.traces=true
       # - -- (defines middlewares)
       # - traefik.http.middlewares.demo-headers.headers.frameDeny=true
       # - traefik.http.middlewares.demo-headers.headers.browserxssfilter=true

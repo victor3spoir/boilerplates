@@ -1,11 +1,9 @@
 name: odoo
 
-# info:
-# default: admin : admin
-
 networks:
   dockernet:
     external: true
+  odoonet: {}
 
 volumes:
   odoo-web-vol:
@@ -23,10 +21,6 @@ volumes:
     #   o: 'addr=127.0.0.1,rw'
     #   device: ':/mnt/storage/odoo/db'
 
-secrets:
-  db_password:
-    file: ./db_password
-
 services:
   odoo-db:
     image: postgres:17-alpine
@@ -34,38 +28,36 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200Mib
-          cpus: 0.2
+          memory: 300Mib
+          cpus: 0.4
     networks:
-      - dockernet
+      - odoonet
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
-      - POSTGRES_DB=${POSTGRES_DB}
-    secrets:
-      - db_password
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
     volumes:
       - odoo-db-vol:/var/lib/postgresql/data:rw
 
   odoo-web:
+    depends_on:
+      - odoo-db
     image: odoo:18
     restart: unless-stopped
     deploy:
       resources:
         limits:
           memory: 400Mib
-          cpus: 0.2
-    depends_on:
-      odoo-db:
-        condition: service_started
+          cpus: 0.8
     networks:
       - dockernet
+      - odoonet
     environment:
       - HOST=odoo-db
-      - USER=${POSTGRES_USER}
-      - PASSWORD_FILE=/run/secrets/db_password
-    secrets:
-      - db_password
+      - USER
+      - PASSWORD
+    ports:
+      - 127.0.0.1:8069:8069
     volumes:
       - ./odoo.conf:/etc/odoo/odoo.conf:ro
       - odoo-web-vol:/var/lib/odoo:rw

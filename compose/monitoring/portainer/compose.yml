@@ -1,3 +1,4 @@
+name: portainer
 networks:
   dockernet:
     external: true
@@ -22,9 +23,9 @@ services:
           cpus: 0.2
     networks:
       - dockernet
-    ports:
-      - 9001:9001 # api
-      - 9000:9000 # ui
+    # ports:
+    #   - 9001:9001 # api
+    #   - 9000:9000 # ui
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer-vol:/data:rw

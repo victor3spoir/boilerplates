@@ -25,7 +25,7 @@ services:
     image: <image>:<tag>
     restart: unless-stopped
     deploy:
-      replicas: 5
+      replicas: 1
       resources:
         limits:
           memory: 200Mb

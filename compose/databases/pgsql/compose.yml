@@ -1,15 +1,27 @@
+name: pgsql
+
 networks:
   dockernet:
     external: true
 
 volumes:
-  pgsql_data:
-    name: pgsql_data
+  pgsql-vol:
+    name: pgsql-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
 
 services:
   pgsql:
     image: postgres:17-alpine
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200Mb
+          cpus: 0.2
     networks:
       - dockernet
     environment:
@@ -17,20 +29,33 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=demodb
     # volumes:
-    #   - pgsql_data:/var/lib/postgresql/data
-    labels:
-      - traefik.enable=true
-      - traefik.tcp.routers.pgsql-rtr.entrypoints=postgres
-      - traefik.tcp.services.pgsql-svc.loadbalancer.server.port=5432
+    #   - pgsql-vol:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4:9
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200Mb
+          cpus: 0.2
     networks:
       - dockernet
     ports:
-      - 9090:80
+      - 127.0.0.1:80:80
     environment:
       - PGADMIN_DEFAULT_EMAIL=user@domain.com
       - PGADMIN_DEFAULT_PASSWORD=SuperSecret
       - PGADMIN_ENABLE_TLS=false
+    labels:
+      - alloy.logs.enable=true
+      - alloy.metrics.enable=true
+      - alloy.traces.enable=true
+      - traefik.enable=true
+      # - services
+      - traefik.http.services.pgadmin-svc.loadbalancer.server.port=80
+      # - routers
+      - traefik.http.routers.pgadmin-rtr.rule=Host(`<pgadmin.domain.com>`)
+      - traefik.http.routers.pgadmin-rtr.tls=true
+      - traefik.http.routers.pgadmin-rtr.tls.certresolver=<letsencrypt>
+      - traefik.http.routers.pgadmin-rtr.service=pgadmin-svc

@@ -1,53 +1,110 @@
 networks:
   dockernet:
     external: true
+  qdrantnet: {}
 
 volumes:
   qdrant-01-vol:
     name: qdrant-01-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
   qdrant-02-vol:
     name: qdrant-02-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
   qdrant-03-vol:
     name: qdrant-03-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
+
+configs:
+  config.yml:
+    content: |
+      service:
+        verify_https_client_certificate: false
+        enable_tls: true
+      cluster:
+        p2p:
+          enable_tls: true
+      storage:
+        storage_path: ./storage
+        snapshots_path: ./snapshots
+        snapshots_config:
+          snapshots_storage: 
+            s3_config:
+              bucket: "qdrant"
+              region: "minio:9000"
+              access_key: "admin"
+              secret_key: "password"
+        temp_path: null
+
+x-qdrant: &qdrant
+  environment:
+    - RUN_MODE=production
+    - QDRANT__CLUSTER__ENABLED=true
+    - QDRANT_ALLOW_RECOVERY_MODE=true
+    - QDRANT__SERVICE__JWT_RBAC=true
+    - QDRANT__SERVICE__API_KEY
+    - QDRANT__SERVICE__READ_ONLY_API_KEY
+  configs:
+    - source: config.yml
+      target: /qdrant/config/config.yml
+      mode: 0660
+      uid: '0'
+      gid: '0'
 
 services:
   qdrant-01:
+    <<: *qdrant
     image: qdrant/qdrant:master
     container_name: qdrant-01
     command: ./qdrant --uri http://qdrant-01:6335
     networks:
       - dockernet
+      - qdrantnet
     restart: unless-stopped
-    environment:
-      - RUN_MODE=production # development
-      - QDRANT__CLUSTER__ENABLED=true
-      # - QDRANT__SERVICE__API_KEY=${QDRANT__SERVICE__API_KEY}
     ports:
-      - 6333:6333
-      - 6334:6334 # GRPC endpoint
+      - 127.0.0.1:6333:6333
+      - 127.0.0.1:6334:6334 # GRPC endpoint
     volumes:
       - qdrant-01-vol:/qdrant/storage
+
+    labels:
+      - traefik.enable=true
+      # - services
+      - traefik.http.services.qdrant-http-svc.loadbalancer.server.port=6333
+      - traefik.http.services.qdrant-grpc-svc.loadbalancer.server.port=6334
+      # - routers
+      - traefik.http.routers.qdrant-http-rtr.rule=Host(`<qdrant.domain.com>`)
+      - traefik.http.routers.qdrant-http-rtr.tls=true
+      - traefik.http.routers.qdrant-http-rtr.tls.certresolver=<letsencrypt>
+      - traefik.http.routers.qdrant-http-rtr.service=qdrant-http-svc
   qdrant-02:
+    <<: *qdrant
     image: qdrant/qdrant:master
     container_name: qdrant-02
     command: ./qdrant --bootstrap http://qdrant-01:6335 --uri http://qdrant-02:6335
     networks:
-      - dockernet
+      - qdrantnet
     restart: unless-stopped
-    environment:
-      - RUN_MODE=production # development
-      - QDRANT__CLUSTER__ENABLED=true
     volumes:
       - qdrant-02-vol:/qdrant/storage
   qdrant-03:
+    <<: *qdrant
     image: qdrant/qdrant:master
     container_name: qdrant-03
     command: ./qdrant --bootstrap http://qdrant-01:6335 --uri http://qdrant-03:6335
     networks:
-      - dockernet
+      - qdrantnet
     restart: unless-stopped
-    environment:
-      - RUN_MODE=production # development
-      - QDRANT__CLUSTER__ENABLED=true
     volumes:
       - qdrant-03-vol:/qdrant/storage

@@ -13,6 +13,11 @@ services:
     image: postgres:17-alpine
     # volumes:
     #   - kestra-db-vol:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 300Mb
+          cpus: 0.3
     networks:
       - dockernet
     environment:
@@ -51,15 +56,12 @@ services:
 
     labels:
       - traefik.enable=true
+      - traefik.http.routers.kestra-rtr.tls.certresolver=letsencrypt
       - traefik.http.services.kestra-svc.loadbalancer.server.port=8080
       - traefik.http.routers.kestra-rtr.entrypoints=http,https
-      # - traefik.http.routers.kestra-rtr.rule=Host(`<kestra.domain.com>`)
-      # - traefik.http.routers.kestra-rtr.tls=true
-      # - traefik.http.routers.kestra-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.kestra-rtr.rule=Host(`<kestra.domain.com>`)
+      - traefik.http.routers.kestra-rtr.tls=true
       - traefik.http.routers.kestra-rtr.service=kestra-svc
-      - traefik.http.routers.kestra-rtr.observability.accesslogs=true
-      - traefik.http.routers.kestra-rtr.observability.metrics=true
-      - traefik.http.routers.kestra-rtr.observability.tracing=true
     depends_on:
       kestra-db:
         condition: service_started

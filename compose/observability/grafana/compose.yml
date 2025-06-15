@@ -1,3 +1,5 @@
+name: grafana
+
 networks:
   dockernet:
     external: true
@@ -5,10 +7,22 @@ networks:
 volumes:
   grafana-01-vol:
     name: grafana-01-vol
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/grafana/web01"
   grafana-02-vol:
     name: grafana-02-vol
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/grafana/web02"
   grafana-db-vol:
     name: grafana-db-vol
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/grafana/db"
 
 configs:
   Caddylfile:
@@ -45,40 +59,32 @@ x-grafana: &grafana
   networks:
     - dockernet
   environment:
-    - GF_LOG_LEVEL=${GF_LOG_LEVEL:-debug}
-    - GF_FEATURE_TOGGLES_ENABLE=${GF_FEATURE_TOGGLES_ENABLE}
-    - GF_INSTALL_PLUGINS=${GF_INSTALL_PLUGINS}
-    - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
-    - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE} #Viewer, Editor, Admin
-    - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
-    - GF_SECURITY_ADMIN_EMAIL=${GF_SECURITY_ADMIN_EMAIL}
-    - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
-    - GF_SECURITY_LOGIN_REMEMBER_DAYS=${GF_SECURITY_LOGIN_REMEMBER_DAYS}
-    - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL}
-    - GF_USERS_DEFAULT_THEME=${GF_USERS_DEFAULT_THEME:-light}
+    - GF_LOG_LEVEL=debug
+    - GF_FEATURE_TOGGLES_ENABLE
+    - GF_INSTALL_PLUGINS
+    - GF_AUTH_ANONYMOUS_ENABLED
+    - GF_AUTH_ANONYMOUS_ORG_ROLE
+    - GF_SECURITY_ADMIN_USER
+    - GF_SECURITY_ADMIN_EMAIL
+    - GF_SECURITY_ADMIN_PASSWORD
+    - GF_SECURITY_LOGIN_REMEMBER_DAYS
+    - GF_SERVER_ROOT_URL
+    - GF_USERS_DEFAULT_THEME=light
     # DB
-    - GF_DATABASE_TYPE=${GF_DATABASE_TYPE}
-    - GF_DATABASE_HOST=${GF_DATABASE_HOST}
-    - GF_DATABASE_NAME=${GF_DATABASE_NAME}
-    - GF_DATABASE_USER=${GF_DATABASE_USER}
-    - GF_DATABASE_PASSWORD=${GF_DATABASE_PASSWORD}
-    - GF_SESSION_PROVIDER=${GF_SESSION_PROVIDER}
-    # LABELS
-    - GF_WHITE_LABELING_FOOTER_LINKS=support guides extracustom
-    - GF_WHITE_LABELING_FOOTER_LINKS_SUPPORT_TEXT=Support
-    - GF_WHITE_LABELING_FOOTER_LINKS_SUPPORT_URL=http://your.support.site
-    - GF_WHITE_LABELING_FOOTER_LINKS_GUIDES_TEXT=Guides
-    - GF_WHITE_LABELING_FOOTER_LINKS_GUIDES_URL=http://your.guides.site
-    - GF_WHITE_LABELING_FOOTER_LINKS_EXTRACUSTOM_TEXT=Custom Text
-    - GF_WHITE_LABELING_FOOTER_LINKS_EXTRACUSTOM_URL=http://your.custom.site
+    - GF_DATABASE_TYPE
+    - GF_DATABASE_HOST
+    - GF_DATABASE_NAME
+    - GF_DATABASE_USER
+    - GF_DATABASE_PASSWORD
+    - GF_SESSION_PROVIDER
     # - SMTP
-    - GF_SMTP_ENABLED=${GF_SMTP_ENABLED}
-    - GF_SMTP_HOST=${GF_SMTP_HOST}
-    - GF_SMTP_PASSWORD=${GF_SMTP_PASSWORD}
-    - GF_SMTP_USER=${GF_SMTP_USER}
-    - GF_SMTP_FROM_ADDRESS=${GF_SMTP_FROM_ADDRESS}
-    - GF_SMTP_FROM_NAME=${GF_SMTP_FROM_NAME}
-    - GF_SMTP_SKIP_VERIFY=${GF_SMTP_SKIP_VERIFY}
+    - GF_SMTP_ENABLED
+    - GF_SMTP_HOST
+    - GF_SMTP_PASSWORD
+    - GF_SMTP_USER
+    - GF_SMTP_FROM_ADDRESS
+    - GF_SMTP_FROM_NAME
+    - GF_SMTP_SKIP_VERIFY
   healthcheck:
     test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
     interval: 10s
@@ -90,16 +96,15 @@ x-grafana: &grafana
     - alloy.metrics.enable=true
     - alloy.traces.enable=true
 
-
 services:
   grafana-db:
     image: postgres:17-alpine
     networks:
       - dockernet
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD
+      - POSTGRES_USER
+      - POSTGRES_DB
     volumes:
       - grafana-db-vol:/var/lib/postgres:data
   grafana-01:

@@ -1,34 +1,64 @@
-# Drupal with PostgreSQL
-#
-# During initial Drupal setup,
-# Database type: PostgreSQL
-# Database name: postgres
-# Database username: postgres
-# Database password: example
-# ADVANCED OPTIONS; Database host: postgres
+name: drupal
 
+networks:
+  dockernet:
+    external: true
+  drupalnet: {}
 
+volumes:
+  drupal-db-vol:
+    name: drupal-db-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
+  drupal-web-vol:
+    name: drupal-web-vol
+    # driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
 services:
+  drupal-postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 528Mib
+          cpus: .5
+    networks:
+      - drupalnet
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-example}
+      - POSTGRES_DB=${POSTGRES_DB:-example}
+      - POSTGRES_PASSWORD
+
   drupal-web:
     image: drupal:10-apache
     restart: always
-    cpus: 0.5
-    mem_limit: 528Mib
+    deploy:
+      resources:
+        limits:
+          memory: 528Mib
+          cpus: .5
+    networks:
+      - dockernet
+      - drupalnet
     ports:
-      - 8085:80
+      - 127.0.0.1:8085:80
     volumes:
       - /var/www/html/modules
       - /var/www/html/profiles
       - /var/www/html/themes
-      # this takes advantage of the feature in Docker that a new anonymous
-      # volume (which is what we're creating here) will be initialized with the
-      # existing content of the image at the same location
       - /var/www/html/sites
-
-  drupal-postgres:
-    image: postgres:17-alpine
-    restart: unless-stopped
-    cpus: 0.5
-    mem_limit: 528Mib
-    environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-example}
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.drupal-svc.loadbalancer.server.port=80
+      - traefik.http.routers.drupal-rtr.entrypoints=http,https
+      - traefik.http.routers.drupal-rtr.rule=Host(`drupal.<domain.com>`)
+      - traefik.http.routers.drupal-rtr.tls=true
+      - traefik.http.routers.drupal-rtr.tls.certresolver=<letsencrypt>
+      - traefik.http.routers.drupal-rtr.service=drupal-svc

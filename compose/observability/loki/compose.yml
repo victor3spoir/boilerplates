@@ -3,7 +3,7 @@ networks:
     external: true
 
 configs:
-  mimir.yaml:
+  loki.yaml:
     content: |
       auth_enabled: false
 
@@ -47,22 +47,20 @@ services:
         limits:
           memory: 500Mib
           cpus: 0.5
-    ports:
-      - 33100:3100
+    # ports:
+    #   - 127.0.0.1:33100:3100
     command: 
       - -config.file=/etc/loki/loki.yaml
       - -config.expand-env=true
     networks:
       - dockernet
     configs:
-      - source: mimir.yaml
+      - source: loki.yaml
         target: /etc/loki/loki.yaml
         uid: "10001"
         gid: "10001"
         mode: 0644
     labels:
-      - alloy.logs.enable=true
-      - alloy.metrics.enable=true
       - traefik.enable=true
       - traefik.http.services.loki-srv.loadbalancer.server.port=3100
       - traefik.http.routers.loki-rtr.rule=Host(`<loki.domain.com>`)
