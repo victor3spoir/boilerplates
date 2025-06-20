@@ -1,65 +1,81 @@
+name: wordpress
+
 networks:
   dockernet:
     external: true
-
-secrets:
-  db_user:
-    file: ./secrets/db_user
-  db_password:
-    file: ./secrets/db_password
-  root_password:
-    file: ./secrets/root_password
+  wordpress-net: {}
 
 volumes:
-  wordpress_db_storage:
-    name: wordpress_db_storage
-  wordpress_web_storage:
-    name: wordpress_web_storage
+  wordpress-db-vol:
+    name: wordpress-db-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
+  wordpress-web-vol:
+    name: wordpress-web-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
 
 services:
-  wordpress_web:
-    image: wordpress:6.7-apache
-    restart: unless-stopped
-    ports:
-      - 30080:80
-    networks:
-      - dockernet
-    environment:
-      - WORDPRESS_DB_HOST=wordpress_db
-      - WORDPRESS_DB_USER_FILE=/run/secrets/db_user
-      - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
-      - WORDPRESS_DB_NAME=db
-    secrets:
-      - db_user
-      - db_password
-    depends_on:
-      - wordpress_db
-    volumes:
-      - wordpress_web_storage:/var/www/html
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.wordpress-rtr.entrypoints=http,https
-      - traefik.http.routers.wordpress-rtr.rule=Host(`${APP_URL}`)
-      - traefik.http.routers.wordpress-rtr.tls=true
-      - traefik.http.routers.wordpress-rtr.tls.certresolver=letsencrypt
-      - traefik.http.services.wordpress-svc.loadbalancer.server.port=80
-
-  wordpress_db:
+  wordpress-db:
     image: mysql:8.0
-    cpus: 0.5
-    mem_limit: "528Mib"
     restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 200Mb
+          cpus: 0.2
     networks:
-      - dockernet
+      - wordpress-net
     secrets:
       - root_password
       - db_user
       - db_password
     environment:
-      - MYSQL_DATABASE=db
-      - MYSQL_USER_FILE=/run/secrets/db_user
-      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/root_password
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+      - MYSQL_DATABASE
+      - MYSQL_ROOT_PASSWORD
     volumes:
-      - wordpress_db_storage:/var/lib/mysql
-# system_admin YZt)Xu$GGcyN2RgtBy
+      - wordpress-db-vol:/var/lib/mysql
+
+  wordpress-web:
+    depends_on:
+      - wordpress-db
+    image: wordpress:6.8-apache
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 200Mb
+          cpus: 0.2
+    ports:
+      - 127.0.0.1:80:80
+    networks:
+      - dockernet
+      - wordpress-net
+    environment:
+      - WORDPRESS_DB_HOST=wordpress-db
+      - WORDPRESS_DB_USER=${MYSQL_USER}
+      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
+      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
+    secrets:
+      - db_user
+      - db_password
+    volumes:
+      - wordpress-web-vol:/var/www/html
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.wordpress-svc.loadbalancer.server.port=80
+      - traefik.http.routers.wordpress-rtr.entrypoints=http,https
+      - traefik.http.routers.wordpress-rtr.rule=Host(`wordpress.<domain.com>`)
+      - traefik.http.routers.wordpress-rtr.tls=true
+      - traefik.http.routers.wordpress-rtr.tls.certresolver=<letsencrypt>
+      - traefik.http.routers.wordpress-rtr.service=wordpress-svc

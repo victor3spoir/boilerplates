@@ -1,51 +1,46 @@
+name: n8n
+
 networks:
   dockernet:
     external: true
+  n8n-net: {}
 
 volumes:
   n8n-vol:
     name: n8n-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
   n8n-db-vol:
     name: n8n-db-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
 
-x-n8n: &service-n8n
-  image: n8nio/n8n:next
-  networks:
-    - dockernet
-  environment:
-    - DB_TYPE=postgresdb
-    - DB_POSTGRESDB_HOST=n8n-db
-    - DB_POSTGRESDB_USER=${POSTGRES_USER:-root}
-    - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD:-password}
-    - DB_POSTGRESDB_DATABASE=${POSTGRES_DB:-n8n}
-    - N8N_DIAGNOSTICS_ENABLED=${N8N_DIAGNOSTICS_ENABLED:-true}
-    - N8N_PERSONALIZATION_ENABLED=${N8N_PERSONALIZATION_ENABLED:-true}
-    - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-not-secure-dskhfdkfdskhfdshdshds}
-    - N8N_USER_MANAGEMENT_JWT_SECRET=${N8N_USER_MANAGEMENT_JWT_SECRET:-not-secure-sdfkjdhfkjdshf}
-    # - N8N_EXTERNAL_STORAGE_S3_HOST=${N8N_EXTERNAL_STORAGE_S3_HOST:-minio}
-    # - N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME=${N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME:-n8n}
-    # - N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY=${N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY:-aeee4573b9074374545f}
-    # - N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET=${N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET:-aeee4573b9074374545f}
-    # - N8N_EXTERNAL_STORAGE_S3_AUTH_AUTO_DETECT=${N8N_EXTERNAL_STORAGE_S3_AUTH_AUTO_DETECT:-true}
-    - N8N_METRICS=${N8N_METRICS:-true}
-    - QUEUE_HEALTH_CHECK_ACTIVE=${QUEUE_HEALTH_CHECK_ACTIVE:-true}
-    - N8N_PUBLIC_API_DISABLED=${N8N_PUBLIC_API_DISABLED:-false}
-    - N8N_PUBLIC_API_SWAGGERUI_DISABLED=${N8N_PUBLIC_API_SWAGGERUI_DISABLED:-true}
-    - N8N_RUNNERS_ENABLED=true
-    - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+# n8n-import:
+#   entrypoint: /bin/sh
+#   command:
+#     - '-c'
+#     - |
+#       n8n import:credentials --separate --input=/backup/credentials
+#       && n8n import:workflow --separate --input=/backup/workflows
 
 services:
   n8n-db:
     image: postgres:17-alpine
     networks:
-      - dockernet
+      - n8n-net
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-root}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
-      - POSTGRES_DB=${POSTGRES_DB:-n8n}
-    # volumes:
-    #   - n8n-db-vol:/var/lib/postgresql/data
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    volumes:
+      - n8n-db-vol:/var/lib/postgresql/data
     healthcheck:
       test:
         - 'CMD-SHELL'
@@ -54,34 +49,74 @@ services:
       timeout: 5s
       retries: 10
 
-  n8n-import:
-    <<: *service-n8n
-    entrypoint: /bin/sh
-    command:
-      - '-c'
-      - |
-        n8n import:credentials --separate --input=/backup/credentials 
-        && n8n import:workflow --separate --input=/backup/workflows
-    volumes:
-      - ./n8n/backup:/backup
+  n8n:
     depends_on:
       n8n-db:
         condition: service_healthy
-
-  n8n:
-    <<: *service-n8n
+    image: n8nio/n8n:next
     restart: unless-stopped
+    networks:
+      - dockernet
+      - n8n-net
     ports:
-      - 5678:5678
+      - 127.0.0.1:5678:5678
     volumes:
       # - n8n-vol:/home/node/.n8n
       - ./n8n/backup:/backup
       - ./n8n/shared:/data/shared
-    depends_on:
-      n8n-db:
-        condition: service_healthy
-      # n8n-import:
-      #   condition: service_completed_successfully
+    environment:
+      # - DB
+      - DB_TYPE
+      - DB_POSTGRESDB_HOST
+      - DB_POSTGRESDB_USER
+      - DB_POSTGRESDB_PASSWORD
+      - DB_POSTGRESDB_DATABASE
+      # N8N
+      - N8N_EDITOR_BASE_URL
+      - N8N_PREVIEW_MODE=true
+      - N8N_TEMPLATES_ENABLED=true
+      - N8N_DIAGNOSTICS_ENABLED=true
+      - N8N_PERSONALIZATION_ENABLED=true
+      - N8N_ENCRYPTION_KEY
+      - N8N_USER_MANAGEMENT_JWT_SECRET
+      - WEBHOOK_URL
+      - N8N_PUBLIC_API_ENDPOINT
+      - N8N_REINSTALL_MISSING_PACKAGES=true
+      # - S3
+      # - N8N_EXTERNAL_STORAGE_S3_HOST
+      # - N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME
+      # - N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY
+      # - N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET
+      # - N8N_EXTERNAL_STORAGE_S3_AUTH_AUTO_DETECT
+      # - METRICS
+      - N8N_METRICS=true
+      - N8N_METRICS_INCLUDE_CACHE_METRICS=true
+      - N8N_METRICS_INCLUDE_MESSAGE_EVENT_BUS_METRICS=true
+      - N8N_METRICS_INCLUDE_WORKFLOW_ID_LABEL=true
+      - N8N_METRICS_INCLUDE_NODE_TYPE_LABEL=true
+      - N8N_METRICS_INCLUDE_CREDENTIAL_TYPE_LABEL=true
+      - N8N_METRICS_INCLUDE_API_ENDPOINTS=true
+      - N8N_METRICS_INCLUDE_API_PATH_LABEL=true
+      - N8N_METRICS_INCLUDE_API_METHOD_LABEL=true
+      - N8N_METRICS_INCLUDE_API_STATUS_CODE_LABEL=true
+      - N8N_METRICS_INCLUDE_QUEUE_METRICS=true
+      - QUEUE_HEALTH_CHECK_ACTIVE=true
+      - N8N_PUBLIC_API_DISABLED=false
+      - N8N_PUBLIC_API_SWAGGERUI_DISABLED=true
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      # - LOGS
+      - N8N_LOG_LEVEL=info
+      - N8N_LOG_FORMAT=json
+      # - LOCS
+      - GENERIC_TIMEZONE=UTC
+      - N8N_DEFAULT_LOCALE=en
+      # - SMTP
+      - N8N_SMTP_HOST
+      - N8N_SMTP_PORT
+      - N8N_SMTP_USER
+      - N8N_SMTP_PASS
+      - N8N_SMTP_SENDER
     labels:
       - traefik.enable=true
       - allow.logs.enable=true
@@ -90,9 +125,10 @@ services:
       # - services
       - traefik.http.services.n8n-svc.loadbalancer.server.port=5678
       # - routers
-      # - traefik.http.routers.n8n-rtr.rule=Host(`<appname.domain.com>`)
+      - traefik.http.routers.n8n-rtr.entrypoints=http,https
+      - traefik.http.routers.n8n-rtr.rule=Host(`<appname.domain.com>`)
       - traefik.http.routers.n8n-rtr.tls=true
-      # - traefik.http.routers.n8n-rtr.tls.certresolver=<certresolver>
+      - traefik.http.routers.n8n-rtr.tls.certresolver=<certresolver>
       - traefik.http.routers.n8n-rtr.service=n8n-svc
       - traefik.http.routers.n8n-rtr.observability.accesslogs=true
       - traefik.http.routers.n8n-rtr.observability.metrics=true
