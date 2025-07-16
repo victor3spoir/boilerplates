@@ -11,7 +11,7 @@ kestra:
       enabled: true
       username: admin@gmail.com
       password: password
-  url: http://localhost:8080/
+  url: https://kestra.localhost
   repository:
     type: postgres
   storage:
