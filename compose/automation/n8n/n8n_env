@@ -11,7 +11,7 @@ DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
 N8N_ENCRYPTION_KEY=not-secure-dskhfdkfdskhfdshdshds
 N8N_USER_MANAGEMENT_JWT_SECRET=not-secure-sdfkjdhfkjdshf
 
-N8N_EDITOR_BASE_URL=http://n8n.localhost
+N8N_EDITOR_BASE_URL=https://n8n.localhost
 WEBHOOK_URL=${N8N_EDITOR_BASE_URL}
 
 # S3

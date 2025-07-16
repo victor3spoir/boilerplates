@@ -3,110 +3,200 @@ name: traefik
 networks:
   dockernet:
     external: true
+  traefik-net: {}
+
+configs:
+  dynamic.yaml:
+    file: ./dynamic.yaml
+
+volumes:
+  traefik-vol:
+    name: traefik-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
 
 services:
-  traefik-proxy:
-    image: traefik:v3.3
+  traefik:
+    image: traefik:v3.5.0-rc2
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          memory: 200Mib
-          cpus: 0.5
+          memory: 400Mib
+          cpus: .5
     command:
-      # Globals
       - --global.checknewversion=true
       - --global.sendanonymoususage=false
-      # - Logs
-      - --log.level=TRACE # TRACE - INFO - DEBUG - WARN - ERROR - FATAL - PANIC
-      - --log.format=json #common|json
-      # - Api
       - --api.insecure=true
-      # (entrypoints)
+      - --api.dashboard=true
+      - --api.debug=true
+      - --ping=true
+      - --ping.entryPoint=http
+      # - --ping.manualRouting=true
+
       - --entryPoints.http.address=:80
       - --entryPoints.https.address=:443
       - --entryPoints.http.http.redirections.entryPoint.to=https
       - --entryPoints.http.http.redirections.entryPoint.scheme=https
+      - --entryPoints.https.transport.respondingTimeouts.readTimeout=90s
+      - --entryPoints.https.transport.respondingTimeouts.writeTimeout=90s
+      - --entryPoints.https.transport.respondingTimeouts.idleTimeout=300s
+      - --entryPoints.metrics.address=:8082
 
-      # (Providers)
       - --providers.docker.endpoint=unix://var/run/docker.sock
       - --providers.docker.exposedbydefault=false
-      # - --providers.file.filename=/var/traefik/dynamic.yaml
-      # - --providers.file.watch=true
+      - --providers.docker.network=dockernet
+      - --providers.file.filename=/etc/traefik/dynamic.yaml
+      - --providers.file.watch=true
 
-      # (http challenge)
-      # - --certificatesResolvers.letsencrypt.acme.email=${CF_DNS_EMAIL}
-      # - --certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
-      # - --certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json
-      # - --certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=http
+      # http challenge
+      - --certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      - --certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json
+      - --certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=http
 
-      # (dns challenge)
-      # - --certificatesResolvers.cloudflare.acme.email=${CF_DNS_EMAIL}
+      # dns challenge
+      # - --certificatesResolvers.cloudflare.acme.email=${ACME_EMAIL}
       # - --certificatesResolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
       # - --certificatesResolvers.cloudflare.acme.storage=/var/traefik/certs/cloudflare-acme.json
       # - --certificatesResolvers.cloudflare.acme.keyType=EC256
       # - --certificatesResolvers.cloudflare.acme.dnsChallenge.provider=cloudflare
       # - --certificatesResolvers.cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,8.8.8.8:53
 
-      # (Observability)
-      # - --accessLog=true
-      # - --metrics.otlp=true
-      # - --tracing=true
-      # - --experimental.otlpLogs=true
-
-      # - --accesslog.filepath=/var/lib/traefik/traefik.log
-      # - --accesslog.otlp.http=true
-      # - --accesslog.otlp.http.endpoint=http://localhost:4318/v1/logs
-      # - --accesslog.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
-      # - --accesslog.format=json
-
-      # - --metrics.otlp.addEntryPointsLabels=true
-      # - --metrics.otlp.addRoutersLabels=true
-      # - --metrics.otlp.addServicesLabels=true
-      # - --metrics.otlp.pushInterval=10s
-      # - --metrics.otlp.serviceName=traefik-svc
+      # METRICS OTLP
+      - --metrics.otlp=true
+      - --metrics.otlp.addRoutersLabels=true
+      - --metrics.otlp.pushInterval=5s
+      - --metrics.otlp.serviceName=traefik
+      - --metrics.otlp.explicitBoundaries=0.1,0.3,1.2,5.0
       # - --metrics.otlp.http.endpoint=http://alloy:4318/v1/metrics
       # - --metrics.otlp.http.headers.x-api-key=sdf78s1sdsAs7
 
-      # - --tracing.addinternals
-      # - --tracing.serviceName=traefik-svc
-      # - --tracing.otlp.http.endpoint=http://alloy:4318/v1/traces
-      # - --tracing.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
+      # METRICS PROMETHEUS
+      - --metrics.prometheus=true
+      - --metrics.prometheus.addRoutersLabels=true
+      - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+      # - --metrics.prometheus.manualRouting=true
+      - --metrics.prometheus.entryPoint=metrics
 
-      # - --log.otlp.http.endpoint=http://alloy:4318/v1/traces
-      # - --log.otlp.http.headers.X-Seq-ApiKey=nB8RfRxF9sRwdSzPiNGd
+      # TRACING
+      - --tracing=true
+      - --tracing.addinternals
+      - --tracing.sampleRate=0.2
+      - --tracing.serviceName=traefik
+      # - --tracing.otlp.http.endpoint=http://alloy:4318/v1/traces
+      # - --tracing.otlp.http.tls.insecureSkipVerify=false
+      # - --tracing.otlp.http.headers.x-api-key=api-key-value
+
+      # LOG
+      - --log.level=TRACE # TRACE - INFO - DEBUG - WARN - ERROR - FATAL - PANIC
+      - --log.format=json
+      # - --log.filepath=""
+      - --log.nocolor=false
+      - --log.compress=true
+      # - --log.otlp.http.endpoint=http://alloy:4318/v1/logs
+      # - --log.otlp.http.headers.x-api-key=api-key-value
+      - --accessLog=true
+      - --accesslog.format=json
+      - --accessLog.addinternals=true
+      - --accesslog.filepath=/var/traefik/log/access.log
+      # - --accesslog.http.headers.x-api-key=api-key-value
+      # - --accesslog.otlp.http=true
+      # - --accesslog.otlp.http.endpoint=http://alloy:4318/v1/logs
+      # - FastProxy
+      - --experimental.fastProxy
+      - --experimental.otlpLogs=true
+
+      # - Plugins
+      # geobloc
+      - --experimental.plugins.geoblock.modulename=github.com/PascalMinder/geoblock
+      - --experimental.plugins.geoblock.version=v0.3.3
+      # modsecurity
+      - --experimental.plugins.traefik-modsecurity-plugin.modulename=github.com/acouvreur/traefik-modsecurity-plugin
+      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.3.0
 
     networks:
       - dockernet
+      - traefik-net
     ports:
       - 80:80
       - 443:443
-      # - 127.0.0.1:8080:8080
+    configs:
+      - source: dynamic.yaml
+        target: /etc/traefik/dynamic.yaml
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      # - ./dynamic.yaml:/var/traefik/dynamic.yaml:ro
-      # - ./certs:/var/traefik/certs:rw
+      - /etc/localtime:/etc/localtime:ro
+      - traefik-vol:/var/traefik/certs:rw
     environment:
-      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+      - TZ=UTC
+      - ACME_EMAIL=user@gmail.com
+      - CF_DNS_API_TOKEN
     labels:
       - traefik.enable=true
-      # - -- (services)
-      - traefik.http.services.traefik-svc.loadbalancer.server.port=8080
-      # - -- (routers)
-      - traefik.http.routers.traefik-rtr.entrypoints=http,https
-      - traefik.http.routers.traefik-rtr.rule=Host(`traefik.<domain.com>`)
+      # - routers
+      - traefik.http.routers.traefik-rtr.entrypoints=https
+      - traefik.http.routers.traefik-rtr.rule=Host(`traefik.localhost`)
       - traefik.http.routers.traefik-rtr.tls=true
-      - traefik.http.routers.traefik-rtr.tls.certresolver=<letsencrypt>
-      - traefik.http.routers.traefik-rtr.tls.domains[0].main=domain-1.com
-      - traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.domain-1.com
-      - traefik.http.routers.traefik-rtr.tls.domains[1].main=domain-2.com
-      - traefik.http.routers.traefik-rtr.tls.domains[1].sans=*.domain-2.com
-      - traefik.http.routers.traefik-rtr.service=traefik-svc
-      # - -- (defines middlewares)
-      # - traefik.http.middlewares.demo-headers.headers.frameDeny=true
-      # - traefik.http.middlewares.demo-headers.headers.browserxssfilter=true
-      - traefik.http.middlewares.authentik.forwardAuth.address=http://outpost.company:9000/outpost.goauthentik.io/auth/traefik
-      - traefik.http.middlewares.authentik.forwardAuth.trustForwardHeader=true
-      - traefik.http.middlewares.authentik.forwardAuth.authResponseHeaders=X-authentik-username,X-authentik-groups,X-authentik-entitlements,X-authentik-email,X-authentik-name,X-authentik-uid,X-authentik-jwt,X-authentik-meta-jwks,X-authentik-meta-outpost,X-authentik-meta-provider,X-authentik-meta-app,X-authentik-meta-version
-      # - -- (use middlewares)
-      - traefik.http.routers.traefik-rtr.middlewares=traefik-auth@file
+      - traefik.http.routers.traefik-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik-rtr.tls.domains[0].main=localhost
+      - traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.localhost
+      - traefik.http.routers.traefik-rtr.service=api@internal
+      # - traefik.http.routers.traefik-rtr.middlewares=traefik-mdls
+
+      - traefik.http.routers.traefik-prom-rtr.entrypoints=https
+      - 'traefik.http.routers.traefik-prom-rtr.rule=Host(`traefik.localhost`) && PathPrefix(`/metrics`)'
+      - traefik.http.routers.traefik-prom-rtr.tls=true
+      - traefik.http.routers.traefik-prom-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik-prom-rtr.service=prometheus@internal
+      # - traefik.http.routers.traefik-prom-rtr.middlewares=
+
+      # - traefik.http.middlewares.traefik-mdls.chain.middlewares=header-web-security-mdl@file,compress-security-mdl@file
+
+  owasp-waf:
+    image: owasp/modsecurity-crs:apache
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 300Mib
+          cpus: .3
+    networks:
+      - traefik-net
+    environment:
+      - BACKEND=http://dummy-service
+      - PARANOIA=1
+      - ANOMALY_INBOUND=10
+      - ANOMALY_OUTBOUND=5
+      - REPORTING_LEVEL=1
+      - MODSEC_AUDIT_LOG_FORMAT=JSON
+      - MODSEC_RULE_ENGINE=On
+
+  dummy-service:
+    image: traefik/whoami:v1.11
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 100Mib
+          cpus: .2
+    networks:
+      - traefik-net
+
+  autoheal:
+    image: willfarrell/autoheal:1.2.0
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200Mib
+          cpus: .2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      - AUTOHEAL_START_PERIOD=240
+      - AUTOHEAL_INTERVAL=30

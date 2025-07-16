@@ -1,4 +1,4 @@
-<div align="center">
+<div align="center" style="">
  <img alt="hero-image" src="./imgs/hero.png">
 </div>
 
