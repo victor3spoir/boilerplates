@@ -1,9 +1,11 @@
+name: alloy
+
 networks:
   dockernet:
     external: true
 
 configs:
-  alloy.alloy:
+  all.alloy:
     content: |
       livedebugging {
         enabled = true
@@ -76,54 +78,47 @@ services:
       --stability.level=public-preview
       --storage.path=/var/lib/alloy/data
       /etc/alloy/alloy.alloy
-    ports:
-      - 127.0.0.1:12345:12345
-      # - 127.0.0.1:4318:4318
-      # - 127.0.0.1:4317:4317
-      # - 127.0.0.1:3100:3100
+    # ports:
+    # - 127.0.0.1:12345:12345
+    # - 127.0.0.1:4318:4318
+    # - 127.0.0.1:4317:4317
+    # - 127.0.0.1:3100:3100
     networks:
       - dockernet
     environment:
       - HOSTNAME=alloy-srv
     configs:
-      - source: alloy.alloy
-        target: /etc/alloy/alloy.alloy
-        uid: '0'
-        gid: '0'
-        mode: 0660
+      - source: all.alloy
+        target: /etc/alloy/all.alloy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
-      - alloy.logs.enable=true
-      - alloy.metrics.enable=true
-
       - traefik.enable=true
+
       - traefik.http.services.alloy-ui-svc.loadbalancer.server.port=12345
-      - traefik.http.services.alloy-loki-svc.loadbalancer.server.port=3100
-      - traefik.http.services.alloy-prometheus-svc.loadbalancer.server.port=9090
-      - traefik.http.services.alloy-otlp-http-svc.loadbalancer.server.port=4318
-
       - traefik.http.routers.alloy-ui-rtr.entrypoints=http,https
-      - traefik.http.routers.alloy-ui-rtr.rule=Host(`alloyui.<domain.com>`)
+      - traefik.http.routers.alloy-ui-rtr.rule=Host(`alloyui.localhost`)
       - traefik.http.routers.alloy-ui-rtr.tls=true
-      - traefik.http.routers.alloy-ui-rtr.tls.certresolver=<resolver>
+      - traefik.http.routers.alloy-ui-rtr.tls.certresolver=letsencrypt
       - traefik.http.routers.alloy-ui-rtr.service=alloy-ui-svc
-      
-      - traefik.http.routers.alloy-loki-rtr.entrypoints=http,https
-      - traefik.http.routers.alloy-loki-rtr.rule=Host(`alloyloki.<domain.com>`)
-      - traefik.http.routers.alloy-loki-rtr.tls=true
-      - traefik.http.routers.alloy-loki-rtr.tls.certresolver=<resolver>
-      - traefik.http.routers.alloy-loki-rtr.service=alloy-loki-svc
-      
-      - traefik.http.routers.alloy-prometheus-rtr.entrypoints=http,https
-      - traefik.http.routers.alloy-prometheus-rtr.rule=Host(`alloyprom.<domain.com>`)
-      - traefik.http.routers.alloy-prometheus-rtr.tls=true
-      - traefik.http.routers.alloy-prometheus-rtr.tls.certresolver=<resolver>
-      - traefik.http.routers.alloy-prometheus-rtr.service=alloy-prometheus-svc
-      
-      - traefik.http.routers.alloy-otlp-http-rtr.entrypoints=http,https
-      - traefik.http.routers.alloy-otlp-http-rtr.rule=Host(`alloyprom.<domain.com>`)
-      - traefik.http.routers.alloy-otlp-http-rtr.tls=true
-      - traefik.http.routers.alloy-otlp-http-rtr.tls.certresolver=<resolver>
-      - traefik.http.routers.alloy-otlp-http-rtr.service=alloy-otlp-http-svc
 
+      - traefik.http.services.alloy-loki-svc.loadbalancer.server.port=3100
+      - traefik.http.routers.alloy-loki-rtr.entrypoints=http,https
+      - traefik.http.routers.alloy-loki-rtr.rule=Host(`alloyloki.localhost`)
+      - traefik.http.routers.alloy-loki-rtr.tls=true
+      - traefik.http.routers.alloy-loki-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.alloy-loki-rtr.service=alloy-loki-svc
+
+      - traefik.http.services.alloy-prometheus-svc.loadbalancer.server.port=9090
+      - traefik.http.routers.alloy-prometheus-rtr.entrypoints=http,https
+      - traefik.http.routers.alloy-prometheus-rtr.rule=Host(`alloyprom.localhost`)
+      - traefik.http.routers.alloy-prometheus-rtr.tls=true
+      - traefik.http.routers.alloy-prometheus-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.alloy-prometheus-rtr.service=alloy-prometheus-svc
+
+      - traefik.http.services.alloy-otlp-http-svc.loadbalancer.server.port=4318
+      - traefik.http.routers.alloy-otlp-http-rtr.entrypoints=http,https
+      - traefik.http.routers.alloy-otlp-http-rtr.rule=Host(`alloyprom.localhost`)
+      - traefik.http.routers.alloy-otlp-http-rtr.tls=true
+      - traefik.http.routers.alloy-otlp-http-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.alloy-otlp-http-rtr.service=alloy-otlp-http-svc

@@ -13,7 +13,7 @@ volumes:
 
 services:
   minio:
-    image: quay.io/minio/minio:RELEASE.2025-03-12T18-04-18Z-cpuv1
+    image: quay.io/minio/minio:latest
     restart: unless-stopped
     command: server /data --address ":9000" --console-address ":9001"
     networks:
@@ -40,7 +40,7 @@ services:
       - traefik.http.routers.minio.entrypoints=http,https
       - traefik.http.routers.minio.tls=true
       - traefik.http.routers.minio.tls.certresolver=letsencrypt
-      - traefik.http.routers.minio.rule=Host(`minio.<domain.com>`)
+      - traefik.http.routers.minio.rule=Host(`minio.localhost`)
   minio-client:
     image: minio/mc
     networks:
