@@ -58,7 +58,7 @@ services:
       - traefik.enable=true
       - traefik.http.services.drupal-svc.loadbalancer.server.port=80
       - traefik.http.routers.drupal-rtr.entrypoints=http,https
-      - traefik.http.routers.drupal-rtr.rule=Host(`drupal.<domain.com>`)
+      - traefik.http.routers.drupal-rtr.rule=Host(`drupal.localhost`)
       - traefik.http.routers.drupal-rtr.tls=true
-      - traefik.http.routers.drupal-rtr.tls.certresolver=<letsencrypt>
+      - traefik.http.routers.drupal-rtr.tls.certresolver=letsencrypt
       - traefik.http.routers.drupal-rtr.service=drupal-svc

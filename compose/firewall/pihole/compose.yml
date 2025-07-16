@@ -32,19 +32,20 @@ services:
       - 53:53/tcp
       - 53:53/udp
       - 67:67/udp
-      # - 127.0.0.1:30080:80
     environment:
       - TZ=UTC
-      - WEBPASSWORD=${WEBPASSWORD:-password}
-      - DNS1=1.1.1.1
-      - DNS2=8.8.8.8
-    # volumes:
-    # - pihole-vol:/etc/pihole:rw
+      - FTLCONF_dns_revServers=true,192.168.0.0/16,192.168.0.1,lan
+      - FTLCONF_dns_upstreams=8.8.8.8;1.1.1.1
+      - FTLCONF_webserver_api_password=password
+      - FTLCONF_debug_api=true
+    volumes:
+    - pihole-vol:/etc/pihole:rw
     # - ./etc-pihole:/etc/pihole:rw
     labels:
       - traefik.enable=true
       - traefik.http.services.pihole-svc.loadbalancer.server.port=80
       - traefik.http.routers.pihole-rtr.entrypoints=http,https
-      - traefik.http.routers.pihole-rtr.rule=Host(`pihole.<domain.com>`)
+      - traefik.http.routers.pihole-rtr.rule=Host(`pihole.localhost`)
       - traefik.http.routers.pihole-rtr.tls=true
       - traefik.http.routers.pihole-rtr.tls.certresolver=letsencrypt
+      # - traefik.http.routers.pihole-rtr.middlewares=

@@ -6,8 +6,8 @@ networks:
   n8n-net: {}
 
 volumes:
-  n8n-vol:
-    name: n8n-vol
+  n8n-web-vol:
+    name: n8n-web-vol
     driver: local
     # driver_opts:
     #   type: nfs
@@ -20,21 +20,40 @@ volumes:
     #   type: nfs
     #   device: :/path/to/volume
     #   o: 'addr=127.0.0.1,rw'
-
-# n8n-import:
-#   entrypoint: /bin/sh
-#   command:
-#     - '-c'
-#     - |
-#       n8n import:credentials --separate --input=/backup/credentials
-#       && n8n import:workflow --separate --input=/backup/workflows
+  n8n-minio-vol:
+    name: n8n-minio-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'
 
 services:
-  n8n-db:
-    image: postgres:17-alpine
+  n8n-minio:
+    image: quay.io/minio/minio:latest
+    restart: unless-stopped
+    entrypoint: ''
+    command:
+      - sh
+      - -c
+      - mkdir -p /data/n8n && minio server /data --address ":9000"
     networks:
       - n8n-net
+    deploy:
+      resources:
+        limits:
+          memory: 300Mb
+          cpus: 0.3
+    environment:
+      - MINIO_ROOT_USER
+      - MINIO_ROOT_PASSWORD
+    volumes:
+      - n8n-minio-vol:/data:rw
+  n8n-db:
+    image: postgres:17-alpine
     restart: unless-stopped
+    networks:
+      - n8n-net
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -49,29 +68,28 @@ services:
       timeout: 5s
       retries: 10
 
-  n8n:
+  n8n-web:
     depends_on:
       n8n-db:
         condition: service_healthy
+      n8n-minio:
+        condition: service_started
     image: n8nio/n8n:next
     restart: unless-stopped
     networks:
       - dockernet
       - n8n-net
-    ports:
-      - 127.0.0.1:5678:5678
     volumes:
-      # - n8n-vol:/home/node/.n8n
+      - n8n-web-vol:/home/node/.n8n
       - ./n8n/backup:/backup
       - ./n8n/shared:/data/shared
     environment:
-      # - DB
-      - DB_TYPE
+      - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST
       - DB_POSTGRESDB_USER
       - DB_POSTGRESDB_PASSWORD
       - DB_POSTGRESDB_DATABASE
-      # N8N
+
       - N8N_EDITOR_BASE_URL
       - N8N_PREVIEW_MODE=true
       - N8N_TEMPLATES_ENABLED=true
@@ -82,13 +100,13 @@ services:
       - WEBHOOK_URL
       - N8N_PUBLIC_API_ENDPOINT
       - N8N_REINSTALL_MISSING_PACKAGES=true
-      # - S3
-      # - N8N_EXTERNAL_STORAGE_S3_HOST
-      # - N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME
-      # - N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY
-      # - N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET
-      # - N8N_EXTERNAL_STORAGE_S3_AUTH_AUTO_DETECT
-      # - METRICS
+
+      - N8N_EXTERNAL_STORAGE_S3_HOST
+      - N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME
+      - N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY
+      - N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET
+      - N8N_EXTERNAL_STORAGE_S3_AUTH_AUTO_DETECT
+
       - N8N_METRICS=true
       - N8N_METRICS_INCLUDE_CACHE_METRICS=true
       - N8N_METRICS_INCLUDE_MESSAGE_EVENT_BUS_METRICS=true
@@ -105,31 +123,25 @@ services:
       - N8N_PUBLIC_API_SWAGGERUI_DISABLED=true
       - N8N_RUNNERS_ENABLED=true
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
-      # - LOGS
+
       - N8N_LOG_LEVEL=info
       - N8N_LOG_FORMAT=json
-      # - LOCS
+
       - GENERIC_TIMEZONE=UTC
       - N8N_DEFAULT_LOCALE=en
-      # - SMTP
+
       - N8N_SMTP_HOST
       - N8N_SMTP_PORT
       - N8N_SMTP_USER
       - N8N_SMTP_PASS
       - N8N_SMTP_SENDER
+
     labels:
       - traefik.enable=true
-      - allow.logs.enable=true
-      - allow.traces.enable=true
-      - allow.metrics.enable=true
-      # - services
       - traefik.http.services.n8n-svc.loadbalancer.server.port=5678
-      # - routers
       - traefik.http.routers.n8n-rtr.entrypoints=http,https
-      - traefik.http.routers.n8n-rtr.rule=Host(`<appname.domain.com>`)
+      - traefik.http.routers.n8n-rtr.rule=Host(`n8n.localhost`)
       - traefik.http.routers.n8n-rtr.tls=true
-      - traefik.http.routers.n8n-rtr.tls.certresolver=<certresolver>
+      - traefik.http.routers.n8n-rtr.tls.certresolver=letsencrypt
       - traefik.http.routers.n8n-rtr.service=n8n-svc
-      - traefik.http.routers.n8n-rtr.observability.accesslogs=true
-      - traefik.http.routers.n8n-rtr.observability.metrics=true
-      - traefik.http.routers.n8n-rtr.observability.tracing=true
+      # - traefik.http.routers.n8n-rtr.middlewares=

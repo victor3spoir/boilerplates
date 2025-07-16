@@ -10,14 +10,14 @@ volumes:
     name: wordpress-db-vol
     driver: local
     # driver_opts:
-    #   type: nfs
+    #   type: nfs4
     #   device: :/path/to/volume
     #   o: 'addr=127.0.0.1,rw'
   wordpress-web-vol:
     name: wordpress-web-vol
     driver: local
     # driver_opts:
-    #   type: nfs
+    #   type: nfs4
     #   device: :/path/to/volume
     #   o: 'addr=127.0.0.1,rw'
 
@@ -29,14 +29,10 @@ services:
       replicas: 1
       resources:
         limits:
-          memory: 200Mb
+          memory: 400Mb
           cpus: 0.2
     networks:
       - wordpress-net
-    secrets:
-      - root_password
-      - db_user
-      - db_password
     environment:
       - MYSQL_USER
       - MYSQL_PASSWORD
@@ -56,26 +52,36 @@ services:
         limits:
           memory: 200Mb
           cpus: 0.2
-    ports:
-      - 127.0.0.1:80:80
     networks:
-      - dockernet
       - wordpress-net
+      - dockernet
     environment:
       - WORDPRESS_DB_HOST=wordpress-db
       - WORDPRESS_DB_USER=${MYSQL_USER}
       - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
       - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
-    secrets:
-      - db_user
-      - db_password
     volumes:
       - wordpress-web-vol:/var/www/html
     labels:
       - traefik.enable=true
       - traefik.http.services.wordpress-svc.loadbalancer.server.port=80
       - traefik.http.routers.wordpress-rtr.entrypoints=http,https
-      - traefik.http.routers.wordpress-rtr.rule=Host(`wordpress.<domain.com>`)
+      - traefik.http.routers.wordpress-rtr.rule=Host(`wordpress.localhost`)
       - traefik.http.routers.wordpress-rtr.tls=true
-      - traefik.http.routers.wordpress-rtr.tls.certresolver=<letsencrypt>
+      - traefik.http.routers.wordpress-rtr.tls.certresolver=letsencrypt
       - traefik.http.routers.wordpress-rtr.service=wordpress-svc
+      # - traefik.http.routers.wordpress-rtr.middlewares=
+
+      - traefik.http.routers.wordpress-auth-rtr.entrypoints=http,https
+      - traefik.http.routers.wordpress-auth-rtr.rule=Host(`wordpress.localhost`) && PathPrefix(`/wp-login`)
+      - traefik.http.routers.wordpress-auth-rtr.tls=true
+      - traefik.http.routers.wordpress-auth-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.wordpress-auth-rtr.service=wordpress-svc
+      # - traefik.http.routers.wordpress-auth-rtr.middlewares=
+
+      - traefik.http.routers.wordpress-admin-rtr.entrypoints=http,https
+      - traefik.http.routers.wordpress-admin-rtr.rule=Host(`wordpress.localhost`) && PathPrefix(`/wp-admin`)
+      - traefik.http.routers.wordpress-admin-rtr.tls=true
+      - traefik.http.routers.wordpress-admin-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.wordpress-admin-rtr.service=wordpress-svc
+      # - traefik.http.routers.wordpress-admin-rtr.middlewares=

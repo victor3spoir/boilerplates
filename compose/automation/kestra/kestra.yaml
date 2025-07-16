@@ -3,28 +3,29 @@ datasources:
     driverClassName: org.postgresql.Driver
     url: jdbc:postgresql://kestra-db:5432/kestra
     username: kestra
-    password: k3str4
+    password: kestra_password
+
 kestra:
   server:
-    # basicAuth:
-    #   enabled: true
-    #   username: admin # it must be a valid email address
-    #   password: kestra
-  url: http://localhost:8080/
+    basicAuth:
+      enabled: true
+      username: admin@gmail.com
+      password: password
+  url: https://kestra.localhost
   repository:
     type: postgres
   storage:
-    type: local
-    local:
-      basePath: /app/storage
-    # type: minio
-    # minio:
-    #   endpoint: http://minio
-    #   port: 9000
-    #   accessKey: admin
-    #   secretKey: password
-    #   bucket: kestra
-      # region: us-east-1
+    # type: local
+    # local:
+    #   basePath: /app/storage
+    type: minio
+    minio:
+      endpoint: http://kestra-minio
+      port: 9000
+      accessKey: admin
+      secretKey: password
+      bucket: kestra
+      region: us-east-1
   queue:
     type: postgres
   tasks:

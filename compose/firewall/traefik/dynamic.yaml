@@ -1,12 +1,158 @@
 http:
   middlewares:
-    traefik-auth:
-      basicAuth:
-        users:
-          - admin:$2y$10$kEVFNRbhZ/xdIk80/Ga3aurT82zO86UhPPPvjz4jzAQNFy2hbPYqy # admin:password
-    ratelimiter:
+    ratelimit-webapp-mdl:
+      rateLimit:
+        average: 50
+        burst: 200
+        period: 1s
+
+    ratelimit-api-mdl:
+      rateLimit:
+        average: 150
+        burst: 200
+        period: 1s
+
+    ratelimit-auth-mdl:
       rateLimit:
         average: 10
-        period: 1m
-        burst: 50
+        burst: 20
+        period: 1h
 
+    ratelimit-admin-mdl:
+      rateLimit:
+        average: 5
+        burst: 200
+        period: 1s
+
+    header-web-security-mdl:
+      headers:
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        frameDeny: true
+        sslRedirect: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 63072000
+        referrerPolicy: "strict-origin-when-cross-origin"
+        permissionsPolicy: >-
+          camera=(), microphone=(), geolocation=(), payment=()
+        accessControlAllowOriginList:
+          - "*"
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - PUT
+          - POST
+          - UPDATE
+          - DELETE
+          - PATCH
+        accessControlAllowHeaders:
+          - content-type
+          - authorization
+          - cache-control
+          - x-requested-with
+          - upload-source
+          - x-session-id
+          - x-lazy-pagination
+          - x-disable-pagination
+        accessControlMaxAge: 100
+
+    header-api-security-mdl:
+      headers:
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        frameDeny: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 63072000
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+        customResponseHeaders:
+          X-Robots-Tag: "noindex,nofollow,nosnippet,noarchive"
+          X-Frame-Options: "DENY"
+          X-Content-Type-Options: "nosniff"
+        accessControlAllowOriginList:
+          - "http://domain.com"
+          - "http://*.domain.com"
+        accessControlAllowMethods:
+          - GET
+          - PUT
+          - POST
+          - DELETE
+          - PATCH
+
+    forwardauth-authentik-mdl:
+      forwardAuth:
+        address: "http://<authentik_server_service_name>:9000/outpost.goauthentik.io/auth/traefik"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - X-authentik-username
+          - X-authentik-groups
+          - X-authentik-entitlements
+          - X-authentik-email
+          - X-authentik-name
+          - X-authentik-uid
+          - X-authentik-jwt
+          - X-authentik-meta-jwks
+          - X-authentik-meta-outpost
+          - X-authentik-meta-provider
+          - X-authentik-meta-app
+          - X-authentik-meta-version
+
+    basicauth-auth-mdl:
+      basicAuth:
+        users:
+          - username:$2y$10$TxMqktdQRSzjKOwA9u.52ePneOWNXpJgKoDB65gwP85Y8nD/LvY0u
+
+    compress-security-mdl:
+      compress:
+        excludedContentTypes:
+          - text/event-stream
+
+    geoblock-client-mdl:
+      plugin:
+        geoblock:
+          allowLocalRequests: "false"
+          allowUnknownCountries: "false"
+          api: https://get.geojs.io/v1/ip/country/{ip}
+          apiTimeoutMs: "150"
+          cacheSize: "15"
+          countries:
+            - TG
+            - BE
+            - CI
+          forceMonthlyUpdate: "true"
+          logAllowedRequests: "false"
+          logApiRequests: "true"
+          logLocalRequests: "false"
+          silentStartUp: "false"
+          unknownCountryApiResponse: nil
+
+    geoblock-admin-mdl:
+      plugin:
+        geoblock:
+          allowLocalRequests: "false"
+          allowUnknownCountries: "false"
+          api: https://get.geojs.io/v1/ip/country/{ip}
+          apiTimeoutMs: "150"
+          cacheSize: "15"
+          countries:
+            - TG
+          forceMonthlyUpdate: "true"
+          logAllowedRequests: "false"
+          logApiRequests: "true"
+          logLocalRequests: "false"
+          silentStartUp: "false"
+          unknownCountryApiResponse: nil
+
+    modsecurity-waf-mdl:
+      plugin:
+        traefik-modsecurity-plugin:
+          BadRequestsThresholdCount: "25"
+          BadRequestsThresholdPeriodSecs: "600"
+          JailEnabled: false
+          JailTimeDurationSecs: "7200"
+          ModsecurityUrl: http://owasp-waf:8080
+          TimeoutMillis: "2000"

@@ -1,36 +1,64 @@
+name: uptimekuma
+
 networks:
   dockernet:
     external: true
+  uptimekuma-net: {}
 
 volumes:
-  uptimekuma-vol:
-    name: uptimekuma-vol
+  uptimekuma-db-vol:
+    name: uptimekuma-db-vol
     driver: local
     # driver_opts:
     #   type: nfs4
     #   o: "addr=127.0.0.1,rw"
-    #   device: ":/mnt/storage/updtimekuma"
+    #   device: ":/mnt/storage/uptimekuma"
+  uptimekuma-web-vol:
+    name: uptimekuma-web-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/uptimekuma"
 
 services:
-  updtimekuma:
-    image: louislam/uptime-kuma:1
+  uptimekuma-db:
+    image: mariadb:12.0-rc
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 400Mib
+          cpus: 0.2
+    networks:
+      - uptimekuma-net
+    environment:
+      - MARIADB_USER=mariadb
+      - MARIADB_PASSWORD=mariadb
+      - MARIADB_ROOT_PASSWORD=mariadb
+    volumes:
+      - uptimekuma-db-vol:/var/lib/mysql
+
+  uptimekuma-web:
+    depends_on:
+      - uptimekuma-db
+    image: louislam/uptime-kuma:nightly2
     restart: unless-stopped
     networks:
+      - uptimekuma-net
       - dockernet
     deploy:
       resources:
         limits:
-          memory: 200Mib
-          cpus: 0.2
-    # ports:
-    #   - 3001:3001
+          memory: 400Mib
+          cpus: 0.3
     volumes:
-      - uptimekuma-vol:/app/data
+      - uptimekuma-web-vol:/app/data
     labels:
       - traefik.enable=true
-      - traefik.http.services.updtimekuma-svc.loadbalancer.server.port=9000
-      - traefik.http.routers.updtimekuma-rtr.entrypoints=http,https
-      - traefik.http.routers.updtimekuma-rtr.tls=true
-      - traefik.http.routers.updtimekuma-rtr.tls.certresolver=letsencrypt
-      - traefik.http.routers.updtimekuma-rtr.rule=Host(`updtimekuma.<domain.com>`)
-      - traefik.http.routers.updtimekuma-rtr.service=updtimekuma-svc
+      - traefik.http.services.uptimekuma-svc.loadbalancer.server.port=3001
+      - traefik.http.routers.uptimekuma-rtr.entrypoints=http,https
+      - traefik.http.routers.uptimekuma-rtr.tls=true
+      - traefik.http.routers.uptimekuma-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.uptimekuma-rtr.rule=Host(`uptimekuma.localhost`)
+      - traefik.http.routers.uptimekuma-rtr.service=uptimekuma-svc
