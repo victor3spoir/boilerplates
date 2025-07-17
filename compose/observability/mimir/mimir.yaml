@@ -1,0 +1,54 @@
+multitenancy_enabled: false
+no_auth_tenant: true
+target: all,alertmanager,overrides-exporter
+
+common:
+  storage:
+    # backend: local
+    # local:
+    #   path: /
+    backend: s3
+    s3:
+      endpoint: grafana-minio:9000
+      access_key_id: admin
+      secret_access_key: password
+      insecure: true
+      bucket_name: mimir
+
+server:
+  log_level: info
+  http_listen_port: 8080
+
+blocks_storage:
+  storage_prefix: blocks
+  tsdb:
+    dir: /data/ingester
+
+memberlist:
+  join_members:
+    - mimir-01
+    - mimir-02
+    - mimir-03
+    - mimir-04
+
+ruler:
+  rule_path: /data/ruler
+  alertmanager_url: http://alertmanager:9093
+  ring:
+    heartbeat_period: 2s
+    heartbeat_timeout: 10s
+  evaluation_interval: 15s
+
+alertmanager:
+  data_dir: /data/alertmanager
+  external_url: http://alertmanager:9093
+  sharding_ring:
+    replication_factor: 2
+  persist_interval: 1m
+
+store_gateway:
+  sharding_ring:
+    replication_factor: 3
+
+limits:
+  max_label_names_per_series: 40

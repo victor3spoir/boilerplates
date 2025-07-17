@@ -1,0 +1,125 @@
+networks:
+  dockernet:
+    external: true
+  grafana-net:
+    external: true
+
+configs:
+  Caddyfile:
+    content: |
+      :80 {
+          reverse_proxy mimir-01:8080 mimir-02:8080 mimir-03:8080 mimir-04:8080 {
+            lb_policy least_conn
+
+            header_up Upgrade {http.request.header.Upgrade}
+            header_up X-Forwarded-For {http.request.remote}
+            header_up X-Forwarded-Proto {http.request.scheme}
+            header_up Host {http.request.host}
+          }
+      }
+  mimir.yaml:
+    content: |
+      multitenancy_enabled: false
+      no_auth_tenant: true
+      target: all,alertmanager,overrides-exporter
+
+      common:
+        storage:
+          backend: s3
+          s3:
+            endpoint: grafana-minio:9000
+            access_key_id: admin
+            secret_access_key: password
+            insecure: true
+            bucket_name: mimir
+
+      server:
+        log_level: info
+        http_listen_port: 8080
+
+      blocks_storage:
+        storage_prefix: blocks
+        tsdb:
+          dir: /data/ingester
+
+      memberlist:
+        join_members:
+          - mimir-01
+          - mimir-02
+          - mimir-03
+          - mimir-04
+
+      ruler:
+        rule_path: /data/ruler
+        alertmanager_url: http://alertmanager:9093
+        ring:
+          heartbeat_period: 2s
+          heartbeat_timeout: 10s
+        evaluation_interval: 15s
+
+      alertmanager:
+        data_dir: /data/alertmanager
+        external_url: http://alertmanager:9093
+        sharding_ring:
+          replication_factor: 2
+        persist_interval: 1m
+
+      store_gateway:
+        sharding_ring:
+          replication_factor: 3
+
+      limits:
+        max_label_names_per_series: 40
+
+x-mimir: &mimir
+  image: grafana/mimir:2.15.2
+  command:
+    - -config.file=/etc/mimir.yaml
+  deploy:
+    resources:
+      limits:
+        memory: 300Mib
+        cpus: 0.3
+  networks:
+    - grafana-net
+  labels:
+    - alloy.logs.enable=true
+    - alloy.metrics.enable=true
+  configs:
+    - source: mimir.yaml
+      target: /etc/mimir.yaml
+
+services:
+  mimir-01:
+    <<: *mimir
+    hostname: mimir-01
+  mimir-02:
+    <<: *mimir
+    hostname: mimir-02
+  mimir-03:
+    <<: *mimir
+    hostname: mimir-03
+  mimir-04:
+    <<: *mimir
+    hostname: mimir-04
+
+  mimir:
+    depends_on:
+      - mimir-01
+      - mimir-02
+      - mimir-03
+      - mimir-04
+    image: caddy:2-alpine
+    networks:
+      - dockernet
+      - grafana-net
+    configs:
+      - source: Caddyfile
+        target: /etc/caddy/Caddyfile
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.mimir-svc.loadbalancer.server.port=80
+      - traefik.http.routers.mimir-rtr.rule=Host(`mimir.localhost`)
+      - traefik.http.routers.mimir-rtr.tls=true
+      - traefik.http.routers.mimir-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.mimir-rtr.service=mimir-svc

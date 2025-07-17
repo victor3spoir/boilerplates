@@ -1,0 +1,10 @@
+:80 {
+    reverse_proxy mimir-01:8080 mimir-02:8080 mimir-03:8080 mimir-04:8080 {
+      lb_policy least_conn
+
+    	header_up Upgrade {http.request.header.Upgrade}
+			header_up X-Forwarded-For {http.request.remote}
+			header_up X-Forwarded-Proto {http.request.scheme}
+			header_up Host {http.request.host}
+    }
+}
