@@ -1,0 +1,9 @@
+name: grafana-observability
+
+include:
+  - ./minio/compose.yml
+  - ./grafana/compose.yml
+  - ./alloy/compose.yml
+  - ./loki/compose.yml
+  - ./mimir/compose.yml
+  - ./tempo/compose.yml
