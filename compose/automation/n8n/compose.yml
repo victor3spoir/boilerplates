@@ -28,7 +28,6 @@ volumes:
     #   device: :/path/to/volume
     #   o: 'addr=127.0.0.1,rw'
 
-
 services:
   n8n-minio:
     image: quay.io/minio/minio:latest
@@ -73,15 +72,15 @@ services:
     depends_on:
       n8n-db:
         condition: service_healthy
+      n8n-minio:
+        condition: service_started
     image: n8nio/n8n:next
     restart: unless-stopped
     networks:
       - dockernet
       - n8n-net
-    # ports:
-    #   - "127.0.0.1:5678:5678"
     volumes:
-      # - n8n-web-vol:/home/node/.n8n
+      - n8n-web-vol:/home/node/.n8n
       - ./n8n/backup:/backup
       - ./n8n/shared:/data/shared
     environment:
@@ -90,7 +89,7 @@ services:
       - DB_POSTGRESDB_USER
       - DB_POSTGRESDB_PASSWORD
       - DB_POSTGRESDB_DATABASE
-      
+
       - N8N_EDITOR_BASE_URL
       - N8N_PREVIEW_MODE=true
       - N8N_TEMPLATES_ENABLED=true
@@ -101,13 +100,13 @@ services:
       - WEBHOOK_URL
       - N8N_PUBLIC_API_ENDPOINT
       - N8N_REINSTALL_MISSING_PACKAGES=true
-      
+
       - N8N_EXTERNAL_STORAGE_S3_HOST
       - N8N_EXTERNAL_STORAGE_S3_BUCKET_NAME
       - N8N_EXTERNAL_STORAGE_S3_ACCESS_KEY
       - N8N_EXTERNAL_STORAGE_S3_ACCESS_SECRET
       - N8N_EXTERNAL_STORAGE_S3_AUTH_AUTO_DETECT
-      
+
       - N8N_METRICS=true
       - N8N_METRICS_INCLUDE_CACHE_METRICS=true
       - N8N_METRICS_INCLUDE_MESSAGE_EVENT_BUS_METRICS=true
@@ -124,22 +123,21 @@ services:
       - N8N_PUBLIC_API_SWAGGERUI_DISABLED=true
       - N8N_RUNNERS_ENABLED=true
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
-      # - LOGS
+
       - N8N_LOG_LEVEL=info
       - N8N_LOG_FORMAT=json
-      
+
       - GENERIC_TIMEZONE=UTC
       - N8N_DEFAULT_LOCALE=en
-      
+
       - N8N_SMTP_HOST
       - N8N_SMTP_PORT
       - N8N_SMTP_USER
       - N8N_SMTP_PASS
       - N8N_SMTP_SENDER
-      
+
     labels:
       - traefik.enable=true
-      
       - traefik.http.services.n8n-svc.loadbalancer.server.port=5678
       - traefik.http.routers.n8n-rtr.entrypoints=http,https
       - traefik.http.routers.n8n-rtr.rule=Host(`n8n.localhost`)

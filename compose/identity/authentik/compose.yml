@@ -5,9 +5,11 @@ name: authentik
 networks:
   dockernet:
     external: true
-  authentiknet: {}
+  authentik-net: {}
 
 x-authentik: &authentik
+  image: ghcr.io/goauthentik/server:2025.6.1
+  restart: unless-stopped
   environment:
     - AUTHENTIK_SECRET_KEY
     - AUTHENTIK_REDIS__HOST
@@ -35,7 +37,7 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     networks:
-      - authentiknet
+      - authentik-net
     deploy:
       resources:
         limits:
@@ -55,7 +57,7 @@ services:
       - POSTGRES_PASSWORD
 
   authentik-redis:
-    image: redis:alpine
+    image: redis:8-alpine
     restart: unless-stopped
     command: --save 60 1 --loglevel warning
     deploy:
@@ -64,7 +66,7 @@ services:
           memory: 200Mib
           cpus: 0.2
     networks:
-      - authentiknet
+      - authentik-net
     healthcheck:
       test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
       start_period: 20s
@@ -75,8 +77,6 @@ services:
       - authentik-redis-vol:/data
   authentik-worker:
     <<: *authentik
-    image: ghcr.io/goauthentik/server:2025.6.1
-    restart: unless-stopped
     command: worker
     deploy:
       resources:
@@ -84,14 +84,14 @@ services:
           memory: 1000Mib
           cpus: 0.5
     networks:
-      - authentiknet
+      - authentik-net
       - dockernet
     user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./media:/media
-      - ./certs:/certs
-      - ./custom-templates:/templates
+      # - ./media:/media
+      # - ./certs:/certs
+      # - ./custom-templates:/templates
 
     depends_on:
       authentik-db:
@@ -100,8 +100,6 @@ services:
         condition: service_healthy
   authentik-server:
     <<: *authentik
-    image: ghcr.io/goauthentik/server:2025.6.1
-    restart: unless-stopped
     command: server
     deploy:
       resources:
@@ -110,25 +108,23 @@ services:
           cpus: 0.6
     networks:
       - dockernet
-      - authentiknet
-    volumes:
-      - ./media:/media
-      - ./custom-templates:/templates
-    # ports:
-      # - 127.0.0.1:39000:9000
-      # - 127.0.0.1:49443:9443
+      - authentik-net
+    # volumes:
+    #   - ./media:/media
+    #   - ./custom-templates:/templates
     depends_on:
       authentik-db:
         condition: service_healthy
       authentik-redis:
         condition: service_healthy
+      authentik-worker:
+        condition: service_completed_successfully
     labels:
       - traefik.enable=true
-      # - (routers)
-      - traefik.http.routers.authentik-rtr.entrypoints=http,https
-      - traefik.http.routers.authentik-rtr.rule=Host(`authentik.<domain.com>`)
-      - traefik.http.routers.authentik-rtr.tls=true
-      - traefik.http.routers.authentik-rtr.tls.certresolver=<letsencrypt>
-      # - (service)
-      - traefik.http.routers.authentik-rtr.service=authentik-svc
       - traefik.http.services.authentik-svc.loadbalancer.server.port=9000
+      - traefik.http.routers.authentik-rtr.entrypoints=http,https
+      - traefik.http.routers.authentik-rtr.rule=Host(`authentik.localhost`)
+      - traefik.http.routers.authentik-rtr.tls=true
+      - traefik.http.routers.authentik-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.authentik-rtr.service=authentik-svc
+      # - traefik.http.routers.authentik-rtr.middlewares=
