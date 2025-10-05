@@ -1,0 +1,35 @@
+datasources:
+  postgres:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://kestra-db:5432/kestra
+    username: $POSTGRES_USER
+    password: $POSTGRES_PASSWORD
+
+kestra:
+  jdbc:
+    queues:
+    messageProtection:
+      enabled: true
+      limit: 1048576
+  server:
+    basicAuth:
+      enabled: true
+      username: $KESTRA_AUTH_USERNAME
+      password: $KESTRA_AUTH_PASSWORD
+  url: https://kestra.localhost
+  repository:
+    type: postgres
+  storage:
+    type: minio
+    minio:
+      endpoint: http://kestra-minio
+      port: 9000
+      accessKey: $MINIO_ROOT_USER
+      secretKey: $MINIO_ROOT_PASSWORD
+      bucket: kestra
+      region: us-east-1
+  queue:
+    type: postgres
+  tasks:
+    tmpDir:
+      path: "/tmp/kestra-wd/tmp"
