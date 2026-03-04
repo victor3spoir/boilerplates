@@ -1,0 +1,7 @@
+{
+  "name": "frappe-devenv",
+  "dockerComposeFile": "./compose.yml",
+  "workspaceFolder": "/workspace/",
+  "service": "frappe",
+  "shutdownAction": "stopCompose"
+}

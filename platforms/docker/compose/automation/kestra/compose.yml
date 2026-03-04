@@ -1,0 +1,144 @@
+name: kestra
+
+networks:
+  docker-net:
+    external: true
+  kestra-net: {}
+
+volumes:
+  kestra-db-vol:
+    name: kestra-db-vol
+    driver: local
+  # driver_opts:
+  #   type: nfs4
+  #   o: 'addr=127.0.0.1'
+  #   device: ':/mnt/formbricks/db'
+  kestra-minio-vol:
+    name: kestra-minio-vol
+    driver: local
+# driver_opts:
+#   type: nfs4
+#   o: 'addr=127.0.0.1'
+#   device: ':/mnt/formbricks/db'
+
+configs:
+  kestra.yaml:
+    content: |
+      datasources:
+        postgres:
+          driverClassName: org.postgresql.Driver
+          url: jdbc:postgresql://kestra-db:5432/kestra
+          username: $POSTGRES_USER
+          password: $POSTGRES_PASSWORD
+
+      kestra:
+        jdbc:
+          queues:
+          messageProtection:
+            enabled: true
+            limit: 1048576
+        server:
+          basicAuth:
+            enabled: true
+            username: $KESTRA_AUTH_USERNAME
+            password: $KESTRA_AUTH_PASSWORD
+        url: https://kestra.localhost
+        repository:
+          type: postgres
+        storage:
+          type: minio
+          minio:
+            endpoint: http://kestra-minio
+            port: 9000
+            accessKey: $MINIO_ROOT_USER
+            secretKey: $MINIO_ROOT_PASSWORD
+            bucket: kestra
+            region: us-east-1
+        queue:
+          type: postgres
+        tasks:
+          tmpDir:
+            path: "/tmp/kestra-wd/tmp"
+
+services:
+  kestra-minio:
+    image: quay.io/minio/minio:latest
+    restart: unless-stopped
+    entrypoint: ''
+    command:
+      - sh
+      - -c
+      - mkdir -p /data/kestra && minio server /data --address ":9000"
+    networks:
+      - kestra-net
+    deploy:
+      resources:
+        limits:
+          memory: 300Mb
+          cpus: 0.3
+    environment:
+      MINIO_ROOT_USER:
+      MINIO_ROOT_PASSWORD:
+    volumes:
+      - kestra-minio-vol:/data:rw
+
+  kestra-db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    volumes:
+      - kestra-db-vol:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 300Mb
+          cpus: 0.3
+    networks:
+      - kestra-net
+    environment:
+      POSTGRES_DB:
+      POSTGRES_USER:
+      POSTGRES_PASSWORD:
+    healthcheck:
+      test:
+        - 'CMD-SHELL'
+        - 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}'
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  kestra-web:
+    depends_on:
+      kestra-db:
+        condition: service_started
+      kestra-minio:
+        condition: service_started
+    image: kestra/kestra:develop
+    restart: unless-stopped
+    command: server standalone --config /etc/kestra/config.yaml
+    user: root
+    deploy:
+      replicas: 1
+      resources:
+        reservations:
+          memory: 600Mb
+          cpus: "0.3"
+        limits:
+          memory: 1024Mb
+          cpus: "0.5"
+    networks:
+      - kestra-net
+      - docker-net
+    configs:
+      - source: kestra.yaml
+        target: /etc/kestra/config.yaml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      traefik.enable: true
+      traefik.http.services.kestra-svc.loadbalancer.server.port: 8080
+      traefik.http.routers.kestra-rtr.entrypoints: websecure
+      traefik.http.routers.kestra-rtr.rule: Host(`kestra.localhost`)
+      traefik.http.routers.kestra-rtr.tls: true
+      traefik.http.routers.kestra-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.kestra-rtr.service: kestra-svc
+      # - traefik.http.routers.kestra-rtr.middlewares=

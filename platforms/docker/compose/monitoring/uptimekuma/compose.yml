@@ -1,0 +1,64 @@
+name: uptimekuma
+
+networks:
+  docker-net:
+    external: true
+  uptimekuma-net: {}
+
+volumes:
+  uptimekuma-db-vol:
+    name: uptimekuma-db-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/uptimekuma"
+  uptimekuma-web-vol:
+    name: uptimekuma-web-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   o: "addr=127.0.0.1,rw"
+    #   device: ":/mnt/storage/uptimekuma"
+
+services:
+  uptimekuma-db:
+    image: mariadb:12.0-rc
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 400Mib
+          cpus: 0.2
+    networks:
+      - uptimekuma-net
+    environment:
+      - MARIADB_USER
+      - MARIADB_PASSWORD
+      - MARIADB_ROOT_PASSWORD
+    volumes:
+      - uptimekuma-db-vol:/var/lib/mysql
+
+  uptimekuma-web:
+    depends_on:
+      - uptimekuma-db
+    image: louislam/uptime-kuma:nightly2
+    restart: unless-stopped
+    networks:
+      - uptimekuma-net
+      - docker-net
+    deploy:
+      resources:
+        limits:
+          memory: 400Mib
+          cpus: 0.3
+    volumes:
+      - uptimekuma-web-vol:/app/data
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.uptimekuma-svc.loadbalancer.server.port=3001
+      - traefik.http.routers.uptimekuma-rtr.entrypoints=http,https
+      - traefik.http.routers.uptimekuma-rtr.tls=true
+      - traefik.http.routers.uptimekuma-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.uptimekuma-rtr.rule=Host(`uptimekuma.localhost`)
+      - traefik.http.routers.uptimekuma-rtr.service=uptimekuma-svc
