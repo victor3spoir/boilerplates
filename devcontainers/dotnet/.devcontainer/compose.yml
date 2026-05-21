@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: Password123!
+      POSTGRES_DB: db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    image: mcr.microsoft.com/devcontainers/dotnet:dev-10.0
+    working_dir: /workspace
+    volumes:
+      - ../src:/workspace:cached
+    command: sleep infinity
+    depends_on:
+      - db
+
+volumes:
+  pgdata:

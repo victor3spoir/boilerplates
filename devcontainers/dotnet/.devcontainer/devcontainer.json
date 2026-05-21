@@ -1,0 +1,47 @@
+{
+  "name": "dotnet-app",
+  "dockerComposeFile": "./compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [
+    8080
+  ],
+  "portsAttributes": {
+    "8080": {
+      "label": "Api port",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "containerUser": "root",
+  "remoteUser": "vscode",
+  "postCreateCommand": "ls -alh",
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/,type=bind,readonly"
+  ],
+  "features": {
+    "ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {
+      "defaultUser": true,
+      "theme": "agnoster",
+      "plugins": "git docker",
+      "desiredLocale": "en_US.UTF-8 UTF-8"
+    },
+    "ghcr.io/devcontainers-extra/features/git-lfs:1": {
+      "version": "latest"
+    },
+    
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": true,
+      "version": "system"
+    }
+  }
+}

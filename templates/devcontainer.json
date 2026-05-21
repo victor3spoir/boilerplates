@@ -1,0 +1,25 @@
+{
+  "name": "devcontainer",
+  "dockerComposeFile": "./compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/app",
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "echo ready",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {
+      "setLocale": true,
+      "theme": "robbyrussell",
+      "plugins": "git docker",
+      "desiredLocale": "en_US.UTF-8 UTF-8"
+    }
+  },
+  "remoteUser": "app",
+  "containerUser": "root"
+}

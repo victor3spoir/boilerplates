@@ -1,0 +1,146 @@
+name: traefik
+
+
+
+services:
+  traefik:
+    image: traefik:v3.7.0
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "200Mib"
+          cpus: "0.25"
+        limits:
+          memory: 400Mib
+          cpus: "0.5"
+    command:
+      - --global.checknewversion=true
+      - --global.sendanonymoususage=false
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --api.debug=true
+      - --ping=true
+      - --ping.entryPoint=web
+      # - --ping.manualRouting=true
+
+      - --entryPoints.web.address=:80
+      - --entryPoints.websecure.address=:443
+      - --entryPoints.metrics.address=:8082
+
+      - --providers.docker.endpoint=unix://var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.filename=/etc/traefik/dynamic.yaml
+      - --providers.file.watch=true
+
+      # http challenge
+      - --certificatesResolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      - --certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json
+      - --certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=web
+
+      # dns challenge
+      # - --certificatesResolvers.cloudflare.acme.email=${ACME_EMAIL}
+      # - --certificatesResolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      # - --certificatesResolvers.cloudflare.acme.storage=/var/traefik/certs/cloudflare-acme.json
+      # - --certificatesResolvers.cloudflare.acme.keyType=EC256
+      # - --certificatesResolvers.cloudflare.acme.dnsChallenge.provider=cloudflare
+      # - --certificatesResolvers.cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,8.8.8.8:53
+
+
+      # METRICS PROMETHEUS
+      - --metrics.prometheus=true
+      - --metrics.prometheus.addRoutersLabels=true
+      - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+      # - --metrics.prometheus.manualRouting=true
+      - --metrics.prometheus.entryPoint=metrics
+
+      # TRACING
+      - --tracing=true
+      - --tracing.addinternals
+      - --tracing.sampleRate=0.2
+      - --tracing.serviceName=traefik
+
+
+      # LOG
+      - --log.level=TRACE # TRACE - INFO - DEBUG - WARN - ERROR - FATAL - PANIC
+      - --log.format=json
+      - --log.filepath="/var/log/traefik/traefik.log"
+      - --log.nocolor=false
+      - --log.compress=true
+
+      - --accessLog=true
+      - --accesslog.format=json
+      - --accessLog.addinternals=true
+      - --accesslog.filepath=/var/log/traefik/access.log
+
+      - --experimental.fastProxy
+      - --experimental.otlpLogs=true
+
+      # - Plugins
+      # geobloc
+      - --experimental.plugins.geoblock.modulename=github.com/PascalMinder/geoblock
+      - --experimental.plugins.geoblock.version=v0.3.3
+      # modsecurity
+      - --experimental.plugins.traefik-modsecurity-plugin.modulename=github.com/acouvreur/traefik-modsecurity-plugin
+      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.3.0
+
+    networks:
+      docker-net:
+    ports:
+      - 80:80
+      - 443:443
+    configs:
+      - source: dynamic.yaml
+        target: /etc/traefik/dynamic.yaml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+      - traefik-vol:/var/traefik/certs:rw
+    environment:
+      TZ: UTC
+      ACME_EMAIL: user@gmail.com
+      CF_DNS_API_TOKEN:
+    labels:
+      traefik.enable: true
+      # - routers
+      traefik.http.routers.traefik-rtr.entrypoints: websecure
+      traefik.http.routers.traefik-rtr.rule: Host(`traefik.127-0-0-1.traefik.me`)
+      traefik.http.routers.traefik-rtr.tls: true
+      traefik.http.routers.traefik-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.traefik-rtr.tls.domains[0].main: 127-0-0-1.traefik.me
+      traefik.http.routers.traefik-rtr.tls.domains[0].sans: '*.127-0-0-1.traefik.me'
+      traefik.http.routers.traefik-rtr.service: api@internal
+      traefik.http.routers.traefik-rtr.middlewares: traefik-mdls
+
+      # traefik.http.routers.traefik-prom-rtr.entrypoints: websecure
+      # traefik.http.routers.traefik-prom-rtr.rule: 'Host(`traefik.127-0-0-1.traefik.me`) && PathPrefix(`/metrics`)'
+      # traefik.http.routers.traefik-prom-rtr.tls: true
+      # traefik.http.routers.traefik-prom-rtr.tls.certresolver: letsencrypt
+      # traefik.http.routers.traefik-prom-rtr.service: prometheus@internal
+      # - traefik.http.routers.traefik-prom-rtr.middlewares=
+
+
+
+
+
+
+
+
+networks:
+  docker-net:
+    external: true
+  traefik-net: {}
+
+configs:
+  dynamic.yaml:
+    file: ./dynamic.yaml
+
+volumes:
+  traefik-vol:
+    name: traefik-vol
+    driver: local
+    # driver_opts:
+    #   type: nfs4
+    #   device: :/path/to/volume
+    #   o: 'addr=127.0.0.1,rw'

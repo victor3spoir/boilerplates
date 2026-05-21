@@ -1,0 +1,67 @@
+name: dockhand
+
+services:
+  dockhand-db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    networks:
+      dockhand-net:
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.2"
+          memory: 200MiB
+        limits:
+          cpus: "0.4"
+          memory: 400MiB
+    environment:
+      POSTGRES_USER: dockhand
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dockhand
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - dockhand_db_vol:/var/lib/postgresql
+
+  dockhand:
+    depends_on:
+      dockhand-db:
+        condition: service_healthy
+    image: fnsys/dockhand:latest
+    restart: unless-stopped
+    networks:
+      docker-net:
+      dockhand-net:
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.3"
+          memory: 600MiB
+        limits:
+          cpus: "0.6"
+          memory: 800MiB
+    ports:
+      - 3000:3000
+    environment:
+      DATABASE_URL: postgres://dockhand:password@dockhand-db:5432/dockhand
+      ENCRYPTION_KEY: 779a7da3f41e0328b0c976943b59a832e191777dfc61b1f823decde6b8ca7eed
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - dockhand_vol:/app/data
+
+volumes:
+  dockhand_db_vol:
+    name: dockhand_db_vol
+    driver: local
+  dockhand_vol:
+    name: dockhand_vol
+    driver: local
+
+
+networks:
+  dockhand-net:
+  docker-net:
+   external: true
