@@ -1,0 +1,6 @@
+- name: harden ubuntu vps
+  hosts: all
+  become: true
+
+  roles:
+    - dev-sec.os-hardening

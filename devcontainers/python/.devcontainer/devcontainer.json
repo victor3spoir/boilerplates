@@ -1,6 +1,10 @@
 {
   "name": "python-devcontainer",
-  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "dockerComposeFile": "./compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/app",
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "uv sync",
   "features": {
     "ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
     "ghcr.io/jsburckhardt/devcontainer-features/ruff:1": {},
@@ -12,11 +16,15 @@
       "desiredLocale": "en_US.UTF-8 UTF-8"
     }
   },
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/,type=bind,readonly"
+  ],
+  "remoteUser": "vscode",
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
-        "ms-toolsai.jupyter"
+        "tamasfe.even-better-toml"
       ]
     }
   }

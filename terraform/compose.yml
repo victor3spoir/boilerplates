@@ -1,0 +1,12 @@
+---
+services:
+  tf:
+    image: hashicorp/terraform:latest
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["tail -f /dev/null"]
+    working_dir: /terraform
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock 
+      - ./configs:/terraform
+
+

@@ -215,3 +215,24 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 **/*/.env
+
+# env
+.env
+.env.*
+!.env.example
+
+# certificates
+*.pem
+*.key
+*.p12
+
+# cloud
+.aws/
+.gcp/
+
+# editors
+.vscode/
+.idea/
+
+# local databases
+*.db

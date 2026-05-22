@@ -1,0 +1,22 @@
+{
+  "name": "web-devcontainer",
+  "dockerComposeFile": "./compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/app",
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "bun install",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers-extra/features/zsh-plugins:0": {},
+    "ghcr.io/devcontainers-extra/features/bun:1.1.0": {}
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/,type=bind,readonly"
+  ],
+  "remoteUser": "node",
+  "customizations": {
+    "vscode": {
+      "extensions": []
+    }
+  }
+}

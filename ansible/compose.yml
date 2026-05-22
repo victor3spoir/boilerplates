@@ -1,0 +1,33 @@
+name: ansible
+
+configs:
+  private_key:
+    file: ./config/private_key
+  entrypoint_sh:
+    content: |
+      #!/bin/sh 
+      mkdir -p /root/.ssh
+      cat /tmp/private_key | tr -d '\015' > /root/.ssh/private_key
+      echo "" >> /root/.ssh/private_key
+      chmod 600 /root/.ssh/private_key
+      exec tail -f /dev/null
+
+services:
+  ansible:
+    image: ansible:dev
+    working_dir: /ansible
+    entrypoint:
+      - /bin/sh
+      - /entrypoint.sh
+
+    configs:
+      - source: entrypoint_sh
+        target: /entrypoint.sh
+        mode: 555
+      - source: private_key
+        target: /tmp/private_key
+    volumes:
+      - ./config/ansible:/ansible:rw
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING=false
+      - ANSIBLE_PYTHON_INTERPRETER=auto

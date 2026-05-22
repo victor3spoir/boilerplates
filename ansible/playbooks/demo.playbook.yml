@@ -1,0 +1,23 @@
+- name: install packages
+  hosts: prod
+  become: true
+
+  tasks:
+    - name: install btop
+      apt:
+        name: btop
+        state: present
+        update_cache: true
+    
+    - name: start ssh server
+      service:
+        name: ssh
+        state: started
+        enabled: true
+      notify: do_someting
+
+  handlers:
+    - name: do_something
+      service:
+        name: ssh
+        state: restarted
