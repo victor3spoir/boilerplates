@@ -1,18 +1,7 @@
 name: redis
 
-networks:
-  docker-net:
-    external: true
-  redis-net: {}
 
-volumes:
-  redisinsight-vol:
-    name: redisinsight-vol
-    driver: local
-    # driver_opts:
-    #   type: nfs
-    #   device: :/path/to/volume
-    #   o: 'addr=127.0.0.1,rw'
+
 
 services:
   redis:
@@ -22,10 +11,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200Mb
-          cpus: 0.2
+          memory: "200MiB"
+          cpus: "0.2"
     networks:
-      - redis-net
+      redis-net:
 
   redisinsight:
     image: redis/redisinsight:2.66
@@ -33,12 +22,22 @@ services:
     deploy:
       resources:
         limits:
-          memory: 200Mb
-          cpus: 0.2
+          memory: "200MiB"
+          cpus: "0.2"
     networks:
-      - docker-net
-      - redis-net
+      docker-net:
+      redis-net:
     ports:
       - 5540:5540
     volumes:
       - redisinsight-vol:/data
+
+networks:
+  docker-net:
+    external: true
+  redis-net: {}
+
+volumes:
+  redisinsight-vol:
+    name: redisinsight-vol
+    driver: local

@@ -1,0 +1,9 @@
+name: ofelia
+
+services:
+  ofelia-cron:
+    image: mcuadros/ofelia:latest
+    restart: unless-stopped
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -1,0 +1,25 @@
+name: timescaldb-dev
+
+services:
+  timescaledb-dev:
+    image: timescale/timescaledb:latest-pg18
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.3"
+          memory: "300MiB"
+        limits:
+          cpus: "0.5"
+          memory: "500MiB"
+    ports:
+      - '127.0.0.1:5432:5432'
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - timescaldb-vol:/var/lib/postgresql/data
+
+volumes:
+  timescaldb-vol:
+    name: timescaldb-vol

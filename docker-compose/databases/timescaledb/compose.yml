@@ -1,0 +1,81 @@
+name: timescaledb
+
+configs:
+  postgres_config:
+    file: "./configs/postgresql.conf"
+  postgres_hba_config:
+    file: "./configs/pg_hba.conf"
+
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg18
+    restart: always
+    command: |
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    deploy:
+      resources:
+        reservations:
+          memory: "1GB"
+          cpus: "1.0"
+        limits:
+          cpus: "2.0"
+          memory: "4GB"
+    ports:
+      - '127.0.0.1:5432:5432'
+    networks:
+      - db-net
+    volumes:
+      - ./scripts:/scripts
+      - timescaledb-vol:/var/lib/postgresql
+    configs:
+      - source: postgres_config
+        target: /etc/postgresql/postgresql.conf
+      - source: postgres_hba_config
+        target: /etc/postgresql/pg_hba.conf
+    secrets:
+      - pg_password
+    environment:
+      POSTGRES_INITDB_ARGS: --data-checksums
+      POSTGRES_DB: timescaledb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: "/run/secrets/pg_password"
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    shm_size: "1gb"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    stop_grace_period: "120s"
+    read_only: false
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      ofelia.enabled: true
+      ofelia.job-exec.daily-backup.schedule: "0 2 * * *"
+      ofelia.job-exec.daily-backup.command: "dos2unix /scripts/backup.sh && ./scripts/backup.sh"
+
+
+
+
+secrets:
+  pg_password:
+    file: "./secrets/pg_password"
+
+networks:
+  db-net:
+    external: true
+
+volumes:
+  timescaledb-vol:
+    name: timescaledb-vol
+    driver: local
+

@@ -1,0 +1,57 @@
+#defaultcreds: admin: public
+name: emqx
+
+services:
+  emqx:
+    image: emqx/emqx:latest
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "/opt/emqx/bin/emqx", "ctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        reservations:
+          memory: "300MiB"
+          cpus: "0.5"
+        limits:
+          memory: "500MiB"
+          cpus: "1.0"
+    networks:
+      docker-net:
+    ports:
+      - 1883:1883 #mqqt
+      - 8083:8083 #ws
+      - 8883:8883 #mqqts
+      - 8084:8084 #wss
+      - '127.0.0.1:18083:18083' #dashoard
+    configs:
+      - source: base_hocon
+        target: /opt/emqx/etc/base.hocon
+    volumes:
+      - emqx-vol:/opt/emqx/data
+      - ./data/log:/opt/emqx/log
+    labels:
+      traefik.enable: true
+      traefik.http.services.emqx-ui-svc.loadbalancer.server.port: 18083
+      traefik.http.routers.emqx-ui-rtr.entrypoints: web,websecure
+      traefik.http.routers.emqx-ui-rtr.rule: Host(`emqx-ui.localhost`)
+      traefik.http.routers.emqx-ui-rtr.tls: true
+      traefik.http.routers.emqx-ui-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.emqx-ui-rtr.service: emqx-ui-svc
+      # - traefik.http.routers.emqx-dashboard-rtr.middlewares=
+
+configs:
+  base_hocon:
+    file:  "./configs/base.hocon"
+
+
+volumes:
+  emqx-vol:
+    name: emqx-vol
+    driver: local
+
+networks:
+  docker-net:
+    external: true

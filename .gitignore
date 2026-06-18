@@ -241,3 +241,5 @@ __marimo__/
 **/*/html/*
 **/*/*.pem
 **/*/secrets/*
+
+**/data/*

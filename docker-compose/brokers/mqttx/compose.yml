@@ -1,0 +1,23 @@
+name: mqttx
+
+services:
+  mqttx:
+    image: emqx/mqttx-web:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "500MiB"
+    networks:
+      - docker-net
+    ports:
+      - '127.0.0.1:80:80'
+    environment:
+      VUE_APP_PAGE_TITLE: mqttx-web
+      VUE_APP_PAGE_DESCRIPTION: mqttx-web
+      # - BASE_URL=value
+
+networks:
+  docker-net:
+    external: true
