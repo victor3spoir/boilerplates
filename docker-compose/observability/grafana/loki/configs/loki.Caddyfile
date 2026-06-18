@@ -1,0 +1,24 @@
+:3100 {
+    log {
+        output stdout
+        format json
+        level   info
+    }
+
+    respond / "OK" 200
+
+    reverse_proxy /api/prom/push http://loki-write:3100
+    reverse_proxy /loki/api/v1/push http://loki-write:3100
+
+    reverse_proxy /api/prom/tail http://loki-read:3100 {
+        header_up Upgrade {http.request.header.Upgrade}
+        header_up Connection {http.request.header.Connection}
+    }
+    reverse_proxy /loki/api/v1/tail http://loki-read:3100 {
+        header_up Upgrade {http.request.header.Upgrade}
+        header_up Connection {http.request.header.Connection}
+    }
+
+    reverse_proxy /api/prom/* http://loki-read:3100
+    reverse_proxy /loki/api/* http://loki-read:3100
+}

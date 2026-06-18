@@ -1,0 +1,70 @@
+name: mimir
+
+configs:
+  mimir_caddyfile:
+    file: "./configs/mimir.Caddyfile"
+  mimir_yaml:
+    file: "./configs/mimir-dev.yaml"
+
+x-mimir: &mimir
+  image: grafana/mimir:latest
+  command:
+    - -config.file=/etc/mimir.yaml
+  deploy:
+    resources:
+      limits:
+        memory: 300Mib
+        cpus: "0.3"
+  networks:
+    grafana-net:
+  labels:
+    - alloy.logs.enable=true
+    - alloy.metrics.enable=true
+  configs:
+    - source: mimir_yaml
+      target: /etc/mimir.yaml
+
+services:
+  mimir-01:
+    <<: *mimir
+    hostname: mimir-01
+  mimir-02:
+    <<: *mimir
+    hostname: mimir-02
+  mimir-03:
+    <<: *mimir
+    hostname: mimir-03
+  mimir-04:
+    <<: *mimir
+    hostname: mimir-04
+
+  mimir:
+    depends_on:
+      mimir-01:
+        condition: service_started
+      mimir-02:
+        condition: service_started
+      mimir-03:
+        condition: service_started
+      mimir-04:
+        condition: service_started
+    image: caddy:2-alpine
+    networks:
+      docker-net:
+      grafana-net:
+    configs:
+      - source: mimir_caddyfile
+        target: /etc/caddy/Caddyfile
+    labels:
+      traefik.enable: true
+      traefik.http.services.mimir-svc.loadbalancer.server.port: 80
+      traefik.http.routers.mimir-rtr.rule: Host(`mimir.localhost`)
+      traefik.http.routers.mimir-rtr.tls: true
+      traefik.http.routers.mimir-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.mimir-rtr.service: mimir-svc
+      
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true

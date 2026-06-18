@@ -1,0 +1,43 @@
+# https://getwud.github.io/wud/#/quickstart/
+name: wud
+
+services:
+  whatsupdocker:
+    image: getwud/wud:latest
+    container_name: wud
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - wud-vol:/store
+      # - /etc/localtime:/etc/localtime:ro
+    networks:
+      docker-net:
+    environment:
+      WUD_LOG_LEVEL: info
+      WUD_LOG_FORMAT: json
+      TZ: UTC
+      WUD_SERVER_CORS_ENABLED: true
+      WUD_SERVER_CORS_ORIGIN: "*"
+      WUD_TRIGGER_SMTP_mailpit_HOST: mailpit
+      WUD_TRIGGER_SMTP_mailpit_PORT: 1025
+      WUD_TRIGGER_SMTP_mailpit_USER: admin
+      WUD_TRIGGER_SMTP_mailpit_PASS: Password123!
+      WUD_TRIGGER_SMTP_mailpit_FROM_ADDRESS: admin@local.host
+      WUD_TRIGGER_SMTP_mailpit_FROM_NAME: Admin
+      WUD_TRIGGER_SMTP_mailpit_TO: user@local.host
+    labels:
+      traefik.enable: true
+      traefik.http.services.wud-svc.loadbalancer.server.port: 3000
+      traefik.http.routers.wud-rtr.entrypoints: web,websecure
+      traefik.http.routers.wud-rtr.tls: true
+      traefik.http.routers.wud-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.wud-rtr.rule: Host(`wud.localhost`)
+      traefik.http.routers.wud-rtr.service: wud-svc
+
+volumes:
+  wud-vol:
+    name: wud-vol
+
+networks:
+  docker-net:
+   external: true

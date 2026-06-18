@@ -1,0 +1,31 @@
+name: alertmanager
+
+configs:
+  alertmanager_yaml:
+    file: "./configs/alertmanager.yaml"
+
+services:
+  alertmanager:
+    image: prom/alertmanager:latest
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yaml
+    networks:
+      docker-net:
+      grafana-net:
+    configs:
+      - source: alertmanager_yaml
+        target: /etc/alertmanager/alertmanager.yaml
+    labels:
+      traefik.enable: true
+      traefik.http.services.alertmanager-svc.loadbalancer.server.port: 9093
+      traefik.http.routers.alertmanager-rtr.rule: Host(`alertmanager.localhost`)
+      traefik.http.routers.alertmanager-rtr.tls: true
+      traefik.http.routers.alertmanager-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.alertmanager-rtr.service: alertmanager-svc
+
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true

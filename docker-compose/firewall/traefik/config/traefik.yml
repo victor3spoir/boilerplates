@@ -1,0 +1,126 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+api:
+  insecure: true
+  dashboard: true
+  debug: true
+
+ping:
+  entryPoint: web
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+  pgsql:
+    address: ":5432"
+
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    watch: true
+    network: docker-net
+  file:
+    filename: "/etc/traefik/dynamic.yaml"
+    watch: true
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: admin@local.host
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      # caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      storage: "/var/traefik/certs/letsencrypt-acme.json"
+      httpChallenge:
+        entryPoint: web
+
+# cloudflare:
+#   acme:
+#     email: "${ACME_EMAIL}"
+#     caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+#     storage: "/var/traefik/certs/cloudflare-acme.json"
+#     keyType: EC256
+#     dnsChallenge:
+#       provider: cloudflare
+#       resolvers:
+#         - "1.1.1.1:53"
+#         - "8.8.8.8:53"
+
+metrics:
+  otlp:
+    addRoutersLabels: true
+    pushInterval: 5s
+    serviceName: traefik
+    explicitBoundaries: [0.1, 0.3, 1.2, 5.0]
+# http:
+#   endpoint: http://alloy:4318/v1/metrics
+#   headers:
+#     x-api-key: sdf78s1sdsAs7
+
+# prometheus:
+#   addRoutersLabels: true
+#   buckets: [0.1, 0.3, 1.2, 5.0]
+#   entryPoint: metrics
+
+
+tracing:
+  serviceName: traefik
+  sampleRate: 0.2
+  addInternals: true
+# otlp:
+#   http:
+#     endpoint: http://alloy:4318/v1/traces
+# tls:
+#   insecureSkipVerify: false
+# headers:
+#   x-api-key: api-key-value
+
+log:
+  level: DEBUG  # TRACE, INFO, DEBUG, WARN, ERROR, FATAL, PANIC
+  format: json
+  filePath: "/var/log/traefik/traefik.log"
+# otlp:
+#   http:
+#     endpoint: http://alloy:4318/v1/logs
+#     headers:
+#       x-api-key: api-key-value
+
+accessLog:
+  format: json
+  addInternals: true
+  filePath: "/var/log/traefik/access.log"
+  bufferingSize: 100
+  filters:
+    statusCodes:
+      - "200-299"
+      - "400-599"
+  fields:
+    defaultMode: keep
+    names:
+      ClientUsername: drop
+    headers:
+      defaultMode: keep #drop|keep
+      names:
+        User-Agent: keep
+        X-Real-Ip: keep
+        X-Forwarded-For: keep
+        X-Forwarded-Proto: keep
+        
+
+
+experimental:
+  fastProxy:
+    debug: true
+  otlplogs: true
+  plugins:
+    bouncer:
+      moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      version: v1.4.6 
+    geoblock:
+      moduleName: github.com/PascalMinder/geoblock
+      version: v0.3.3

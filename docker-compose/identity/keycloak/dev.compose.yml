@@ -1,0 +1,32 @@
+name: keycloak-dev
+
+services:
+  keycloak-dev:
+    image: keycloak/keycloak:nightly
+    command: start-dev 
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.4"
+          memory: "528MiB"
+        limits:
+          cpus: "0.6"
+          memory: "700MiB"
+    networks:
+      docker-net:
+    ports:
+      - 8080:8080
+    environment:
+      KC_HEALTH_ENABLED: true
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: Password123!
+
+networks:
+  docker-net:
+    external: true
+
+volumes:
+  keycloack-data:
+    name: keycloack-data
+

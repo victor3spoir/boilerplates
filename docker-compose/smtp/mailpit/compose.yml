@@ -1,0 +1,29 @@
+name: mailpit
+
+services:
+  mailpit:
+    image: axllent/mailpit:v1.27
+    restart: unless-stopped
+    networks:
+      docker-net:
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 200MiB
+    ports:
+      - '127.0.0.1:1025:1025'
+    environment:
+      MP_ENABLE_PROMETHEUS: true
+    labels:
+      traefik.enable: true
+      traefik.http.services.mailpit-svc.loadbalancer.server.port: 8025
+      traefik.http.routers.mailpit-rtr.entrypoints: web,websecure
+      traefik.http.routers.mailpit-rtr.rule: Host(`mailpit.localhost`)
+      traefik.http.routers.mailpit-rtr.tls: true
+      traefik.http.routers.mailpit-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.mailpit-rtr.service: mailpit-svc
+
+networks:
+  docker-net:
+    external: true

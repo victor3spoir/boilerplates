@@ -1,0 +1,14 @@
+server:
+  http_listen_port: 4040
+  log_level: info
+
+storage:
+  backend: filesystem
+  filesystem:
+    dir: /data/pyroscope
+
+limits:
+  max_profile_size_bytes: 104857600
+  max_label_name_length: 1024
+  max_label_value_length: 2048
+  ingestion_rate_mb: 10

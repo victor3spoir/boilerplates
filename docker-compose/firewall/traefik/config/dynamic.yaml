@@ -1,0 +1,107 @@
+http:
+  # services:
+  #   srv-master-svc:
+  #     loadBalancer:
+  #       servers:
+  #         - url: "http://srv-side.multipass"
+
+  # routers:
+  #   srv-master-rtr:
+  #     rule: "Host(`srv-side.localhost`)"
+  #     entryPoints:
+  #       - websecure
+  #     tls:
+  #       certResolver: letsencrypt
+  #     service: srv-master-svc
+
+
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    chain-web-security-mdl:
+      chain:
+        middlewares:
+          - header-web-security-mdl
+          - ratelimit-webapp-mdl
+          - compress-security-mdl
+    header-web-security-mdl:
+      headers:
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        frameDeny: true
+        sslRedirect: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 63072000
+        referrerPolicy: "strict-origin-when-cross-origin"
+        permissionsPolicy: >-
+          camera=(), microphone=(), geolocation=(), payment=()
+        accessControlAllowOriginList:
+          - "*"
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - PUT
+          - POST
+          - UPDATE
+          - DELETE
+          - PATCH
+        accessControlAllowHeaders:
+          - content-type
+          - authorization
+          - cache-control
+          - x-requested-with
+          - upload-source
+          - x-session-id
+          - x-lazy-pagination
+          - x-disable-pagination
+        accessControlMaxAge: 100
+    ratelimit-webapp-mdl:
+      rateLimit:
+        average: 50
+        burst: 200
+        period: 1s
+
+    compress-security-mdl:
+      compress:
+        excludedContentTypes:
+          - text/event-stream
+    crowdsec:
+      plugin:
+        bouncer:
+          enabled: false
+          logLevel: DEBUG
+          LogFilePath: ""
+          updateIntervalSeconds: 60
+          updateMaxFailure: 0
+          defaultDecisionSeconds: 60
+          remediationStatusCode: 403
+          httpTimeoutSeconds: 10
+          crowdsecMode: live
+          crowdsecAppsecEnabled: true
+          crowdsecAppsecHost: crowdsec:7422
+          crowdsecAppsecPath: "/"
+          crowdsecAppsecFailureBlock: true
+          crowdsecAppsecUnreachableBlock: true
+          crowdsecAppsecBodyLimit: 10485760
+          crowdsecLapiKey: IKm/fCc4pzdlOmic3d0KRZFEYi0KZ2Mv22wNd9ukKtg
+          crowdsecLapiScheme: http
+          crowdsecLapiHost: crowdsec:8080
+          crowdsecLapiPath: "/"
+          crowdsecLapiTLSInsecureVerify: false
+          crowdsecCapiMachineId: login
+          crowdsecCapiPassword: password
+          crowdsecCapiScenarios:
+            - crowdsecurity/http-path-traversal-probing
+            - crowdsecurity/http-xss-probing
+            - crowdsecurity/http-generic-bf
+          forwardedHeadersTrustedIPs:
+            - 192.168.1.0/24
+            - 10.0.10.23/32
+            - 10.0.20.0/24
+          clientTrustedIPs:
+            - 192.168.1.0/24

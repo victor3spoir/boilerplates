@@ -1,0 +1,48 @@
+name: zerobyte
+
+services:
+  zerobyte:
+    image: ghcr.io/nicotsx/zerobyte:v0.37
+    container_name: zerobyte
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    ports:
+      - "4096:4096"
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.3"
+          memory: "400MiB"
+        limits:
+          memory: "500MiB"
+          cpus: "0.4"
+    networks:
+      docker-net:
+    devices:
+      - /dev/fuse:/dev/fuse
+    environment:
+      TZ: UTC
+      BASE_URL: https://zerobyte.localhost
+      APP_SECRET: 5fcef611d4d51a4d2eec7d237d1f2f8ac652dd442e916b2261794ba02c13eeb6
+      TRUST_PROXY: true
+      # TRUSTED_ORIGINS:
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - zerobyte-vol:/var/lib/zerobyte
+    labels:
+      traefik.enable: true
+      traefik.http.services.zerobyte-svc.loadbalancer.server.port: 4096
+      traefik.http.routers.zerobyte-rtr.entrypoints: websecure
+      traefik.http.routers.zerobyte-rtr.rule: Host(`zerobyte.localhost`)
+      traefik.http.routers.zerobyte-rtr.tls: true
+      traefik.http.routers.zerobyte-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.zerobyte-rtr.service: zerobyte-svc
+
+volumes:
+  zerobyte-vol:
+   name: zerobyte-vol
+
+networks:
+  docker-net:
+   external: true

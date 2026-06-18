@@ -1,0 +1,44 @@
+# https://docs.rustfs.com/installation/
+# rustfsadmin:rustfsadmin
+name: rustfs
+
+services:
+  rustfs:
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "300MiB"
+          cpus: "0.3"
+        limits:
+          memory: "700MiB"
+          cpus: "0.5"
+    networks:
+      docker-net:
+    volumes:
+      - rustfs-vol:/data
+    labels:
+      traefik.enable: true
+      traefik.http.services.rustfs-console-svc.loadbalancer.server.port: 9001
+      traefik.http.routers.rustfs-console-rtr.entrypoints: web,websecure
+      traefik.http.routers.rustfs-console-rtr.tls: true
+      traefik.http.routers.rustfs-console-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.rustfs-console-rtr.rule: Host(`rustfs.localhost`)
+      traefik.http.routers.rustfs-console-rtr.service: rustfs-console-svc
+
+      traefik.http.services.rustfs-api-svc.loadbalancer.server.port: 9000
+      traefik.http.routers.rustfs-api-rtr.entrypoints: web,websecure
+      traefik.http.routers.rustfs-api-rtr.tls: true
+      traefik.http.routers.rustfs-api-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.rustfs-api-rtr.rule: Host(`api-rustfs.localhost`)
+      traefik.http.routers.rustfs-api-rtr.service: rustfs-api-svc
+
+
+networks:
+  docker-net:
+    external: true
+
+volumes:
+  rustfs-vol:
+    name: rustfs-vol

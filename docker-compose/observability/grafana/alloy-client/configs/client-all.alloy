@@ -1,0 +1,116 @@
+livedebugging {
+  enabled = true
+}
+
+// // Metrics
+
+prometheus.exporter.cadvisor "containers" {
+  docker_host = "unix:///var/run/docker.sock"
+}
+
+prometheus.scrape "containers" {
+  targets    = prometheus.exporter.cadvisor.containers.targets
+  forward_to = [ 
+    prometheus.remote_write.outbound.receiver, 
+    ]
+  scrape_interval = "5s"
+  scrape_timeout = "5s"
+}
+
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex = "/(.*)"
+    target_label = "service_name"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_id"]
+    regex = "/(.*)"
+    target_label = "container_id"
+  }
+}
+
+loki.source.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+  targets = discovery.relabel.containers.output
+  forward_to = [loki.write.outbound.receiver]
+}
+
+otelcol.receiver.otlp "otlp" {
+    grpc {
+      endpoint = "0.0.0.0:4317"
+    }
+    http {
+      endpoint = "0.0.0.0:4318"
+    }
+    output {
+      metrics = [otelcol.processor.batch.otlp.input,]
+      logs    = [otelcol.processor.batch.otlp.input,]
+      traces  = [otelcol.processor.batch.otlp.input,]
+  }
+}
+
+otelcol.processor.batch "otlp" {
+  output {
+      metrics = [
+        otelcol.exporter.otlp.outbound.input,
+        otelcol.exporter.otlphttp.outbound.input,
+        ]
+      logs    = [
+        otelcol.exporter.otlp.outbound.input,
+        otelcol.exporter.otlphttp.outbound.input,
+        ]
+      traces  = [
+        otelcol.exporter.otlp.outbound.input,
+        otelcol.exporter.otlphttp.outbound.input,
+        ]
+    }
+}
+
+loki.write "outbound" {
+    endpoint {
+        url = "https://alloy-srv-loki.localhost/loki/api/v1/push"
+    }
+}
+
+
+prometheus.remote_write "outbound" {
+  endpoint {
+    url = "https://alloy-srv-prom.localhost/api/v1/push"
+    headers = {
+      "X-Scope-OrgId" = "demo",
+    }
+    // basic_auth {
+    //   username = sys.env("MIMIR_USER")
+    //   password = sys.env("MIMIR_PASSWORD")
+    // }
+  }
+}
+
+otelcol.exporter.otlp "outbound" {
+   client {
+    endpoint = "https://alloy-srv-otlp.localhost"
+    tls {
+      insecure = true
+    }
+}
+}
+
+
+otelcol.exporter.otlphttp "outbound" {
+   client {
+    endpoint = "https://alloy-srv-otlp.localhost"
+    tls {
+      insecure = true
+    }
+}
+}
+
+
+

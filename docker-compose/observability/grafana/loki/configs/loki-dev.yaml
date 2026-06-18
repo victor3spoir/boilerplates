@@ -1,0 +1,81 @@
+server:
+  http_listen_address: 0.0.0.0
+  http_listen_port: 3100
+
+auth_enabled: false
+
+memberlist:
+  join_members:
+    - loki-read
+    - loki-write
+    - loki-backend
+  bind_addr:
+    - 0.0.0.0
+  bind_port: 7946
+
+schema_config:
+  configs:
+    - from: 2023-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+common:
+  path_prefix: /loki
+  replication_factor: 1
+  compactor_address: http://loki-backend:3100
+
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+
+  ring:
+    kvstore:
+      store: memberlist
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+
+compactor:
+  working_directory: /loki/compactor
+  retention_enabled: true
+  delete_request_store: filesystem
+
+ingester:
+  wal:
+    enabled: true
+    dir: /loki/wal
+  chunk_encoding: snappy # zstd | snappy
+
+limits_config:
+  retention_period: 30d
+  max_query_parallelism: 32
+  max_entries_limit_per_query: 5000
+  split_queries_by_interval: 15m
+  query_timeout: 2m
+  allow_structured_metadata: true
+  volume_enabled: true
+
+query_scheduler:
+  max_outstanding_requests_per_tenant: 2048
+
+frontend_worker:
+  scheduler_address: loki-backend:9095
+
+query_range:
+  cache_results: true
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 500
+
+pattern_ingester:
+  enabled: true

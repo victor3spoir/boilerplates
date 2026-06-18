@@ -1,0 +1,40 @@
+
+
+// prometheus.scrape "mimir" {
+//   targets = [
+//     {"__address__" = "mimir-01:8080", "cluster"="mimir", "node"="mimir-01", "app"="mimir-01"},
+//     {"__address__" = "mimir-02:8080", "cluster"="mimir", "node"="mimir-02", "app"="mimir-02"},
+//     {"__address__" = "mimir-03:8080", "cluster"="mimir", "node"="mimir-03", "app"="mimir-03"},
+//     {"__address__" = "mimir-04:8080", "cluster"="mimir", "node"="mimir-04", "app"="mimir-04"},
+//   ]
+//   forward_to = [
+//     prometheus.relabel.mimir.receiver, 
+//   ]
+//   scrape_interval = "10s"
+// }
+
+// prometheus.relabel "mimir" {
+//   rule {
+//     source_labels = ["__name__"]
+//     // regex = "/(.*)"
+//     target_label = "name"
+//   }
+//   forward_to = [
+//   prometheus.remote_write.mimir.receiver, 
+//   // prometheus.remote_write.prometheus.receiver,
+//   ]
+// }
+
+// APPS
+// prometheus.scrape "caddy" {
+//   targets = [
+//     {"__address__"="caddy:2019", "app"="caddy"},
+//     ]
+//   forward_to=[prometheus.relabel.caddy.receiver]
+//   scrape_interval = "5s"
+//   scrape_timeout = "5s"
+//   job_name = "integration/caddy"
+// }
+// prometheus.relabel "caddy" {
+//   forward_to=[prometheus.remote_write.mimir.receiver]
+// }

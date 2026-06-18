@@ -1,0 +1,18 @@
+name: k6
+
+services:
+  k6:
+    image: grafana/xk6
+    ports:
+      - '127.0.0.1:5665:5665'
+    environment:
+      K6_OTEL_GRPC_EXPORTER_INSECURE: true
+      K6_OTEL_METRIC_PREFIX: k6_
+      K6_WEB_DASHBOARD: true
+      K6_OTEL_SERVICE_NAME: k6
+      K6_OTEL_TLS_INSECURE_SKIP_VERIFY: true
+      K6_OTEL_EXPORTER_TYPE: grpc #http
+      K6_OTEL_GRPC_EXPORTER_ENDPOINT: http://alloy:4317 # 4318
+
+# docker run --rm -it -v ./:/usr/srv -e "K6_OTEL_GRPC_EXPORTER_INSECURE=true" "K6_WEB_DASHBOARD=true" -e "K6_OTEL_SERVICE_NAME=k6" -e "K6_OTEL_GRPC_EXPORTER_ENDPOINT=http://alloy:4317" sh
+# docker run --rm -u $(id -u) -v $PWD:/app -w /app grafana/k6 new

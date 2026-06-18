@@ -1,0 +1,17 @@
+name: flog
+
+networks:
+  docker-net:
+    external: true
+
+services:
+  # generate logs
+  flog:
+    image: mingrammer/flog
+    command: -f json -d 200ms -l
+
+  # blogs to generate trafic
+  goblog:
+    image: mariomac/goblog:dev
+    ports:
+      - '18443:8443'

@@ -236,3 +236,8 @@ __marimo__/
 
 # local databases
 *.db
+**/*/.chainlit/*
+**µ
+**/*/html/*
+**/*/*.pem
+**/*/secrets/*

@@ -1,0 +1,35 @@
+name: pyroscope
+
+configs:
+  pyroscope_yaml:
+    file: "./config/pyroscope-dev.yaml"
+
+services:
+  pyroscope:
+    image: grafana/pyroscope:latest
+    restart: unless-stopped
+    command:
+      - server
+      - -config.file=/etc/pyroscope.yaml
+    networks:
+      docker-net:
+      grafana-net:
+    volumes:
+      - pyroscope-data:/data/pyroscope
+    labels:
+      traefik.enable: true
+      traefik.http.services.pyroscope-svc.loadbalancer.server.port: 4040
+      traefik.http.routers.pyroscope-rtr.rule: Host(`pyroscope.localhost`)
+      traefik.http.routers.pyroscope-rtr.tls: true
+      traefik.http.routers.pyroscope-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.pyroscope-rtr.service: pyroscope-svc
+
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true
+
+volumes:
+  pyroscope-data:
+    name: pyroscope-data

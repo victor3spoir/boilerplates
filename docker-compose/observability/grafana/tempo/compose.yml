@@ -1,0 +1,47 @@
+name: tempo
+
+
+
+configs:
+  tempo_yaml:
+    file: "./configs/tempo-dev.yaml"
+
+
+services:
+  tempo:
+    image: grafana/tempo:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500Mib
+          cpus: "0.5"
+    command:
+      - -config.file=/etc/tempo.yaml
+    networks:
+      docker-net:
+      grafana-net:
+    configs:
+      - source: tempo_yaml
+        target: /etc/tempo.yaml
+    # ports:
+      # - 4318:4318 # otlp grpc
+      # - 4317:4317 # otlp grpc
+    labels:
+      traefik.enable: true
+      traefik.http.services.tempo-svc.loadbalancer.server.port: 3200
+      traefik.http.routers.tempo-rtr.rule: Host(`tempo.localhost`)
+      traefik.http.routers.tempo-rtr.tls: true
+      traefik.http.routers.tempo-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.tempo-rtr.service: tempo-svc
+
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true
+
+volumes:
+  tempo-vol:
+    name: tempo-vol
+    driver: local

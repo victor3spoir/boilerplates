@@ -1,0 +1,26 @@
+name: excalidraw
+
+networks:
+  docker-net:
+    external: true
+
+services:
+  excalidraw:
+    image: excalidraw/excalidraw:latest
+    deploy:
+      resources:
+        limits:
+          memory: 200Mib
+          cpus: 0.2
+    # ports:
+    #   - 80:80
+    networks:
+      - docker-net
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.appname-svc.loadbalancer.server.port=80
+      - traefik.http.routers.excalidraw-rtr.rule=Host(`excalidraw.localhost`)
+      - traefik.http.routers.excalidraw-rtr.tls=true
+      - traefik.http.routers.excalidraw-rtr.tls.certresolver=letsencrypt
+      - traefik.http.routers.excalidraw-rtr.service=excalidraw-svc
+      # - traefik.http.routers.excalidraw-rtr.middlewares=

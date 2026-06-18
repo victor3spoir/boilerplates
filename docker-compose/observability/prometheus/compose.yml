@@ -1,0 +1,44 @@
+name: prometheus
+
+configs:
+  prometheus.yml:
+    file: "./configs/prometheus.yml"
+  prometheus.web.yml:
+    file: "./configs/web.prometheus.yml"
+  rules.yml:
+    file: "./configs/rules.yml"
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      # - --web.config.file=/etc/prometheus/web.prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --web.enable-lifecycle
+    networks:
+      docker-net:
+      grafana-net:
+    configs:
+      - source: prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+      - source: prometheus.web.yml
+        target: /etc/prometheus/web.prometheus.yml
+      - source: rules.yml
+        target: /etc/prometheus/rules.yml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      traefik.enable: true
+      traefik.http.services.prometheus-svc.loadbalancer.server.port: 9090
+      traefik.http.routers.prometheus-rtr.rule: Host(`prometheus.localhost`)
+      traefik.http.routers.prometheus-rtr.tls: true
+      traefik.http.routers.prometheus-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.prometheus-rtr.service: prometheus-svc
+
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true

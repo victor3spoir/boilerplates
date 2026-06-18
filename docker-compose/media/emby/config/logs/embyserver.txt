@@ -1,0 +1,569 @@
+2026-06-01 19:15:34.685 Info Main: Application path: /system/EmbyServer.dll
+2026-06-01 19:15:34.715 Info NetworkManager: Adding event handler for NetworkChange.NetworkAddressChanged
+2026-06-01 19:15:34.799 Info App: Setting default culture to en-us
+2026-06-01 19:15:34.802 Info Main: Emby Server 4.9.5.0
+	Command line: /system/EmbyServer.dll -programdata /config -ffdetect /bin/ffdetect -ffmpeg /bin/ffmpeg -ffprobe /bin/ffprobe -restartexitcode 3
+	Operating system: Linux version 7.0.0-15-generic (buildd@lcy02-amd64-048) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46)
+	OS/Process: x64/x64
+	Framework: .NET 8.0.25
+	Runtime: system/System.Private.CoreLib.dll
+	Processor count: 8
+	Data path: /config
+	Application path: /system
+2026-06-01 19:15:34.802 Info Main: Logs path: /config/logs
+2026-06-01 19:15:34.802 Info Main: Cache path: /config/cache
+2026-06-01 19:15:34.802 Info Main: Internal metadata path: /config/metadata
+2026-06-01 19:15:34.802 Info Main: DefaultThreadCurrentCulture: en-US
+2026-06-01 19:15:34.802 Info Main: DefaultThreadCurrentUICulture: en-US
+2026-06-01 19:15:34.802 Info Main: DefaultThreadCurrentUICulture: en-US
+2026-06-01 19:15:34.804 Info Main: Server Friendly Name: ‌747a3d88ede5‌
+2026-06-01 19:15:34.805 Info Main: Local time: 06/01/2026 19:15:34 +00:00
+2026-06-01 19:15:34.806 Info App: Emby Server Version: 4.9.5.0
+2026-06-01 19:15:34.807 Info App: Loading assemblies
+2026-06-01 19:15:34.812 Info App: Copying plugin from /system/plugins/Emby.M3UTuner.dll to /config/plugins/Emby.M3UTuner.dll
+2026-06-01 19:15:34.815 Info App: Copying plugin from /system/plugins/Emby.Dlna.dll to /config/plugins/Emby.Dlna.dll
+2026-06-01 19:15:34.816 Info App: Copying plugin from /system/plugins/MovieDb.dll to /config/plugins/MovieDb.dll
+2026-06-01 19:15:34.816 Info App: Copying plugin from /system/plugins/DvdMounter.dll to /config/plugins/DvdMounter.dll
+2026-06-01 19:15:34.816 Info App: Copying plugin from /system/plugins/OpenSubtitles.dll to /config/plugins/OpenSubtitles.dll
+2026-06-01 19:15:34.816 Info App: Copying plugin from /system/plugins/Emby.Server.CinemaMode.dll to /config/plugins/Emby.Server.CinemaMode.dll
+2026-06-01 19:15:34.817 Info App: Copying plugin from /system/plugins/EmbyGuideData.dll to /config/plugins/EmbyGuideData.dll
+2026-06-01 19:15:34.817 Info App: Copying plugin from /system/plugins/Emby.PortMapper.dll to /config/plugins/Emby.PortMapper.dll
+2026-06-01 19:15:34.817 Info App: Copying plugin from /system/plugins/Emby.Webhooks.dll to /config/plugins/Emby.Webhooks.dll
+2026-06-01 19:15:34.818 Info App: Copying plugin from /system/plugins/MusicBrainz.dll to /config/plugins/MusicBrainz.dll
+2026-06-01 19:15:34.818 Info App: Copying plugin from /system/plugins/OMDb.dll to /config/plugins/OMDb.dll
+2026-06-01 19:15:34.818 Info App: Copying plugin from /system/plugins/Tvdb.dll to /config/plugins/Tvdb.dll
+2026-06-01 19:15:34.818 Info App: Copying plugin from /system/plugins/MBBackup.dll to /config/plugins/MBBackup.dll
+2026-06-01 19:15:34.819 Info App: Copying plugin from /system/plugins/StudioImages.dll to /config/plugins/StudioImages.dll
+2026-06-01 19:15:34.819 Info App: Copying plugin from /system/plugins/Fanart.dll to /config/plugins/Fanart.dll
+2026-06-01 19:15:34.819 Info App: Copying plugin from /system/plugins/AudioDb.dll to /config/plugins/AudioDb.dll
+2026-06-01 19:15:34.819 Info App: Copying plugin from /system/plugins/NfoMetadata.dll to /config/plugins/NfoMetadata.dll
+2026-06-01 19:15:34.820 Info App: Copying plugin from /system/plugins/BlurayMounter.dll to /config/plugins/BlurayMounter.dll
+2026-06-01 19:15:34.820 Info App: Copying plugin from /system/plugins/Emby.XmlTV.dll to /config/plugins/Emby.XmlTV.dll
+2026-06-01 19:15:34.827 Info App: Loading Emby.Api, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Web, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading MediaBrowser.Model, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading MediaBrowser.Common, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading MediaBrowser.Controller, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Providers, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Photos, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Server.Implementations, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.LiveTV, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.ActivityLog, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Server.MediaEncoding, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.LocalMetadata, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Notifications, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Web.GenericUI, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Codecs.Dxva, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Codecs, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Server.Connect, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading Emby.Server.Sync, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading EmbyServer, Version=4.9.5.0, Culture=neutral, PublicKeyToken=null
+2026-06-01 19:15:34.827 Info App: Loading AudioDb, Version=1.0.21.0, Culture=neutral, PublicKeyToken=null from /config/plugins/AudioDb.dll
+2026-06-01 19:15:34.827 Info App: Loading BlurayMounter, Version=1.0.5.0, Culture=neutral, PublicKeyToken=null from /config/plugins/BlurayMounter.dll
+2026-06-01 19:15:34.827 Info App: Loading DvdMounter, Version=1.0.2.0, Culture=neutral, PublicKeyToken=null from /config/plugins/DvdMounter.dll
+2026-06-01 19:15:34.827 Info App: Loading Emby.Dlna, Version=1.5.5.0, Culture=neutral, PublicKeyToken=null from /config/plugins/Emby.Dlna.dll
+2026-06-01 19:15:34.827 Info App: Loading Emby.M3UTuner, Version=1.0.42.0, Culture=neutral, PublicKeyToken=null from /config/plugins/Emby.M3UTuner.dll
+2026-06-01 19:15:34.827 Info App: Loading Emby.PortMapper, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null from /config/plugins/Emby.PortMapper.dll
+2026-06-01 19:15:34.827 Info App: Loading Emby.Server.CinemaMode, Version=1.0.50.0, Culture=neutral, PublicKeyToken=null from /config/plugins/Emby.Server.CinemaMode.dll
+2026-06-01 19:15:34.827 Info App: Loading Emby.Webhooks, Version=1.0.38.0, Culture=neutral, PublicKeyToken=null from /config/plugins/Emby.Webhooks.dll
+2026-06-01 19:15:34.827 Info App: Loading Emby.XmlTV, Version=1.2.2.0, Culture=neutral, PublicKeyToken=null from /config/plugins/Emby.XmlTV.dll
+2026-06-01 19:15:34.827 Info App: Loading EmbyGuideData, Version=1.0.20.0, Culture=neutral, PublicKeyToken=null from /config/plugins/EmbyGuideData.dll
+2026-06-01 19:15:34.827 Info App: Loading Fanart, Version=1.0.18.0, Culture=neutral, PublicKeyToken=null from /config/plugins/Fanart.dll
+2026-06-01 19:15:34.827 Info App: Loading MBBackup, Version=1.8.3.0, Culture=neutral, PublicKeyToken=null from /config/plugins/MBBackup.dll
+2026-06-01 19:15:34.827 Info App: Loading MovieDb, Version=1.8.9.0, Culture=neutral, PublicKeyToken=null from /config/plugins/MovieDb.dll
+2026-06-01 19:15:34.827 Info App: Loading MusicBrainz, Version=1.0.28.0, Culture=neutral, PublicKeyToken=null from /config/plugins/MusicBrainz.dll
+2026-06-01 19:15:34.827 Info App: Loading NfoMetadata, Version=1.0.86.0, Culture=neutral, PublicKeyToken=null from /config/plugins/NfoMetadata.dll
+2026-06-01 19:15:34.827 Info App: Loading OMDb, Version=1.0.22.0, Culture=neutral, PublicKeyToken=null from /config/plugins/OMDb.dll
+2026-06-01 19:15:34.827 Info App: Loading OpenSubtitles, Version=1.0.68.0, Culture=neutral, PublicKeyToken=null from /config/plugins/OpenSubtitles.dll
+2026-06-01 19:15:34.827 Info App: Loading StudioImages, Version=1.0.3.0, Culture=neutral, PublicKeyToken=null from /config/plugins/StudioImages.dll
+2026-06-01 19:15:34.827 Info App: Loading Tvdb, Version=1.6.3.0, Culture=neutral, PublicKeyToken=null from /config/plugins/Tvdb.dll
+2026-06-01 19:15:34.940 Info SqliteUserRepository: Initializing PooledDatabaseConnectionManager with pool size: 3
+2026-06-01 19:15:34.943 Info SqliteUserRepository: Sqlite version: 3.49.2
+2026-06-01 19:15:34.943 Info SqliteUserRepository: Sqlite compiler options: ATOMIC_INTRINSICS=1,COMPILER=gcc-10.3.0,DEFAULT_AUTOVACUUM,DEFAULT_CACHE_SIZE=-2000,DEFAULT_FILE_FORMAT=4,DEFAULT_JOURNAL_SIZE_LIMIT=-1,DEFAULT_MMAP_SIZE=0,DEFAULT_PAGE_SIZE=4096,DEFAULT_PCACHE_INITSZ=20,DEFAULT_RECURSIVE_TRIGGERS,DEFAULT_SECTOR_SIZE=4096,DEFAULT_SYNCHRONOUS=2,DEFAULT_WAL_AUTOCHECKPOINT=1000,DEFAULT_WAL_SYNCHRONOUS=2,DEFAULT_WORKER_THREADS=0,DIRECT_OVERFLOW_READ,ENABLE_COLUMN_METADATA,ENABLE_FTS3_PARENTHESIS,ENABLE_FTS3_TOKENIZER,ENABLE_FTS5,ENABLE_MATH_FUNCTIONS,ENABLE_UPDATE_DELETE_LIMIT,LIKE_DOESNT_MATCH_BLOBS,MALLOC_SOFT_LIMIT=1024,MAX_ATTACHED=10,MAX_COLUMN=2000,MAX_COMPOUND_SELECT=500,MAX_DEFAULT_PAGE_SIZE=8192,MAX_EXPR_DEPTH=1000,MAX_FUNCTION_ARG=1000,MAX_LENGTH=1000000000,MAX_LIKE_PATTERN_LENGTH=50000,MAX_MMAP_SIZE=0x7fff0000,MAX_PAGE_COUNT=0xfffffffe,MAX_PAGE_SIZE=65536,MAX_SCHEMA_RETRY=25,MAX_SQL_LENGTH=1000000000,MAX_TRIGGER_DEPTH=1000,MAX_VARIABLE_NUMBER=250000,MAX_VDBE_OP=250000000,MAX_WORKER_THREADS=8,MUTEX_PTHREADS,OMIT_LOOKASIDE,OMIT_SHARED_CACHE,SYSTEM_MALLOC,TEMP_STORE=1,THREADSAFE=1
+2026-06-01 19:15:34.943 Info SqliteUserRepository: Sqlite ThreadSafe: 1
+2026-06-01 19:15:34.943 Info SqliteUserRepository: Sqlite ThreadingMode: MultiThreaded
+2026-06-01 19:15:34.943 Info SqliteUserRepository: Opening sqlite connection to /config/data/users.db. isReadOnly: False
+2026-06-01 19:15:34.951 Info SqliteUserRepository: Default journal_mode for /config/data/users.db is delete
+2026-06-01 19:15:34.954 Info SqliteUserRepository: PRAGMA cache_size=-65536
+2026-06-01 19:15:34.954 Info SqliteUserRepository: PRAGMA page_size=4096
+2026-06-01 19:15:34.954 Info SqliteUserRepository: PRAGMA foreign_keys=1
+2026-06-01 19:15:34.954 Info SqliteUserRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:15:34.955 Info SqliteUserRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:15:34.955 Info SqliteUserRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:15:34.991 Info SqliteItemRepository: Initializing PooledDatabaseConnectionManager with pool size: 5
+2026-06-01 19:15:34.992 Info AuthenticationRepository: Initializing PooledDatabaseConnectionManager with pool size: 5
+2026-06-01 19:15:35.012 Info ActivityRepository: Initializing PooledDatabaseConnectionManager with pool size: 3
+2026-06-01 19:15:35.012 Info ActivityRepository: Opening sqlite connection to /config/data/activitylog.db. isReadOnly: False
+2026-06-01 19:15:35.013 Info ActivityRepository: Default journal_mode for /config/data/activitylog.db is delete
+2026-06-01 19:15:35.014 Info ActivityRepository: PRAGMA cache_size=-65536
+2026-06-01 19:15:35.014 Info ActivityRepository: PRAGMA page_size=4096
+2026-06-01 19:15:35.014 Info ActivityRepository: PRAGMA foreign_keys=1
+2026-06-01 19:15:35.014 Info ActivityRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:15:35.014 Info ActivityRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:15:35.014 Info ActivityRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:15:35.020 Info NetworkManager: Detecting local network addresses
+2026-06-01 19:15:35.021 Info NetworkManager: networkInterface: Ethernet eth0, Speed: 10000000000, Description: eth0
+2026-06-01 19:15:35.022 Info NetworkManager: GatewayAddresses: 172.22.0.1
+2026-06-01 19:15:35.023 Info NetworkManager: UnicastAddresses: 172.22.0.6
+2026-06-01 19:15:35.023 Info NetworkManager: networkInterface: Loopback lo, Speed: -1, Description: lo
+2026-06-01 19:15:35.023 Info NetworkManager: GatewayAddresses: 
+2026-06-01 19:15:35.027 Info NetworkManager: UnicastAddresses: 127.0.0.1,::1
+2026-06-01 19:15:35.045 Info NetworkManager: Detected local ip addresses: [{"IPAddress":"172.22.0.6","HasGateWayAddress":true,"PrefixLength":16,"IPv4Mask":"255.255.0.0"},{"IPAddress":"127.0.0.1","HasGateWayAddress":false,"PrefixLength":8,"IPv4Mask":"255.0.0.0"},{"IPAddress":"::1","HasGateWayAddress":false,"PrefixLength":128}]
+2026-06-01 19:15:35.048 Info App: Requesting administrative access to authorize http server
+2026-06-01 19:15:35.049 Info ServerConfigurationManager: Saving system configuration
+2026-06-01 19:15:35.051 Info App: Adding HttpListener prefix http://+:8096/
+2026-06-01 19:15:35.078 Info AuthenticationRepository: Opening sqlite connection to /config/data/authentication.db. isReadOnly: False
+2026-06-01 19:15:35.078 Info AuthenticationRepository: Default journal_mode for /config/data/authentication.db is delete
+2026-06-01 19:15:35.079 Info AuthenticationRepository: PRAGMA cache_size=-65536
+2026-06-01 19:15:35.079 Info AuthenticationRepository: PRAGMA page_size=4096
+2026-06-01 19:15:35.079 Info AuthenticationRepository: PRAGMA foreign_keys=1
+2026-06-01 19:15:35.079 Info AuthenticationRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:15:35.079 Info AuthenticationRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:15:35.079 Info AuthenticationRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:15:35.084 Info SqliteItemRepository: Opening sqlite connection to /config/data/library.db. isReadOnly: False
+2026-06-01 19:15:35.087 Info SqliteItemRepository: Default journal_mode for /config/data/library.db is delete
+2026-06-01 19:15:35.088 Info SqliteItemRepository: PRAGMA cache_size=-131072
+2026-06-01 19:15:35.088 Info SqliteItemRepository: PRAGMA page_size=4096
+2026-06-01 19:15:35.088 Info SqliteItemRepository: PRAGMA foreign_keys=1
+2026-06-01 19:15:35.088 Info SqliteItemRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:15:35.088 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:15:35.088 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:15:35.108 Info SqliteItemRepository: Init Complete
+2026-06-01 19:15:35.112 Info SqliteItemRepository: Opening sqlite connection to /config/data/library.db. isReadOnly: True
+2026-06-01 19:15:35.113 Info SqliteItemRepository: PRAGMA cache_size=-131072
+2026-06-01 19:15:35.113 Info SqliteItemRepository: PRAGMA page_size=4096
+2026-06-01 19:15:35.113 Info SqliteItemRepository: PRAGMA foreign_keys=1
+2026-06-01 19:15:35.113 Info SqliteItemRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:15:35.113 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:15:35.113 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:15:35.172 Info SqliteUserRepository: Opening sqlite connection to /config/data/users.db. isReadOnly: True
+2026-06-01 19:15:35.172 Info SqliteUserRepository: PRAGMA cache_size=-65536
+2026-06-01 19:15:35.172 Info SqliteUserRepository: PRAGMA page_size=4096
+2026-06-01 19:15:35.172 Info SqliteUserRepository: PRAGMA foreign_keys=1
+2026-06-01 19:15:35.172 Info SqliteUserRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:15:35.172 Info SqliteUserRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:15:35.172 Info SqliteUserRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:15:35.260 Info App: Emby Server 4.9.5.0
+	Command line: /system/EmbyServer.dll -programdata /config -ffdetect /bin/ffdetect -ffmpeg /bin/ffmpeg -ffprobe /bin/ffprobe -restartexitcode 3
+	Operating system: Linux version 7.0.0-15-generic (buildd@lcy02-amd64-048) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46)
+	OS/Process: x64/x64
+	Framework: .NET 8.0.25
+	Runtime: system/System.Private.CoreLib.dll
+	Processor count: 8
+	Data path: /config
+	Application path: /system
+2026-06-01 19:15:35.260 Info App: Logs path: /config/logs
+2026-06-01 19:15:35.260 Info App: Cache path: /config/cache
+2026-06-01 19:15:35.260 Info App: Internal metadata path: /config/metadata
+2026-06-01 19:15:35.260 Info App: Transcoding temporary files path: /config/transcoding-temp
+2026-06-01 19:15:35.260 Info App: DefaultThreadCurrentCulture: en-US
+2026-06-01 19:15:35.260 Info App: DefaultThreadCurrentUICulture: en-US
+2026-06-01 19:15:35.260 Info App: DefaultThreadCurrentUICulture: en-US
+2026-06-01 19:15:35.260 Info App: Server Friendly Name: ‌747a3d88ede5‌
+2026-06-01 19:15:35.260 Info App: Local time: 06/01/2026 19:15:35 +00:00
+2026-06-01 19:15:35.825 Info FfmpegManager: FFMpeg: /bin/ffmpeg
+2026-06-01 19:15:35.825 Info FfmpegManager: FFProbe: /bin/ffprobe
+2026-06-01 19:15:35.825 Info FfmpegManager: FFDetect: /bin/ffdetect
+2026-06-01 19:15:35.846 Info Skia: SkiaSharp version: 2.88.0.0
+2026-06-01 19:15:35.867 Info libvips: NetVips version: 3.0.0.0
+2026-06-01 19:15:35.868 Info ImageProcessor: Adding image processor Skia
+2026-06-01 19:15:35.868 Info ImageProcessor: Adding image processor libvips
+2026-06-01 19:15:35.893 Info TaskManager: Daily trigger for Video preview thumbnail extraction set to fire at 06/02/2026 02:00:00, which is 404.40178229833333 minutes from now.
+2026-06-01 19:15:35.896 Info TaskManager: Daily trigger for Rotate log file set to fire at 06/02/2026 00:00:00, which is 284.40172709666666 minutes from now.
+2026-06-01 19:15:35.899 Info TaskManager: Queueing task HardwareDetectionScheduledTask
+2026-06-01 19:15:35.900 Info TaskManager: Executing Hardware Detection
+2026-06-01 19:15:35.901 Info TaskManager: Daily trigger for Emby Server Backup set to fire at 06/02/2026 00:10:00, which is 294.4016369716667 minutes from now.
+2026-06-01 19:15:35.903 Info App: ServerId: e33551cfd1094bb399efd1ddf57d0663
+2026-06-01 19:15:35.910 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -version' Execute: /bin/ffmpeg -hide_banner -version
+2026-06-01 19:15:35.931 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -version' Process exited with code 0
+2026-06-01 19:15:35.939 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -decoders' Execute: /bin/ffmpeg -hide_banner -decoders
+2026-06-01 19:15:35.947 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -decoders' Process exited with code 0
+2026-06-01 19:15:35.948 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -encoders' Execute: /bin/ffmpeg -hide_banner -encoders
+2026-06-01 19:15:35.951 Info App: Starting entry point Emby.Server.Implementations.Networking.RemoteAddressEntryPoint
+2026-06-01 19:15:35.952 Info App: Loading data from /config/data/wan.dat
+2026-06-01 19:15:35.953 Info App: Entry point completed: Emby.Server.Implementations.Networking.RemoteAddressEntryPoint. Duration: 0.0013021 seconds
+2026-06-01 19:15:35.953 Info App: Starting entry point Emby.Server.Connect.ConnectEntryPoint
+2026-06-01 19:15:35.953 Info App: Loading data from /config/data/connect.txt
+2026-06-01 19:15:35.954 Info App: Entry point completed: Emby.Server.Connect.ConnectEntryPoint. Duration: 0.0010111 seconds
+2026-06-01 19:15:35.954 Info App: Starting entry point Emby.Dlna.Main.DlnaEntryPoint
+2026-06-01 19:15:35.955 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -encoders' Process exited with code 0
+2026-06-01 19:15:35.955 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -hwaccels' Execute: /bin/ffmpeg -hide_banner -hwaccels
+2026-06-01 19:15:35.960 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -hwaccels' Process exited with code 0
+2026-06-01 19:15:35.961 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -protocols' Execute: /bin/ffmpeg -hide_banner -protocols
+2026-06-01 19:15:35.966 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -protocols' Process exited with code 0
+2026-06-01 19:15:35.967 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -filters' Execute: /bin/ffmpeg -hide_banner -filters
+2026-06-01 19:15:35.971 Info FfmpegManager: ProcessRun 'ffmpeg -hide_banner -filters' Process exited with code 0
+2026-06-01 19:15:35.973 Info FfmpegManager: FfmpegValidator.Validate complete
+2026-06-01 19:15:35.987 Info App: Entry point completed: Emby.Dlna.Main.DlnaEntryPoint. Duration: 0.0335705 seconds
+2026-06-01 19:15:35.987 Info App: Core startup complete
+2026-06-01 19:15:35.988 Info App: Starting entry point Emby.Server.Implementations.Udp.UdpServerEntryPoint
+2026-06-01 19:15:35.989 Info App: Entry point completed: Emby.Server.Implementations.Udp.UdpServerEntryPoint. Duration: 0.000935 seconds
+2026-06-01 19:15:35.989 Info App: Starting entry point Emby.Server.Implementations.Session.PartyEventNotifier
+2026-06-01 19:15:35.989 Info App: Entry point completed: Emby.Server.Implementations.Session.PartyEventNotifier. Duration: 0.0003406 seconds
+2026-06-01 19:15:35.989 Info App: Starting entry point Emby.Server.Implementations.Playlists.PlaylistUpgradeEntryPoint
+2026-06-01 19:15:35.990 Info App: Entry point completed: Emby.Server.Implementations.Playlists.PlaylistUpgradeEntryPoint. Duration: 0.0008767 seconds
+2026-06-01 19:15:35.990 Info App: Starting entry point Emby.Server.Implementations.Library.DeviceAccessEntryPoint
+2026-06-01 19:15:35.991 Info App: Entry point completed: Emby.Server.Implementations.Library.DeviceAccessEntryPoint. Duration: 0.0002258 seconds
+2026-06-01 19:15:35.991 Info App: Starting entry point Emby.Server.Implementations.IO.LibraryMonitorStartup
+2026-06-01 19:15:36.002 Info App: Entry point completed: Emby.Server.Implementations.IO.LibraryMonitorStartup. Duration: 0.0112316 seconds
+2026-06-01 19:15:36.002 Info App: Starting entry point Emby.Server.Implementations.EntryPoints.AutomaticRestartEntryPoint
+2026-06-01 19:15:36.002 Info App: Entry point completed: Emby.Server.Implementations.EntryPoints.AutomaticRestartEntryPoint. Duration: 0.0002468 seconds
+2026-06-01 19:15:36.002 Info App: Starting entry point Emby.Server.Implementations.EntryPoints.KeepServerAwake
+2026-06-01 19:15:36.003 Info App: Entry point completed: Emby.Server.Implementations.EntryPoints.KeepServerAwake. Duration: 7.13E-05 seconds
+2026-06-01 19:15:36.003 Info App: Starting entry point Emby.Server.Implementations.EntryPoints.LibraryChangedNotifier
+2026-06-01 19:15:36.003 Info App: Entry point completed: Emby.Server.Implementations.EntryPoints.LibraryChangedNotifier. Duration: 0.0004197 seconds
+2026-06-01 19:15:36.003 Info App: Starting entry point Emby.Server.Implementations.EntryPoints.LogLibrariesEntryPoint
+2026-06-01 19:15:36.004 Info App: Libraries
+	Server Configuration: CollapseVideoFolders: False
+2026-06-01 19:15:36.004 Info App: Entry point completed: Emby.Server.Implementations.EntryPoints.LogLibrariesEntryPoint. Duration: 0.0003544 seconds
+2026-06-01 19:15:36.004 Info App: Starting entry point Emby.Server.Implementations.EntryPoints.ServerEventNotifier
+2026-06-01 19:15:36.004 Info App: Entry point completed: Emby.Server.Implementations.EntryPoints.ServerEventNotifier. Duration: 0.0007026 seconds
+2026-06-01 19:15:36.004 Info App: Starting entry point Emby.Server.Implementations.EntryPoints.StartupWizard
+2026-06-01 19:15:36.005 Info App: Entry point completed: Emby.Server.Implementations.EntryPoints.StartupWizard. Duration: 0.0001701 seconds
+2026-06-01 19:15:36.005 Info App: Starting entry point Emby.Server.Implementations.EntryPoints.SystemEvents
+2026-06-01 19:15:36.005 Info App: Entry point completed: Emby.Server.Implementations.EntryPoints.SystemEvents. Duration: 0.0001101 seconds
+2026-06-01 19:15:36.005 Info App: Starting entry point Emby.Server.Implementations.EntryPoints.UserDataChangeNotifier
+2026-06-01 19:15:36.005 Info App: Entry point completed: Emby.Server.Implementations.EntryPoints.UserDataChangeNotifier. Duration: 0.000109 seconds
+2026-06-01 19:15:36.005 Info App: Starting entry point Emby.Server.Implementations.Channels.ChannelsEntryPoint
+2026-06-01 19:15:36.006 Info App: Entry point completed: Emby.Server.Implementations.Channels.ChannelsEntryPoint. Duration: 0.0011816 seconds
+2026-06-01 19:15:36.006 Info App: Starting entry point Emby.LiveTV.EntryPoint
+2026-06-01 19:15:36.007 Info LiveTV: Loading live tv data from /config/data/livetv/timers
+2026-06-01 19:15:36.008 Info App: Entry point completed: Emby.LiveTV.EntryPoint. Duration: 0.0014957 seconds
+2026-06-01 19:15:36.008 Info App: Starting entry point Emby.LiveTV.RecordingNotifier
+2026-06-01 19:15:36.009 Info App: Entry point completed: Emby.LiveTV.RecordingNotifier. Duration: 0.001097 seconds
+2026-06-01 19:15:36.009 Info App: Starting entry point Emby.Server.MediaEncoding.Api.EncodingManagerEntryPoint
+2026-06-01 19:15:36.009 Info App: Entry point completed: Emby.Server.MediaEncoding.Api.EncodingManagerEntryPoint. Duration: 0.000538 seconds
+2026-06-01 19:15:36.009 Info App: Starting entry point Emby.Notifications.NotificationManagerEntryPoint
+2026-06-01 19:15:36.018 Info Notifications: Registering event nofitier Activity Log
+2026-06-01 19:15:36.018 Info Notifications: Registering event nofitier Emby Server User Notifications
+2026-06-01 19:15:36.018 Info Notifications: Registering event factory CoreNotificationTypeFactory
+2026-06-01 19:15:36.018 Info Notifications: Registering event factory BackupNotificationTypeFactory
+2026-06-01 19:15:36.025 Info SoftwareCodecProvider: h264, libx264, x264, V-E-libx264
+2026-06-01 19:15:36.025 Info SoftwareCodecProvider: hevc, libx265, x265, V-E-libx265
+2026-06-01 19:15:36.025 Info SoftwareCodecProvider: mpeg4, mpeg4, MPEG-4 part 2, V-E-mpeg4
+2026-06-01 19:15:36.025 Info SoftwareCodecProvider: msmpeg4v3, msmpeg4, MPEG-4 part 2 (MS Variant 3), V-E-msmpeg4
+2026-06-01 19:15:36.025 Info SoftwareCodecProvider: vp8, libvpx, libvpx VP8, V-E-libvpx
+2026-06-01 19:15:36.025 Info SoftwareCodecProvider: av1, libaom-av1, libaom-av1, V-E-libaom_av1
+2026-06-01 19:15:36.026 Info App: Entry point completed: Emby.Notifications.NotificationManagerEntryPoint. Duration: 0.0162987 seconds
+2026-06-01 19:15:36.026 Info App: Starting entry point Emby.Server.Sync.SyncNotificationEntryPoint
+2026-06-01 19:15:36.026 Info App: Entry point completed: Emby.Server.Sync.SyncNotificationEntryPoint. Duration: 0.0007567 seconds
+2026-06-01 19:15:36.026 Info App: Starting entry point EmbyServer.Windows.LoopUtilEntryPoint
+2026-06-01 19:15:36.027 Info App: Entry point completed: EmbyServer.Windows.LoopUtilEntryPoint. Duration: 4.69E-05 seconds
+2026-06-01 19:15:36.027 Info App: Starting entry point Emby.PortMapper.ExternalPortForwarding
+2026-06-01 19:15:36.027 Info SoftwareCodecProvider: h264, libx264, x264, V-E-libx264
+2026-06-01 19:15:36.027 Info App: Entry point completed: Emby.PortMapper.ExternalPortForwarding. Duration: 0.0008777 seconds
+2026-06-01 19:15:36.027 Info SoftwareCodecProvider: hevc, libx265, x265, V-E-libx265
+2026-06-01 19:15:36.027 Info App: Starting entry point Emby.Security.PluginSecurityManager
+2026-06-01 19:15:36.027 Info SoftwareCodecProvider: mpeg4, mpeg4, MPEG-4 part 2, V-E-mpeg4
+2026-06-01 19:15:36.028 Info SoftwareCodecProvider: msmpeg4v3, msmpeg4, MPEG-4 part 2 (MS Variant 3), V-E-msmpeg4
+2026-06-01 19:15:36.028 Info App: Entry point completed: Emby.Security.PluginSecurityManager. Duration: 2.58E-05 seconds
+2026-06-01 19:15:36.028 Info App: Starting entry point Emby.Server.CinemaMode.IntrosEntryPoint
+2026-06-01 19:15:36.028 Info SoftwareCodecProvider: vp8, libvpx, libvpx VP8, V-E-libvpx
+2026-06-01 19:15:36.028 Info SoftwareCodecProvider: av1, libaom-av1, libaom-av1, V-E-libaom_av1
+2026-06-01 19:15:36.028 Info App: Entry point completed: Emby.Server.CinemaMode.IntrosEntryPoint. Duration: 6.96E-05 seconds
+2026-06-01 19:15:36.028 Info App: Starting entry point MBBackup.ServerEntryPoint
+2026-06-01 19:15:36.028 Info App: Entry point completed: MBBackup.ServerEntryPoint. Duration: 1.89E-05 seconds
+2026-06-01 19:15:36.028 Info App: Starting entry point NfoMetadata.EntryPoint
+2026-06-01 19:15:36.028 Info App: Entry point completed: NfoMetadata.EntryPoint. Duration: 0.0001024 seconds
+2026-06-01 19:15:36.028 Info App: Starting entry point Tvdb.EntryPoint
+2026-06-01 19:15:36.028 Info App: Entry point completed: Tvdb.EntryPoint. Duration: 2.39E-05 seconds
+2026-06-01 19:15:36.028 Info App: All entry points have started
+2026-06-01 19:15:36.036 Info VaapiCodecProvider: ProcessRun 'ffdetect_vaencdec' Execute: /bin/ffdetect -hide_banner -show_program_version -loglevel 48 -show_error -show_log 40 vaencdec -print_format json 
+2026-06-01 19:15:36.055 Info VaapiCodecProvider: ProcessRun 'ffdetect_vaencdec' Process exited with code 0
+2026-06-01 19:15:36.056 Info App: Init BeginReceive on 0.0.0.0
+2026-06-01 19:15:36.056 Info App: Init BeginReceive on 0.0.0.0
+2026-06-01 19:15:36.056 Info App: Init BeginReceive on 172.22.0.6
+2026-06-01 19:15:36.056 Info App: Init BeginReceive on 127.0.0.1
+2026-06-01 19:15:36.126 Info VaapiCodecProvider: Adapter #0: 'TigerLake-LP GT2 Iris Xe Graphics' Id:39497 (Driver: , Vendor: Intel Corporation)
+2026-06-01 19:15:36.128 Info QuickSyncCodecProvider: ProcessRun 'ffdetect_qsvencdec' Execute: /bin/ffdetect -hide_banner -show_program_version -loglevel 48 -show_error -show_log 40 qsvencdec -print_format json 
+2026-06-01 19:15:36.137 Info QuickSyncCodecProvider: ProcessRun 'ffdetect_qsvencdec' Process exited with code 0
+2026-06-01 19:15:36.191 Info NvidiaCodecProvider: ProcessRun 'ffdetect_nvencdec' Execute: /bin/ffdetect -hide_banner -show_program_version -loglevel 48 -show_error -show_log 40 nvencdec -print_format json 
+2026-06-01 19:15:36.192 Info NvidiaCodecProvider: ProcessRun 'ffdetect_nvencdec' Process exited with code 1 - Failed
+2026-06-01 19:15:36.402 Info CodecManager: CodecList:
+2026-06-01 19:15:36.402 Info TaskManager: Hardware Detection Completed after 0 minute(s) and 0 seconds
+2026-06-01 19:15:38.896 Info TaskManager: Queueing task SystemUpdateTask
+2026-06-01 19:15:38.896 Info TaskManager: Queueing task PluginUpdateTask
+2026-06-01 19:15:38.896 Info TaskManager: Executing Check for application updates
+2026-06-01 19:15:38.896 Info TaskManager: Executing Check for plugin updates
+2026-06-01 19:15:38.896 Info TaskManager: Queueing task SubtitleOcrDataTask
+2026-06-01 19:15:38.896 Info TaskManager: Executing Download OCR Data
+2026-06-01 19:15:38.900 Info HttpClient: GET https://www.mb3admin.com/admin/service/EmbyPackages.json
+2026-06-01 19:15:38.900 Info HttpClient: GET https://api.github.com/repos/MediaBrowser/Emby.Releases/releases
+2026-06-01 19:15:38.913 Info TaskManager: Download OCR Data Completed after 0 minute(s) and 0 seconds
+2026-06-01 19:15:39.528 Info HttpClient: Http response 200 from https://api.github.com/repos/MediaBrowser/Emby.Releases/releases after 628ms
+2026-06-01 19:15:40.453 Info HttpClient: Http response 200 from https://www.mb3admin.com/admin/service/EmbyPackages.json after 1553ms
+2026-06-01 19:15:41.709 Info TaskManager: Check for plugin updates Completed after 0 minute(s) and 2 seconds
+2026-06-01 19:15:45.559 Info App: No application update available.
+2026-06-01 19:15:45.559 Info TaskManager: Check for application updates Completed after 0 minute(s) and 6 seconds
+2026-06-01 19:15:50.611 Info AuthenticationRepository: Opening sqlite connection to /config/data/authentication.db. isReadOnly: True
+2026-06-01 19:15:50.611 Info AuthenticationRepository: Opening sqlite connection to /config/data/authentication.db. isReadOnly: True
+2026-06-01 19:15:50.612 Info AuthenticationRepository: PRAGMA cache_size=-65536
+2026-06-01 19:15:50.612 Info AuthenticationRepository: PRAGMA cache_size=-65536
+2026-06-01 19:15:50.612 Info AuthenticationRepository: PRAGMA page_size=4096
+2026-06-01 19:15:50.612 Info AuthenticationRepository: PRAGMA page_size=4096
+2026-06-01 19:15:50.612 Info AuthenticationRepository: PRAGMA foreign_keys=1
+2026-06-01 19:15:50.612 Info AuthenticationRepository: PRAGMA foreign_keys=1
+2026-06-01 19:15:50.612 Info AuthenticationRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:15:50.612 Info AuthenticationRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:15:50.612 Info AuthenticationRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:15:50.612 Info AuthenticationRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:15:50.612 Info AuthenticationRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:15:50.612 Info AuthenticationRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:15:58.025 Info StartupWizardService-0HNM028KD1CTP:0000001C: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Startup/Configuration?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. Source Ip: ‌‍‍172.22.0.2‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:15:58.029 Info ServerConfigurationManager: Saving system configuration
+2026-06-01 19:15:58.031 Info StartupWizardService-0HNM028KD1CTP:0000001C: http/1.1 Response 204 to ‌‍‍172.22.0.2‌. Time: 6ms. POST http://‌‍‍emby.localhost‌/emby/Startup/Configuration?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. 
+2026-06-01 19:15:58.031 Info App: Setting default culture to en-US
+2026-06-01 19:16:13.148 Info StartupWizardService-0HNM028KD1CTV:00000005: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Startup/User?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. Source Ip: ‌‍‍172.22.0.2‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:16:13.173 Info StartupWizardService-0HNM028KD1CTV:00000005: http/1.1 Response 200 to ‌‍‍172.22.0.2‌. Time: 25ms. POST http://‌‍‍emby.localhost‌/emby/Startup/User?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. 
+2026-06-01 19:17:30.021 Info EnvironmentService-0HNM028KD1CTU:00000012: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Environment/ValidatePath?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. Source Ip: ‌‍‍172.22.0.2‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:17:30.023 Info EnvironmentService-0HNM028KD1CTU:00000012: http/1.1 Response 204 to ‌‍‍172.22.0.2‌. Time: 2ms. POST http://‌‍‍emby.localhost‌/emby/Environment/ValidatePath?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. 
+2026-06-01 19:17:32.723 Info LibraryStructureService-0HNM028KD1CTS:00000012: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Library/VirtualFolders?collectionType=movies&refreshLibrary=false&name=Movies&X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us&reqformat=json. Source Ip: ‌‍‍172.22.0.2‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:17:32.764 Info App: Creating folder in database mnt - /mnt
+2026-06-01 19:17:32.769 Info App: Created folder in database mnt 4 - /mnt
+2026-06-01 19:17:32.773 Info LibraryStructureService-0HNM028KD1CTS:00000012: http/1.1 Response 204 to ‌‍‍172.22.0.2‌. Time: 50ms. POST http://‌‍‍emby.localhost‌/emby/Library/VirtualFolders?collectionType=movies&refreshLibrary=false&name=Movies&X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us&reqformat=json. 
+2026-06-01 19:17:41.160 Info LibraryStructureService-0HNM028KD1CTR:00000023: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Library/VirtualFolders/LibraryOptions?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us&reqformat=json. Source Ip: ‌‍‍172.22.0.2‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:17:41.168 Info LibraryStructureService-0HNM028KD1CTR:00000023: http/1.1 Response 204 to ‌‍‍172.22.0.2‌. Time: 8ms. POST http://‌‍‍emby.localhost‌/emby/Library/VirtualFolders/LibraryOptions?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us&reqformat=json. 
+2026-06-01 19:17:41.169 Info LibraryMonitor: Watching directory with new FileSystemWatcher for /mnt for item 4
+2026-06-01 19:17:50.681 Info StartupWizardService-0HNM028KD1CTN:00000029: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Startup/User?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. Source Ip: ‌‍‍172.22.0.2‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:17:50.682 Info StartupWizardService-0HNM028KD1CTN:00000029: http/1.1 Response 200 to ‌‍‍172.22.0.2‌. Time: 2ms. POST http://‌‍‍emby.localhost‌/emby/Startup/User?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. 
+2026-06-01 19:17:53.425 Info StartupWizardService-0HNM028KD1CTQ:00000025: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Startup/RemoteAccess?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. Source Ip: ‌‍‍172.22.0.2‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:17:53.426 Info ServerConfigurationManager: Saving system configuration
+2026-06-01 19:17:53.431 Info StartupWizardService-0HNM028KD1CTQ:00000025: http/1.1 Response 204 to ‌‍‍172.22.0.2‌. Time: 6ms. POST http://‌‍‍emby.localhost‌/emby/Startup/RemoteAccess?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. 
+2026-06-01 19:17:53.431 Info App: Setting default culture to en-US
+2026-06-01 19:17:58.667 Info StartupWizardService-0HNM028KD1CTR:00000025: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Startup/Complete?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. Source Ip: ‌‍‍172.22.0.2‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:17:58.668 Info ServerConfigurationManager: Saving system configuration
+2026-06-01 19:17:58.673 Info StartupWizardService-0HNM028KD1CTR:00000025: http/1.1 Response 204 to ‌‍‍172.22.0.2‌. Time: 6ms. POST http://‌‍‍emby.localhost‌/emby/Startup/Complete?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. 
+2026-06-01 19:17:58.674 Info TaskManager: Queueing task RefreshMediaLibraryTask
+2026-06-01 19:17:58.674 Info App: Setting default culture to en-US
+2026-06-01 19:17:58.674 Info TaskManager: Executing Scan media library
+2026-06-01 19:17:58.688 Info App: ValidatePhysicalRoots start validating 4 mnt /mnt
+2026-06-01 19:17:58.736 Info App: ValidatePhysicalRoots completed validating 4 mnt /mnt
+2026-06-01 19:17:58.736 Info App: ValidateTopLibraryFolders validating 3 Movies 
+2026-06-01 19:17:58.749 Info TaskManager: Scan media library Completed after 0 minute(s) and 0 seconds
+2026-06-01 19:18:09.627 Info UserService-0HNM028KD1CTR:00000026: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Users/authenticatebyname?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. Source Ip: ‌‍‍172.22.0.1‌, Accept=application/json, Host=emby.localhost, User-Agent=Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0, Accept-Encoding=gzip, deflate, br, zstd, Accept-Language=en-US,en;q=0.9, Content-Type=application/x-www-form-urlencoded; charset=UTF-8, Origin=https://‌‍‍emby.localhost‌, Referer=https://‌‍‍emby.localhost‌/web/index.html, TE=trailers, Content-Length=32, Sec-Gpc=1, Sec-Fetch-Dest=empty, Sec-Fetch-Mode=cors, DNT=1, X-Forwarded-Proto=https, X-Forwarded-Port=‌‍‍‍443‌, Sec-Fetch-Site=same-origin, X-Real-Ip=172.22.0.1, X-Forwarded-Server=8e36b71bdf9d, Priority=u=0, X-Forwarded-Host=emby.localhost, X-Forwarded-For=172.22.0.1
+2026-06-01 19:18:09.634 Info UserManager: Authentication request for admin has succeeded.
+2026-06-01 19:18:09.637 Info SessionManager: Creating new access token for user 1 admin
+2026-06-01 19:18:09.666 Info UserService-0HNM028KD1CTR:00000026: http/1.1 Response 200 to ‌‍‍172.22.0.1‌. Time: 38ms. POST http://‌‍‍emby.localhost‌/emby/Users/authenticatebyname?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Language=en-us. Headers: Content-Type=application/json; charset=utf-8, Date=Mon, 01 Jun 2026 19:18:09 GMT, Server=UPnP/1.0 DLNADOC/1.50, Content-Encoding=br, Expires=-1, Vary=Accept-Encoding, Content-Length=1286, Cross-Origin-Resource-Policy=cross-origin, Private-Network-Access-Name=747a3d88ede5, Private-Network-Access-Id=e33551cfd1094bb399efd1ddf57d0663
+2026-06-01 19:18:09.690 Info SessionsService-0HNM028KD1CTQ:00000027: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Sessions/Capabilities/Full?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Token=‌fdc6d04d268a4c04b3052cf59f0d8bab‌&X-Emby-Language=en-us&reqformat=json. Source Ip: ‌‍‍172.22.0.1‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:18:09.712 Info SessionsService-0HNM028KD1CTQ:00000027: http/1.1 Response 204 to ‌‍‍172.22.0.1‌. Time: 21ms. POST http://‌‍‍emby.localhost‌/emby/Sessions/Capabilities/Full?X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Token=‌fdc6d04d268a4c04b3052cf59f0d8bab‌&X-Emby-Language=en-us&reqformat=json. 
+2026-06-01 19:18:09.843 Info AuthenticationRepository: Opening sqlite connection to /config/data/authentication.db. isReadOnly: True
+2026-06-01 19:18:09.849 Info AuthenticationRepository: PRAGMA cache_size=-65536
+2026-06-01 19:18:09.849 Info AuthenticationRepository: PRAGMA page_size=4096
+2026-06-01 19:18:09.849 Info AuthenticationRepository: PRAGMA foreign_keys=1
+2026-06-01 19:18:09.849 Info AuthenticationRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:18:09.849 Info AuthenticationRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:18:09.849 Info AuthenticationRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:18:09.850 Info SqliteItemRepository: Opening sqlite connection to /config/data/library.db. isReadOnly: True
+2026-06-01 19:18:09.851 Info SqliteItemRepository: PRAGMA cache_size=-131072
+2026-06-01 19:18:09.851 Info SqliteItemRepository: PRAGMA page_size=4096
+2026-06-01 19:18:09.851 Info SqliteItemRepository: PRAGMA foreign_keys=1
+2026-06-01 19:18:09.851 Info SqliteItemRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:18:09.851 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:18:09.851 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:18:09.854 Info SqliteItemRepository: Opening sqlite connection to /config/data/library.db. isReadOnly: True
+2026-06-01 19:18:09.854 Info SqliteItemRepository: Opening sqlite connection to /config/data/library.db. isReadOnly: True
+2026-06-01 19:18:09.854 Info SqliteItemRepository: PRAGMA cache_size=-131072
+2026-06-01 19:18:09.854 Info SqliteItemRepository: PRAGMA page_size=4096
+2026-06-01 19:18:09.854 Info SqliteItemRepository: PRAGMA foreign_keys=1
+2026-06-01 19:18:09.854 Info SqliteItemRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:18:09.854 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:18:09.854 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:18:09.854 Info SqliteItemRepository: PRAGMA cache_size=-131072
+2026-06-01 19:18:09.854 Info SqliteItemRepository: PRAGMA page_size=4096
+2026-06-01 19:18:09.854 Info SqliteItemRepository: PRAGMA foreign_keys=1
+2026-06-01 19:18:09.854 Info SqliteItemRepository: PRAGMA SECURE_DELETE=0
+2026-06-01 19:18:09.854 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DDL to 0 is 0
+2026-06-01 19:18:09.854 Info SqliteItemRepository: Result of setting SQLITE_DBCONFIG_DQS_DML to 0 is 0
+2026-06-01 19:18:26.984 Info HttpClient: GET https://www.mb3admin.com/admin/service/EmbyPackages.json
+2026-06-01 19:18:28.189 Info HttpClient: Http response 200 from https://www.mb3admin.com/admin/service/EmbyPackages.json after 1205ms
+2026-06-01 19:18:38.407 Info HttpClient: POST https://www.mb3admin.com/admin/service/package/retrieveall?includeAllRuntimes=true
+2026-06-01 19:18:39.041 Info HttpClient: Http response 200 from https://www.mb3admin.com/admin/service/package/retrieveall?includeAllRuntimes=true after 634ms
+2026-06-01 19:18:42.681 Info PackageService-0HNM028KD1CTU:0000001F: http/1.1 POST http://‌‍‍emby.localhost‌/emby/Packages/Installed/Emby%20Guide%20Data?updateClass=Release&AssemblyGuid=C8165D38-EC3D-46E8-B9EB-74FE79DFBADB&version=1.0.20&X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Token=‌fdc6d04d268a4c04b3052cf59f0d8bab‌&X-Emby-Language=en-us. Source Ip: ‌‍‍172.22.0.1‌, UserAgent: Mozilla/5.0 (X11; Linux x86_64; rv:150.0) Gecko/20100101 Firefox/150.0
+2026-06-01 19:18:42.683 Info HttpClient: GET https://www.mb3admin.com/admin/service/EmbyPackages.json
+2026-06-01 19:18:42.683 Info HttpClient: Http response served from cache from https://www.mb3admin.com/admin/service/EmbyPackages.json
+2026-06-01 19:18:42.703 Info PackageService-0HNM028KD1CTU:0000001F: http/1.1 Response 204 to ‌‍‍172.22.0.1‌. Time: 22ms. POST http://‌‍‍emby.localhost‌/emby/Packages/Installed/Emby%20Guide%20Data?updateClass=Release&AssemblyGuid=C8165D38-EC3D-46E8-B9EB-74FE79DFBADB&version=1.0.20&X-Emby-Client=Emby Web&X-Emby-Device-Name=Firefox&X-Emby-Device-Id=bef4dee6-5488-4642-8f4c-130573a3cf93&X-Emby-Client-Version=4.9.5.0&X-Emby-Token=‌fdc6d04d268a4c04b3052cf59f0d8bab‌&X-Emby-Language=en-us. 
+2026-06-01 19:18:42.710 Info HttpClient: GetTempFileResponse url: https://embydata.com/admin/service/packageFiles/EmbyGuideData.dll_1.0.20.exe
+2026-06-01 19:18:42.710 Info HttpClient: GET https://embydata.com/admin/service/packageFiles/EmbyGuideData.dll_1.0.20.exe
+2026-06-01 19:19:02.726 Error HttpClient: Connection to https://embydata.com/admin/service/packageFiles/EmbyGuideData.dll_1.0.20.exe timed out
+2026-06-01 19:19:02.733 Error InstallationManager: Package installation failed
+	*** Error Report ***
+	Version: 4.9.5.0
+	Command line: /system/EmbyServer.dll -programdata /config -ffdetect /bin/ffdetect -ffmpeg /bin/ffmpeg -ffprobe /bin/ffprobe -restartexitcode 3
+	Operating system: Linux version 7.0.0-15-generic (buildd@lcy02-amd64-048) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46)
+	OS/Process: x64/x64
+	Framework: .NET 8.0.25
+	Runtime: system/System.Private.CoreLib.dll
+	Processor count: 8
+	Data path: /config
+	Application path: /system
+	MediaBrowser.Model.Net.HttpException: MediaBrowser.Model.Net.HttpException: Connection to https://embydata.com/admin/service/packageFiles/EmbyGuideData.dll_1.0.20.exe timed out
+	 ---> System.Threading.Tasks.TaskCanceledException: The request was canceled due to the configured HttpClient.Timeout of 20 seconds elapsing.
+	 ---> System.TimeoutException: The operation was canceled.
+	 ---> System.Threading.Tasks.TaskCanceledException: The operation was canceled.
+	 ---> System.IO.IOException: Unable to read data from the transport connection: Operation canceled.
+	 ---> System.Net.Sockets.SocketException (125): Operation canceled
+	   --- End of inner exception stack trace ---
+	   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+	   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+	   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+	   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+	   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+	   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+	   at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+	   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   --- End of inner exception stack trace ---
+	   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+	   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+	   --- End of inner exception stack trace ---
+	   --- End of inner exception stack trace ---
+	   at System.Net.Http.HttpClient.HandleFailure(Exception e, Boolean telemetryStarted, HttpResponseMessage response, CancellationTokenSource cts, CancellationToken cancellationToken, CancellationTokenSource pendingRequestsCts)
+	   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.SendAsyncInternal(HttpRequestOptions options, String httpMethod)
+	   --- End of inner exception stack trace ---
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.GetTempFileResponse(HttpRequestOptions options)
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.GetTempFile(HttpRequestOptions options)
+	   at Emby.Server.Implementations.Updates.InstallationManager.PerformPackageInstallation(IProgress`1 progress, String target, PackageVersionInfo package, CancellationToken cancellationToken)
+	   at Emby.Server.Implementations.Updates.InstallationManager.InstallPackageInternal(PackageVersionInfo package, Boolean isPlugin, IProgress`1 progress, CancellationToken cancellationToken)
+	   at Emby.Server.Implementations.Updates.InstallationManager.InstallPackage(PackageVersionInfo package, Boolean isPlugin, IProgress`1 progress, CancellationToken cancellationToken)
+	Source: Emby.Server.Implementations
+	TargetSite: Void MoveNext()
+	InnerException: System.Threading.Tasks.TaskCanceledException: The request was canceled due to the configured HttpClient.Timeout of 20 seconds elapsing.
+	Source: System.Net.Http
+	TargetSite: Void HandleFailure(System.Exception, Boolean, System.Net.Http.HttpResponseMessage, System.Threading.CancellationTokenSource, System.Threading.CancellationToken, System.Threading.CancellationTokenSource)
+	   at System.Net.Http.HttpClient.HandleFailure(Exception e, Boolean telemetryStarted, HttpResponseMessage response, CancellationTokenSource cts, CancellationToken cancellationToken, CancellationTokenSource pendingRequestsCts)
+	   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.SendAsyncInternal(HttpRequestOptions options, String httpMethod)
+	InnerException: System.TimeoutException: The operation was canceled.
+	Source: 
+	TargetSite: 
+	InnerException: System.Threading.Tasks.TaskCanceledException: The operation was canceled.
+	Source: System.Net.Http
+	TargetSite: Void MoveNext()
+	   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+	   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+	InnerException: System.IO.IOException: Unable to read data from the transport connection: Operation canceled.
+	Source: System.Net.Sockets
+	TargetSite: Void ThrowException(System.Net.Sockets.SocketError, System.Threading.CancellationToken)
+	   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+	   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+	   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+	   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+	   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+	   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+	   at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+	   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	InnerException: System.Net.Sockets.SocketException: Operation canceled
+	Source: 
+	TargetSite: 
+	
+2026-06-01 19:19:02.733 Error InstallationManager: Error in event handler
+	*** Error Report ***
+	Version: 4.9.5.0
+	Command line: /system/EmbyServer.dll -programdata /config -ffdetect /bin/ffdetect -ffmpeg /bin/ffmpeg -ffprobe /bin/ffprobe -restartexitcode 3
+	Operating system: Linux version 7.0.0-15-generic (buildd@lcy02-amd64-048) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46)
+	OS/Process: x64/x64
+	Framework: .NET 8.0.25
+	Runtime: system/System.Private.CoreLib.dll
+	Processor count: 8
+	Data path: /config
+	Application path: /system
+	System.NullReferenceException: System.NullReferenceException: Object reference not set to an instance of an object.
+	   at Emby.Notifications.NotificationManager._installationManager_PackageInstallationFailed(Object sender, InstallationFailedEventArgs e)
+	   at MediaBrowser.Common.Events.EventHelper.TriggerAll[T](EventHandler`1 mainHandler, Object sender, T args, ILogger logger)
+	Source: Emby.Notifications
+	TargetSite: Void _installationManager_PackageInstallationFailed(System.Object, MediaBrowser.Common.Updates.InstallationFailedEventArgs)
+	
+2026-06-01 19:19:02.735 Error PackageService-0HNM028KD1CTU:0000001F: From FireAndForget - System.Threading.Tasks.UnwrapPromise`1[System.Threading.Tasks.VoidTaskResult]
+	*** Error Report ***
+	Version: 4.9.5.0
+	Command line: /system/EmbyServer.dll -programdata /config -ffdetect /bin/ffdetect -ffmpeg /bin/ffmpeg -ffprobe /bin/ffprobe -restartexitcode 3
+	Operating system: Linux version 7.0.0-15-generic (buildd@lcy02-amd64-048) (x86_64-linux-gnu-gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, GNU ld (GNU Binutils for Ubuntu) 2.46)
+	OS/Process: x64/x64
+	Framework: .NET 8.0.25
+	Runtime: system/System.Private.CoreLib.dll
+	Processor count: 8
+	Data path: /config
+	Application path: /system
+	System.AggregateException: System.AggregateException: One or more errors occurred. (Connection to https://embydata.com/admin/service/packageFiles/EmbyGuideData.dll_1.0.20.exe timed out)
+	 ---> MediaBrowser.Model.Net.HttpException: Connection to https://embydata.com/admin/service/packageFiles/EmbyGuideData.dll_1.0.20.exe timed out
+	 ---> System.Threading.Tasks.TaskCanceledException: The request was canceled due to the configured HttpClient.Timeout of 20 seconds elapsing.
+	 ---> System.TimeoutException: The operation was canceled.
+	 ---> System.Threading.Tasks.TaskCanceledException: The operation was canceled.
+	 ---> System.IO.IOException: Unable to read data from the transport connection: Operation canceled.
+	 ---> System.Net.Sockets.SocketException (125): Operation canceled
+	   --- End of inner exception stack trace ---
+	   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+	   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+	   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+	   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+	   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+	   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+	   at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+	   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   --- End of inner exception stack trace ---
+	   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+	   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+	   --- End of inner exception stack trace ---
+	   --- End of inner exception stack trace ---
+	   at System.Net.Http.HttpClient.HandleFailure(Exception e, Boolean telemetryStarted, HttpResponseMessage response, CancellationTokenSource cts, CancellationToken cancellationToken, CancellationTokenSource pendingRequestsCts)
+	   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.SendAsyncInternal(HttpRequestOptions options, String httpMethod)
+	   --- End of inner exception stack trace ---
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.GetTempFileResponse(HttpRequestOptions options)
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.GetTempFile(HttpRequestOptions options)
+	   at Emby.Server.Implementations.Updates.InstallationManager.PerformPackageInstallation(IProgress`1 progress, String target, PackageVersionInfo package, CancellationToken cancellationToken)
+	   at Emby.Server.Implementations.Updates.InstallationManager.InstallPackageInternal(PackageVersionInfo package, Boolean isPlugin, IProgress`1 progress, CancellationToken cancellationToken)
+	   at Emby.Server.Implementations.Updates.InstallationManager.InstallPackage(PackageVersionInfo package, Boolean isPlugin, IProgress`1 progress, CancellationToken cancellationToken)
+	   --- End of inner exception stack trace ---
+	Source: 
+	TargetSite: 
+	No Stack Trace Available
+	InnerException: MediaBrowser.Model.Net.HttpException: Connection to https://embydata.com/admin/service/packageFiles/EmbyGuideData.dll_1.0.20.exe timed out
+	Source: Emby.Server.Implementations
+	TargetSite: Void MoveNext()
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.GetTempFileResponse(HttpRequestOptions options)
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.GetTempFile(HttpRequestOptions options)
+	   at Emby.Server.Implementations.Updates.InstallationManager.PerformPackageInstallation(IProgress`1 progress, String target, PackageVersionInfo package, CancellationToken cancellationToken)
+	   at Emby.Server.Implementations.Updates.InstallationManager.InstallPackageInternal(PackageVersionInfo package, Boolean isPlugin, IProgress`1 progress, CancellationToken cancellationToken)
+	   at Emby.Server.Implementations.Updates.InstallationManager.InstallPackage(PackageVersionInfo package, Boolean isPlugin, IProgress`1 progress, CancellationToken cancellationToken)
+	InnerException: System.Threading.Tasks.TaskCanceledException: The request was canceled due to the configured HttpClient.Timeout of 20 seconds elapsing.
+	Source: System.Net.Http
+	TargetSite: Void HandleFailure(System.Exception, Boolean, System.Net.Http.HttpResponseMessage, System.Threading.CancellationTokenSource, System.Threading.CancellationToken, System.Threading.CancellationTokenSource)
+	   at System.Net.Http.HttpClient.HandleFailure(Exception e, Boolean telemetryStarted, HttpResponseMessage response, CancellationTokenSource cts, CancellationToken cancellationToken, CancellationTokenSource pendingRequestsCts)
+	   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+	   at Emby.Server.Implementations.HttpClientManager.CoreHttpClientManager.SendAsyncInternal(HttpRequestOptions options, String httpMethod)
+	InnerException: System.TimeoutException: The operation was canceled.
+	Source: 
+	TargetSite: 
+	InnerException: System.Threading.Tasks.TaskCanceledException: The operation was canceled.
+	Source: System.Net.Http
+	TargetSite: Void MoveNext()
+	   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+	   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.DecompressionHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+	InnerException: System.IO.IOException: Unable to read data from the transport connection: Operation canceled.
+	Source: System.Net.Sockets
+	TargetSite: Void ThrowException(System.Net.Sockets.SocketError, System.Threading.CancellationToken)
+	   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+	   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource<System.Int32>.GetResult(Int16 token)
+	   at System.Net.Security.SslStream.EnsureFullTlsFrameAsync[TIOAdapter](CancellationToken cancellationToken, Int32 estimatedSize)
+	   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+	   at System.Net.Security.SslStream.ReadAsyncInternal[TIOAdapter](Memory`1 buffer, CancellationToken cancellationToken)
+	   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+	   at System.Net.Http.HttpConnection.InitialFillAsync(Boolean async)
+	   at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+	InnerException: System.Net.Sockets.SocketException: Operation canceled
+	Source: 
+	TargetSite: 
+	

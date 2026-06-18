@@ -1,0 +1,36 @@
+name: beyla
+
+
+
+configs:
+  beyla_config:
+    file: ./configs/beyla.yml
+
+services:
+  goblog:
+    image: mariomac/goblog:dev
+    ports:
+      - '18443:8443'
+
+  autoinstrumenter:
+    image: grafana/beyla:latest
+    pid: 'service:goblog'
+    # pid: 'service:target-service'
+    restart: unless-stopped
+    privileged: true
+    networks:
+      docker-net:
+    configs:
+      - source: beyla_config
+        target: /etc/beyla/config.yml
+    environment:
+      BEYLA_CONFIG_PATH: /etc/beyla/config.yml
+      BEYLA_TRACE_PRINTER: json_indent
+      BEYLA_SHUTDOWN_TIMEOUT: "10s"
+      BEYLA_ENFORCE_SYS_CAPS: false
+      BEYLA_LOG_LEVEL: debug
+      BEYLA_OPEN_PORT: 8443
+
+networks:
+  docker-net:
+    external: true

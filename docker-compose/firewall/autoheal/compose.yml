@@ -1,0 +1,30 @@
+name: autoheal
+
+
+services:
+  autoheal:
+    image: willfarrell/autoheal:latest
+    restart: unless-stopped
+    networks:
+      docker-net:
+    deploy:
+      resources:
+        reservations:
+          memory: "100Mib"
+          cpus: "0.1"
+        limits:
+          memory: "200Mib"
+          cpus: "0.2"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=all
+      - AUTOHEAL_START_PERIOD=0
+      - AUTOHEAL_INTERVAL=30
+      - AUTOHEAL_DEFAULT_STOP_TIMEOUT=10
+      # - DOCKER_HOST: tcp://docker-proxy:2375
+
+networks:
+  docker-net:
+    external: true
+

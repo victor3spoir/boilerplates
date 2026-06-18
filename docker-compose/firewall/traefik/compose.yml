@@ -1,0 +1,57 @@
+name: traefik
+
+configs:
+  traefik_yml:
+    file: ./config/traefik.yml
+  traefik_dynamic_yaml:
+    file: ./config/dynamic.yaml
+
+services:
+  traefik:
+    image: traefik:v3.7.0
+    restart: unless-stopped
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.25"
+          memory: "200Mib"
+        limits:
+          memory: "400Mib"
+          cpus: "0.5"
+    networks:
+      - docker-net
+    ports:
+      - 80:80
+      - 443:443
+    configs:
+      - source: traefik_yml
+        target: /etc/traefik/traefik.yml
+      - source: traefik_dynamic_yaml
+        target: /etc/traefik/dynamic.yaml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/certs:/var/traefik/certs:rw
+      - ./data/logs:/var/log/traefik:rw
+    environment:
+      TZ: UTC
+      ACME_EMAIL: user@gmail.com
+      CF_DNS_API_TOKEN: change-this-for-cloudflare-dns-challenge
+    labels:
+      traefik.enable: true
+      traefik.http.routers.traefik-rtr.service: api@internal
+      # traefik.http.middlewares.traefik-mdl.chain.middlewares: ""
+      traefik.http.routers.traefik-rtr.entrypoints: web,websecure
+      traefik.http.routers.traefik-rtr.rule: Host(`traefik.localhost`)
+      traefik.http.routers.traefik-rtr.tls: true
+      traefik.http.routers.traefik-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.traefik-rtr.tls.domains[0].main: "localhost"
+      traefik.http.routers.traefik-rtr.tls.domains[0].sans: "*.localhost"
+      # traefik.http.routers.traefik-rtr.middlewares=traefik-mdl
+
+
+
+networks:
+  docker-net:
+    external: true

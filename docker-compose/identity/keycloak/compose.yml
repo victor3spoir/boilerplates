@@ -1,0 +1,89 @@
+name: keycloak
+
+
+services:
+  keycloack-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    container_name: keycloak-postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
+    volumes:
+      - keycloak-db-vol:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      keycloak-net:
+
+  keycloak:
+    depends_on:
+      keycloack-db:
+        condition: service_healthy
+    image: keycloak/keycloak:26.5
+    container_name: keycloak
+    command:
+      - start
+      # - --optimized
+    environment:
+      KEYCLOAK_ADMIN: ${KC_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloack-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+
+      KC_PROXY: edge
+      KC_HOSTNAME: keycloak.localhost
+      KC_HOSTNAME_STRICT: true
+      KC_HOSTNAME_STRICT_HTTPS: true
+
+      KC_HTTP_ENABLED: true
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_PORT: 8080
+
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+
+      KC_CACHE: ispn
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.keycloak-svc.loadbalancer.server.port: "8080"
+      traefik.http.routers.keycloak-rtr.rule: "Host(`keycloak.localhost`)"
+      traefik.http.routers.keycloak-rtr.entrypoints: "websecure"
+      traefik.http.routers.keycloak-rtr.tls: "true"
+      traefik.http.routers.keycloak-rtr.tls.certresolver: "letsencrypt"
+
+      traefik.http.routers.keycloak-rtr.service: "keycloak-svc"
+      traefik.http.routers.keycloak-rtr.middlewares: "keycloak-headers"
+
+      # Optional security headers
+      traefik.http.middlewares.keycloak-headers.headers.sslredirect: "true"
+      traefik.http.middlewares.keycloak-headers.headers.stsSeconds: "31536000"
+      traefik.http.middlewares.keycloak-headers.headers.stsIncludeSubdomains: "true"
+
+
+    networks:
+      docker-net:
+      keycloak-net:
+    restart: unless-stopped
+
+
+
+volumes:
+  keycloak-db-vol:
+    name: keycloak-db-vol
+    driver: local
+
+networks:
+  docker-net:
+    external: true
+  keycloak-net:
+    internal: true
