@@ -1,0 +1,30 @@
+name: schema-registry
+
+services:
+  schema-registry:
+    image: confluentinc/cp-schema-registry
+    restart: unless-stopped
+    hostname: schema-registry
+    container_name: schema-registry
+
+    networks:
+      kafka-net:
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka-broker-01:9091,PLAINTEXT://kafka-broker-02:9091,PLAINTEXT://kafka-broker-03:9091
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    labels:
+      traefik.enable: true
+      traefik.http.services.schema-registry-svc.loadbalancer.server.port: 8081
+      traefik.http.routers.schema-registry-rtr.entrypoints: web,websecure
+      traefik.http.routers.schema-registry-rtr.rule: Host(`schema-registry.localhost`)
+      traefik.http.routers.schema-registry-rtr.tls: true
+      traefik.http.routers.schema-registry-rtr.tls.certresolver: letsencrypt
+
+networks:
+  kafka-net:
+    external: true

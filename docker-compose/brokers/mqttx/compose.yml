@@ -12,7 +12,7 @@ services:
     networks:
       - docker-net
     ports:
-      - '127.0.0.1:80:80'
+      - '127.0.0.1:30080:80'
     environment:
       VUE_APP_PAGE_TITLE: mqttx-web
       VUE_APP_PAGE_DESCRIPTION: mqttx-web

@@ -8,10 +8,7 @@ volumes:
   pgsql-vol:
     name: pgsql-vol
     driver: local
-    # driver_opts:
-    #   type: nfs
-    #   device: :/path/to/volume
-    #   o: 'addr=127.0.0.1,rw'
+
 
 services:
   pgsql:

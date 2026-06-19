@@ -22,8 +22,11 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - pgsql-vol:/var/lib/postgresql
+      - ./scripts:/scripts
     networks:
       db-net:
+    ports:
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: [ 'CMD-SHELL', 'pg_isready -U $$POSTGRES_USER' ]
       interval: 10s
@@ -43,6 +46,10 @@ services:
       traefik.tcp.routers.pgsql-rtr.rule: "HostSNI(`*`)"
       traefik.tcp.routers.pgsql-rtr.service: "pgsql-svc"
 
+      ofelia.enabled: true
+      ofelia.job-exec.daily-backup.schedule: "0 2 * * *"
+      ofelia.job-exec.daily-backup.command: "dos2unix /scripts/backup.sh && ./scripts/backup.sh"
+
 secrets:
   pg_password:
     file: "./secrets/pg_password"
@@ -50,7 +57,6 @@ secrets:
 configs:
   postgres_config:
     file: "./config/postgresql.conf"
-
   postgres_hba_config:
     file: "./config/pg_hba.conf"
 

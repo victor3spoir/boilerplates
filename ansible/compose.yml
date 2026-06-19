@@ -1,33 +1,35 @@
 name: ansible
 
-configs:
-  private_key:
-    file: ./config/private_key
+secrets:
+  automation_key:
+    file: ${HOME}/.ssh/automation_key
+  
+configs:  
   entrypoint_sh:
     content: |
       #!/bin/sh 
       mkdir -p /root/.ssh
-      cat /tmp/private_key | tr -d '\015' > /root/.ssh/private_key
-      echo "" >> /root/.ssh/private_key
-      chmod 600 /root/.ssh/private_key
+      cat /run/secrets/automation_key | tr -d '\015' > /root/.ssh/automation_key
+      echo "" >> /root/.ssh/automation_key
+      chmod 600 /root/.ssh/automation_key
       exec tail -f /dev/null
 
 services:
   ansible:
     image: ansible:dev
     working_dir: /ansible
-    entrypoint:
-      - /bin/sh
+    entrypoint: 
+      - /bin/sh 
+    command:
       - /entrypoint.sh
-
+    secrets:
+      - automation_key
     configs:
       - source: entrypoint_sh
         target: /entrypoint.sh
-        mode: 555
-      - source: private_key
-        target: /tmp/private_key
-    volumes:
-      - ./config/ansible:/ansible:rw
     environment:
-      - ANSIBLE_HOST_KEY_CHECKING=false
-      - ANSIBLE_PYTHON_INTERPRETER=auto
+      ANSIBLE_HOST_KEY_CHECKING: false
+      ANSIBLE_PRIVATE_KEY_FILE: /root/.ssh/automation_key
+      ANSIBLE_PYTHON_INTERPRETER: auto
+    volumes:
+      - ./config/:/ansible:rw

@@ -1,0 +1,82 @@
+name: kafka-ui
+
+services:
+  # kafdrop:
+  #   image: obsidiandynamics/kafdrop:4.2.0
+  #   networks:
+  #     - docker-net
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 500MiB
+  #         cpus: .5
+  #   environment:
+  #     - KAFKA_BROKERCONNECT=kafka-broker-01:9092,kafka-broker-02:9092,kafka-broker-03:9092
+  #     - SERVER_SERVLET_CONTEXTPATH=/
+  #     - SERVER_PORT=9000
+  #   ports:
+  #     - 39000:9000
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.http.services.kafdrop-svc.loadbalancer.server.port=9000
+  #     - traefik.http.routers.kafdrop-rtr.entrypoints=web,websecure
+  #     - traefik.http.routers.kafdrop-rtr.rule=Host(`kafdrop.cluster.localhost`)
+  #     - traefik.http.routers.kafdrop-rtr.tls=true
+  #     - traefik.http.routers.kafdrop-rtr.tls.certresolver=letsencrypt
+
+  # kafbat:
+  #   image: ghcr.io/kafbat/kafka-ui:latest
+  #   restart: unless-stopped
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 500MiB
+  #         cpus: .5
+  #   networks:
+  #     - docker-net
+  #   environment:
+  #     - DYNAMIC_CONFIG_ENABLED=true
+  #   ports:
+  #     - 38080:8080
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.http.services.kafbat-svc.loadbalancer.server.port=8080
+  #     - traefik.http.routers.kafbat-rtr.entrypoints=web,websecure
+  #     - traefik.http.routers.kafbat-rtr.rule=Host(`kafbat.localhost`)
+  #     - traefik.http.routers.kafbat-rtr.tls=true
+  #     - traefik.http.routers.kafbat-rtr.tls.certresolver=letsencrypt
+
+  kafkaui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500MiB
+          cpus: 0.5
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      docker-net:
+      kafka-net:
+    environment:
+      DYNAMIC_CONFIG_ENABLED: true
+    ports:
+      - 38080:8080
+    labels:
+      traefik.enable: true
+      traefik.http.services.kafbat-svc.loadbalancer.server.port: 8080
+      traefik.http.routers.kafbat-rtr.entrypoints: web,websecure
+      traefik.http.routers.kafbat-rtr.rule: Host(`kafbatui.localhost`)
+      traefik.http.routers.kafbat-rtr.tls: true
+      traefik.http.routers.kafbat-rtr.tls.certresolver: letsencrypt
+
+networks:
+  docker-net:
+    external: true
+  kafka-net:
+    external: true
