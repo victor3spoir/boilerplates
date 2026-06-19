@@ -1,16 +1,5 @@
 name: traefik-dev
 
-configs:
-  traefik_dynamic_yml:
-    content: |
-      http:
-        middlewares:
-          redirect-to-https:
-            redirectScheme:
-              scheme: https
-              permanent: true
-
-
 services:
   traefik:
     image: traefik:v3.7.0
@@ -43,7 +32,7 @@ services:
       - --certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
       - --certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json
       - --certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=web
-      
+
       # - --certificatesResolvers.cloudflare.acme.email=${ACME_EMAIL}
       # - --certificatesResolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
       # - --certificatesResolvers.cloudflare.acme.storage=/var/traefik/certs/cloudflare-acme.json
@@ -56,12 +45,12 @@ services:
       - --log.nocolor=false
       - --log.compress=true
       - --log.filepath=/var/log/traefik/traefik.log
-      
+
       - --accessLog=true
       - --accesslog.format=json
       - --accessLog.addinternals=true
       - --accesslog.filepath=/var/log/traefik/access.log
-      
+
       - --experimental.fastProxy
       - --experimental.otlpLogs=true
     configs:
@@ -72,13 +61,13 @@ services:
     ports:
       - '80:80'
       - '443:443'
-      - 8080:8080
+      # - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./data/certs:/var/traefik/certs:rw
       - ./data/logs:/var/log/traefik/:rw
     environment:
-      - ACME_EMAIL=user@gmail.com
+      ACME_EMAIL: user@gmail.com
     labels:
       traefik.enable: "true"
       traefik.http.routers.traefik-rtr.service: "api@internal"
@@ -89,8 +78,10 @@ services:
       traefik.http.routers.traefik-rtr.tls.domains[0].main: "localhost"
       traefik.http.routers.traefik-rtr.tls.domains[0].sans: "*.localhost"
 
+configs:
+  traefik_dynamic_yml:
+    file: "./config/dynamic.yaml"
+
 networks:
   docker-net:
     external: true
-
-

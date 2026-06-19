@@ -1,0 +1,49 @@
+name: phpmyadmin
+
+services:
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: unless-stopped
+    read_only: true
+    deploy:
+      resources:
+        reservations:
+          memory: "521MiB"
+          cpus: "0.25"
+        limits:
+          memory: "1025MiB"
+          cpus: "0.5"
+    # ports:
+    #   - 8080:80
+    environment:
+      PMA_ARBITRARY: 1
+      TZ: UTC
+      HIDE_PHP_VERSION: "true"
+      UPLOAD_LIMIT: 64M
+      MEMORY_LIMIT: 512M
+      MAX_EXECUTION_TIME: 600
+      PMA_ABSOLUTE_URI: "https://phpmyadmin.localhost"
+    networks:
+      docker-net:
+      db-net:
+    volumes:
+      - phpmyadmin-vol:/sessions
+    labels:
+      traefik.enable: true
+      traefik.http.services.phpmyadmin-svc.loadbalancer.server.port: 80
+      traefik.http.routers.phpmyadmin-rtr.entrypoints: web,websecure
+      traefik.http.routers.phpmyadmin-rtr.rule: Host(`phpmyadmin.localhost`)
+      traefik.http.routers.phpmyadmin-rtr.tls: true
+      traefik.http.routers.phpmyadmin-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.phpmyadmin-rtr.service: phpmyadmin-svc
+      # traefik.http.routers.phpmyadmin-rtr.middlewares: 
+
+volumes:
+  phpmyadmin-vol:
+    name: phpmyadmin-vol
+
+networks:
+  docker-net:
+    external: true
+  db-net:
+    external: true
