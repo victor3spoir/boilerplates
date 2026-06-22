@@ -19,7 +19,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: dockhand
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER" ]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -35,6 +35,11 @@ services:
     networks:
       docker-net:
       dockhand-net:
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
     deploy:
       resources:
         reservations:
@@ -56,8 +61,6 @@ services:
       traefik.http.routers.dockhand-rtr.rule: "Host(`dockhand.localhost`)"
       traefik.http.routers.dockhand-rtr.tls: "true"
       traefik.http.routers.dockhand-rtr.tls.certresolver: letsencrypt
-      traefik.http.routers.dockhand-rtr.tls.domains[0].main: "localhost"
-      traefik.http.routers.dockhand-rtr.tls.domains[0].sans: "*.localhost"
       traefik.http.routers.dockhand-rtr.service: dockhand-svc
 
 volumes:
@@ -68,8 +71,7 @@ volumes:
     name: dockhand_vol
     driver: local
 
-
 networks:
   dockhand-net:
   docker-net:
-   external: true
+    external: true

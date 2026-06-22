@@ -6,6 +6,9 @@ services:
     restart: unless-stopped
     deploy:
       resources:
+        reservations:
+          memory: "200Mib"
+          cpus: "0.25"
         limits:
           memory: "400Mib"
           cpus: "0.5"
@@ -18,27 +21,19 @@ services:
       - --ping=true
       - --ping.entryPoint=web
 
-      # Entrypoint definitions
       - --entryPoints.web.address=:80
       - --entryPoints.websecure.address=:443
 
       - --providers.docker.endpoint=unix://var/run/docker.sock
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=docker-net
-      - --providers.file.filename=/etc/traefik/dynamic.yaml
+      - --providers.file.directory=/etc/traefik/dynamic
       - --providers.file.watch=true
 
       - --certificatesResolvers.letsencrypt.acme.email=admin@local.host
       - --certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
       - --certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json
       - --certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=web
-
-      # - --certificatesResolvers.cloudflare.acme.email=${ACME_EMAIL}
-      # - --certificatesResolvers.cloudflare.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
-      # - --certificatesResolvers.cloudflare.acme.storage=/var/traefik/certs/cloudflare-acme.json
-      # - --certificatesResolvers.cloudflare.acme.keyType=EC256
-      # - --certificatesResolvers.cloudflare.acme.dnsChallenge.provider=cloudflare
-      # - --certificatesResolvers.cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,8.8.8.8:53
 
       - --log.level=INFO # TRACE - INFO - DEBUG - WARN - ERROR - FATAL - PANIC
       - --log.format=json
@@ -53,21 +48,17 @@ services:
 
       - --experimental.fastProxy
       - --experimental.otlpLogs=true
-    configs:
-      - source: traefik_dynamic_yml
-        target: /etc/traefik/dynamic.yaml
     networks:
       docker-net:
     ports:
-      - '80:80'
-      - '443:443'
+      - "80:80"
+      - "443:443"
       # - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./data/certs:/var/traefik/certs:rw
       - ./data/logs:/var/log/traefik/:rw
-    environment:
-      ACME_EMAIL: user@gmail.com
+      - ./config/dynamic:/etc/traefik/dynamic:ro
     labels:
       traefik.enable: "true"
       traefik.http.routers.traefik-rtr.service: "api@internal"
@@ -77,10 +68,6 @@ services:
       traefik.http.routers.traefik-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.traefik-rtr.tls.domains[0].main: "localhost"
       traefik.http.routers.traefik-rtr.tls.domains[0].sans: "*.localhost"
-
-configs:
-  traefik_dynamic_yml:
-    file: "./config/dynamic.yaml"
 
 networks:
   docker-net:

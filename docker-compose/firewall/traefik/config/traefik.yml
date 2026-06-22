@@ -18,7 +18,6 @@ entryPoints:
   pgsql:
     address: ":5432"
 
-
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
@@ -26,7 +25,7 @@ providers:
     watch: true
     network: docker-net
   file:
-    filename: "/etc/traefik/dynamic.yaml"
+    directory: "/etc/traefik/dynamic"
     watch: true
 
 certificatesResolvers:
@@ -67,7 +66,6 @@ metrics:
 #   buckets: [0.1, 0.3, 1.2, 5.0]
 #   entryPoint: metrics
 
-
 tracing:
   serviceName: traefik
   sampleRate: 0.2
@@ -81,7 +79,7 @@ tracing:
 #   x-api-key: api-key-value
 
 log:
-  level: DEBUG  # TRACE, INFO, DEBUG, WARN, ERROR, FATAL, PANIC
+  level: DEBUG # TRACE, INFO, DEBUG, WARN, ERROR, FATAL, PANIC
   format: json
   filePath: "/var/log/traefik/traefik.log"
 # otlp:
@@ -110,8 +108,6 @@ accessLog:
         X-Real-Ip: keep
         X-Forwarded-For: keep
         X-Forwarded-Proto: keep
-        
-
 
 experimental:
   fastProxy:
@@ -120,7 +116,7 @@ experimental:
   plugins:
     bouncer:
       moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
-      version: v1.4.6 
+      version: v1.4.6
     geoblock:
       moduleName: github.com/PascalMinder/geoblock
       version: v0.3.3

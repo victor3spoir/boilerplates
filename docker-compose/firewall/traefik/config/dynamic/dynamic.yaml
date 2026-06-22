@@ -14,8 +14,11 @@ http:
   #       certResolver: letsencrypt
   #     service: srv-master-svc
 
-
   middlewares:
+    simple-ratelimit:
+      rateLimit:
+        average: 100
+        burst: 50
     redirect-to-https:
       redirectScheme:
         scheme: https
