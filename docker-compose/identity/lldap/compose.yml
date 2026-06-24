@@ -8,17 +8,17 @@ services:
       lldap-net:
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: 27b360f5374ef599577eda2695bc038694c49046696013f101107a4d4b910fd3
       POSTGRES_DB: lldap
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
     volumes:
       - lldap-db-vol:/var/lib/postgresql
- 
+
   lldap:
     depends_on:
       lldap-db:
@@ -27,38 +27,46 @@ services:
     restart: unless-stopped
     expose:
       - 3890 #ldap 
-      - 6360  #ldap ssl
-      - 17170  
+      - 6360 #ldap ssl
+      - 17170
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.3"
+          memory: "400MiB"
+        limits:
+          memory: "500MiB"
+          cpus: "0.5"
     networks:
       docker-net:
       lldap-net:
     volumes:
       - lldap-vol:/data:rw
     secrets:
-      - LLDAP_JWT_SECRET
-      - LLDAP_KEY_SEED
+      - lldap_jwt_secret
+      - lldap_key_seed
+      - lldap_ldap_user_pass
     environment:
       UID: 1000
       GID: 1000
       TZ: UTC
-      LLDAP_JWT_SECRET_FILE: "/run/secrets/LLDAP_JWT_SECRET"
-      LLDAP_KEY_SEED_FILE: "/run/secrets/LLDAP_KEY_SEED"
-      LLDAP_LDAP_BASE_DN: cn=admin,ou=people,dc=traefik,dc=me
-      LLDAP_LDAP_USER_PASS: ${LLDAP_LDAP_USER_PASS} 
+      LLDAP_JWT_SECRET_FILE: "/run/secrets/lldap_jwt_secret"
+      LLDAP_KEY_SEED_FILE: "/run/secrets/lldap_key_seed"
+      LLDAP_LDAP_BASE_DN: dc=lldalp,dc=localhost
+      LLDAP_LDAP_USER_PASS_FILE: "/run/secrets/lldap_ldap_user_pass"
       # LLDAP_LDAPS_OPTIONS__ENABLED: false
       # LLDAP_LDAPS_OPTIONS__CERT_FILE: /path/to/certfile.crt
       # LLDAP_LDAPS_OPTIONS__KEY_FILE: /path/to/keyfile.key
-    
-      LLDAP-volBASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@lldap-db:5432/lldap
-      # If using SMTP, set the following variables
-      LLDAP_SMTP_OPTIONS__ENABLE_PASSWORD_RESET: true
-      LLDAP_SMTP_OPTIONS__SERVER: mailpit
-      LLDAP_SMTP_OPTIONS__PORT: 465 # Check your smtp provider's documentation for this setting
-      LLDAP_SMTP_OPTIONS__SMTP_ENCRYPTION: NONE # "NONE:25, TLS:465, STARTTLS:587
-      LLDAP_SMTP_OPTIONS__USER: no-reply@local.host # The SMTP user, usually your email address
-      LLDAP_SMTP_OPTIONS__PASSWORD: Password123! # The SMTP password
-      LLDAP_SMTP_OPTIONS__FROM: no-reply <no-reply@local.host> # The header field, optional: how the sender appears in the email. The first is a free-form name, followed by an email between <>.
-      LLDAP_SMTP_OPTIONS__TO: admin <admin@local.host> 
+
+      LLDAP-volBASE_URL: postgres://postgres:27b360f5374ef599577eda2695bc038694c49046696013f101107a4d4b910fd3@lldap-db:5432/lldap
+      # LLDAP_SMTP_OPTIONS__ENABLE_PASSWORD_RESET: true
+      # LLDAP_SMTP_OPTIONS__SERVER: mailpit
+      # LLDAP_SMTP_OPTIONS__PORT: 25 
+      # LLDAP_SMTP_OPTIONS__SMTP_ENCRYPTION: NONE # "NONE:25, TLS:465, STARTTLS:587
+      # LLDAP_SMTP_OPTIONS__USER: no-reply@local.host 
+      # LLDAP_SMTP_OPTIONS__PASSWORD: Password123! 
+      # LLDAP_SMTP_OPTIONS__FROM: no-reply <no-reply@local.host>
+      # LLDAP_SMTP_OPTIONS__TO: admin <admin@local.host> 
     labels:
       traefik.enable: true
       traefik.http.services.lldap-ui-svc.loadbalancer.server.port: 17170
@@ -68,18 +76,18 @@ services:
       traefik.http.routers.lldap-ui-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.lldap-ui-rtr.service: lldap-ui-svc
 
-
 secrets:
-  LLDAP_JWT_SECRET:
+  lldap_jwt_secret:
     file: "${PWD}/secrets/jwt"
-  LLDAP_KEY_SEED:
+  lldap_key_seed:
     file: "${PWD}/secrets/seed"
+  lldap_ldap_user_pass:
+    file: "./secrets/user_pass"
 
 networks:
   lldap-net:
   docker-net:
     external: true
-
 
 volumes:
   lldap-vol:

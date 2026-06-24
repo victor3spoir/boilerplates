@@ -3,7 +3,7 @@
 name: tinyauth
 services:
   tinyauth:
-    image: ghcr.io/steveiliop56/tinyauth:v5
+    image: ghcr.io/tinyauthapp/tinyauth:nightly
     restart: unless-stopped
     networks:
       docker-net:
@@ -14,12 +14,12 @@ services:
           memory: "400MiB"
         limits:
           memory: "500MiB"
-          cpus: "0.4"
+          cpus: "0.5"
     secrets:
-      - USERS
+      - users
     environment:
       TINYAUTH_APPURL: https://tinyauth.localhost
-      TINYAUTH_AUTH_USERSFILE: "/run/secrets/USERS"
+      TINYAUTH_AUTH_USERSFILE: "/run/secrets/users"
       TINYAUTH_LOG_JSON: true
       TINYAUTH_LOG_STREAMS_AUDIT_ENABLED: true
       TINYAUTH_AUTH_SECURECOOKIE: true
@@ -29,11 +29,11 @@ services:
       # TINYAUTH_UI_BACKGROUNDIMAGE: 
         
       # TINYAUTH_LDAP_ADDRESS: ldap://my-lldap-server:3890
-      # TINYAUTH_LDAP_BINDDN: uid=your-observer-user,ou=people,dc=example,dc=com
-      # TINYAUTH_LDAP_BINDPASSWORD: your-observer-user-password
-      # TINYAUTH_LDAP_BASEDN: dc=example,dc=com
+      # TINYAUTH_LDAP_BINDDN: uid=tinyauth,ou=people,dc=lldalp,dc=localhost
+      # TINYAUTH_LDAP_BINDPASSWORD: tinyauth-password
+      # TINYAUTH_LDAP_BASEDN: dc=lldalp,dc=localhost
       # TINYAUTH_LDAP_INSECURE: true
-      # TINYAUTH_LDAP_SEARCHFILTER: (uid=%s)
+      # TINYAUTH_LDAP_SEARCHFILTER: "(uid=%s)"
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -47,9 +47,10 @@ services:
       traefik.http.routers.tinyauth-rtr.tls: true
       traefik.http.routers.tinyauth-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.tinyauth-rtr.service: tinyauth-svc
+      tinyauth.apps.appname.loadbalancer.groups: admins,monitoring
 
 secrets:
-  USERS:
+  users:
     file: '${PWD}/secrets/users'
 
 
