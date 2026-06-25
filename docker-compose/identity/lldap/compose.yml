@@ -78,9 +78,9 @@ services:
 
 secrets:
   lldap_jwt_secret:
-    file: "${PWD}/secrets/jwt"
+    file: "./secrets/jwt"
   lldap_key_seed:
-    file: "${PWD}/secrets/seed"
+    file: "./secrets/seed"
   lldap_ldap_user_pass:
     file: "./secrets/user_pass"
 

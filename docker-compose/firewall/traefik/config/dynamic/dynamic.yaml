@@ -1,9 +1,9 @@
 http:
   # services:
-  #   srv-master-svc:
+  #   srv-master:
   #     loadBalancer:
   #       servers:
-  #         - url: "http://srv-side.multipass"
+  #         - url: "http://srv-master.multipass:80"
 
   # routers:
   #   srv-master-rtr:
@@ -12,7 +12,7 @@ http:
   #       - websecure
   #     tls:
   #       certResolver: letsencrypt
-  #     service: srv-master-svc
+  #     service: srv-master
 
   middlewares:
     simple-ratelimit:

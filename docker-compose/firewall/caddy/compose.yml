@@ -1,10 +1,4 @@
-networks:
-  docker-net:
-    external: true
-
-configs:
-  caddy_file:
-    file: ./Caddyfile
+name: caddy
 
 services:
   caddy:
@@ -16,8 +10,7 @@ services:
     configs:
       - source: caddy_file
         target: /etc/caddy/Caddyfile
-    # environment:
-    #   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://alloy:4318/v1/traces
+
 
   webapp-01:
     image: nginxdemos/hello:0.4
@@ -31,3 +24,12 @@ services:
     image: nginxdemos/hello:0.4
     networks:
       - docker-net
+configs:
+  caddy_file:
+    file: ./configsCaddyfile
+
+networks:
+  docker-net:
+    external: true
+
+
