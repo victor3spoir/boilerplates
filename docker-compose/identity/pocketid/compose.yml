@@ -25,13 +25,13 @@ services:
     depends_on:
       pocketid-db:
         condition: service_started
-    image: ghcr.io/pocket-id/pocket-id:v2
+    image: pocketid/pocket-id:v2.9
     restart: unless-stopped
     networks:
       docker-net:
       pocketid-net:
     environment:
-      APP_URL: https://pocket-id.localhost
+      APP_URL: https://pocketid.localhost
       TRUST_PROXY: true
       ENCRYPTION_KEY: 5fcef611d4d51a4d2eec7d237d1f2f8ac652dd442e916b2261794ba02c13eeb6
       PUID: 1000
@@ -47,8 +47,8 @@ services:
 
       # LDAP_ENABLED: false
       # LDAP_URL: ldap://my-lldap-server:3890
-      # LDAP_BIND_DN: uid=your-observer-user,ou=people,dc=example,dc=com
-      # LDAP_BIND_PASSWORD: your-observer-user-password
+      # LDAP_BIND_DN: uid=pocketid,ou=people,dc=example,dc=localhost
+      # LDAP_BIND_PASSWORD: pocketid-password
       # LDAP_BASE: dc=example,dc=com
     volumes:
       - pocketid-vol:/app/data
@@ -62,7 +62,7 @@ services:
       traefik.enable: true
       traefik.http.services.pocket-id-svc.loadbalancer.server.port: 1411
       traefik.http.routers.pocket-id-rtr.entrypoints: websecure
-      traefik.http.routers.pocket-id-rtr.rule: Host(`pocket-id.localhost`)
+      traefik.http.routers.pocket-id-rtr.rule: Host(`pocketid.localhost`)
       traefik.http.routers.pocket-id-rtr.tls: true
       traefik.http.routers.pocket-id-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.pocket-id-rtr.service: pocket-id-svc
