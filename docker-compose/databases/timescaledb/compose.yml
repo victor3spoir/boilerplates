@@ -30,6 +30,7 @@ services:
     volumes:
       - ./scripts:/scripts
       - timescaledb-vol:/var/lib/postgresql
+      - ./backups:/backups
     configs:
       - source: postgres_config
         target: /etc/postgresql/postgresql.conf
