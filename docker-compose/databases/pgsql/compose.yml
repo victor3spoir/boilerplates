@@ -23,6 +23,7 @@ services:
     volumes:
       - pgsql-vol:/var/lib/postgresql
       - ./scripts:/scripts
+      - ./backups:/backups
     networks:
       db-net:
     ports:

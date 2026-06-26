@@ -1,60 +1,53 @@
+# Intial setup: https://authentik.localhost/if/flow/initial-setup/
 name: authentik
 
-# Intial setup: /if/flow/initial-setup/
-
-networks:
-  docker-net:
-    external: true
-  authentik-net: {}
-
 x-authentik: &authentik
-  image: ghcr.io/goauthentik/server:2025.6.1
+  image: authentik/server:2026.5.3
   restart: unless-stopped
+  networks:
+    authentik-net:
   environment:
-    - AUTHENTIK_SECRET_KEY
-    - AUTHENTIK_REDIS__HOST
-    - AUTHENTIK_POSTGRESQL__HOST
-    - AUTHENTIK_POSTGRESQL__USER
-    - AUTHENTIK_POSTGRESQL__NAME
-    - AUTHENTIK_POSTGRESQL__PASSWORD
-
-volumes:
-  authentik-db-vol:
-    driver: local
-    # driver_opts:
-    #   type: nfs4
-    #   o: 'addr=127.0.0.1'
-    #   device: ':/mnt/storage/authentik/db'
-  authentik-redis-vol:
-    driver: local
-    # driver_opts:
-    #   type: nfs4
-    #   o: 'addr=127.0.0.1'
-    #   device: ':/mnt/storage/authentik/redis'
+    AUTHENTIK_SECRET_KEY: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    AUTHENTIK_REDIS__HOST: authentik-redis
+    AUTHENTIK_POSTGRESQL__HOST: authentik-db
+    AUTHENTIK_POSTGRESQL__USER: authentik
+    AUTHENTIK_POSTGRESQL__NAME: authentik
+    AUTHENTIK_POSTGRESQL__PASSWORD: xxxxxxxxxxxxxx
+    AUTHENTIK_EMAIL__HOST: mailpit
+    AUTHENTIK_EMAIL__PORT: 2500
+    AUTHENTIK_EMAIL__USERNAME: username
+    AUTHENTIK_EMAIL__PASSWORD: password
+    AUTHENTIK_EMAIL__USE_SSL: false
+    AUTHENTIK_EMAIL__TIMEOUT: 10
+    AUTHENTIK_EMAIL__USE_TLS: true
+    AUTHENTIK_EMAIL__FROM: authentik@local.host
 
 services:
   authentik-db:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     networks:
-      - authentik-net
+      authentik-net:
     deploy:
       resources:
+        reservations:
+          memory: "200MiB"
+          cpus: "0.2"
         limits:
-          memory: 200Mib
-          cpus: 0.2
+          memory: "400MiB"
+          cpus: "0.4"
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}']
+      test: [ 'CMD-SHELL', 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}' ]
       start_period: 20s
       interval: 30s
       retries: 5
       timeout: 5s
     volumes:
-      - authentik-db-vol:/var/lib/postgresql/data
+      - authentik-db-vol:/var/lib/postgresql
     environment:
-      - POSTGRES_USER
-      - POSTGRES_DB
-      - POSTGRES_PASSWORD
+      POSTGRES_USER: authentik
+      POSTGRES_DB: authentik
+      POSTGRES_PASSWORD: xxxxxxxxxxxxxx
 
   authentik-redis:
     image: redis:8-alpine
@@ -66,26 +59,24 @@ services:
           memory: 200Mib
           cpus: 0.2
     networks:
-      - authentik-net
+      authentik-net:
     healthcheck:
-      test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
+      test: [ 'CMD-SHELL', 'redis-cli ping | grep PONG' ]
       start_period: 20s
       interval: 30s
       retries: 5
       timeout: 3s
     volumes:
       - authentik-redis-vol:/data
+
   authentik-worker:
     <<: *authentik
     command: worker
     deploy:
       resources:
         limits:
-          memory: 1000Mib
-          cpus: 0.5
-    networks:
-      - authentik-net
-      - docker-net
+          memory: "1000MiB"
+          cpus: "0.5"
     user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -98,20 +89,8 @@ services:
         condition: service_healthy
       authentik-redis:
         condition: service_healthy
+
   authentik-server:
-    <<: *authentik
-    command: server
-    deploy:
-      resources:
-        limits:
-          memory: 600Mib
-          cpus: 0.6
-    networks:
-      - docker-net
-      - authentik-net
-    # volumes:
-    #   - ./media:/media
-    #   - ./custom-templates:/templates
     depends_on:
       authentik-db:
         condition: service_healthy
@@ -119,12 +98,37 @@ services:
         condition: service_healthy
       authentik-worker:
         condition: service_completed_successfully
+    <<: *authentik
+    command: server
+    deploy:
+      resources:
+        limits:
+          memory: "600MiB"
+          cpus: "0.6"
+    networks:
+      authentik-net:
+      docker-net:
+        # volumes:
+        #   - ./media:/media
+        #   - ./custom-templates:/templates
     labels:
-      - traefik.enable=true
-      - traefik.http.services.authentik-svc.loadbalancer.server.port=9000
-      - traefik.http.routers.authentik-rtr.entrypoints=web,websecure
-      - traefik.http.routers.authentik-rtr.rule=Host(`authentik.localhost`)
-      - traefik.http.routers.authentik-rtr.tls=true
-      - traefik.http.routers.authentik-rtr.tls.certresolver=letsencrypt
-      - traefik.http.routers.authentik-rtr.service=authentik-svc
-      # - traefik.http.routers.authentik-rtr.middlewares=
+      traefik.enable: true
+      traefik.http.services.authentik-svc.loadbalancer.server.port: 9000
+      traefik.http.routers.authentik-rtr.entrypoints: web,websecure
+      traefik.http.routers.authentik-rtr.rule: Host(`authentik.localhost`)
+      traefik.http.routers.authentik-rtr.tls: true
+      traefik.http.routers.authentik-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.authentik-rtr.service: authentik-svc
+      # traefik.http.routers.authentik-rtr.middlewares: 
+
+volumes:
+  authentik-db-vol:
+    driver: local
+  authentik-redis-vol:
+    driver: local
+
+networks:
+  docker-net:
+    external: true
+  authentik-net:
+    driver: bridge

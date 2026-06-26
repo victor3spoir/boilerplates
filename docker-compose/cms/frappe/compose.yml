@@ -1,11 +1,12 @@
 name: frappe
+
 services:
   redis-cache:
     image: redis:8-alpine
     restart: unless-stopped
     networks:
       frappe-net:
- 
+
   redis-queue:
     image: redis:8-alpine
     restart: unless-stopped
@@ -39,7 +40,6 @@ services:
     restart: unless-stopped
     volumes:
       - frappe-db-vol:/var/lib/mysql
- 
 
   frappe-configurator:
     image: docker.io/library/frappecms:dev
@@ -75,7 +75,7 @@ services:
     volumes:
       - frappe-sites-vol:/home/frappe/frappe-bench/sites
       - frappe-assets-vol:/home/frappe/frappe-bench/assets
-  
+
   frappe-sites-initializer:
     extends:
       service: frappe-configurator
@@ -109,7 +109,7 @@ services:
           else
             echo "INFO: no extra apps to install"
           fi
-        
+
           chown -R 1000:1000 sites/assets
           bench --site $$SITE_NAME enable-scheduler
         else
@@ -131,7 +131,7 @@ services:
           else
             echo "INFO: no extra apps to install"
           fi
-        
+
         fi
 
         bench --site $$SITE_NAME migrate;
@@ -160,7 +160,6 @@ services:
       - frappe-sites-vol:/home/frappe/frappe-bench/sites
       - frappe-assets-vol:/home/frappe/frappe-bench/assets
 
-
   frappe-websocket:
     depends_on:
       frappe-configurator:
@@ -175,7 +174,6 @@ services:
     volumes:
       - frappe-sites-vol:/home/frappe/frappe-bench/sites
       - frappe-assets-vol:/home/frappe/frappe-bench/assets
-
 
   frappe-backend:
     depends_on:
@@ -241,7 +239,7 @@ services:
       UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
       UPSTREAM_REAL_IP_RECURSIVE: "off"
     networks:
-      frappe-net: 
+      frappe-net:
       docker-net:
     restart: unless-stopped
     volumes:
@@ -255,8 +253,6 @@ services:
       traefik.http.routers.frappe-rtr.tls: true
       traefik.http.routers.frappe-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.frappe-rtr.service: frappe-svc
-
-
 
 networks:
   frappe-net:
