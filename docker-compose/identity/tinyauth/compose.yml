@@ -24,9 +24,9 @@ services:
       TINYAUTH_LOG_STREAMS_AUDIT_ENABLED: true
       TINYAUTH_AUTH_SECURECOOKIE: true
       TINYAUTH_UI_TITLE: tinyauth-app
+      # TINYAUTH_UI_BACKGROUNDIMAGE: "/assets/background-01.png"
       # TINYAUTH_UI_FORGOTPASSWORDMESSAGE: 
-      # TINYAUTH_UI_BACKGROUNDIMAGE: 
-      TINYAUTH_AUTH_USERSFILE: "/run/secrets/users"
+      # TINYAUTH_AUTH_USERSFILE: "/run/secrets/users"
       # TINYAUTH_LDAP_ADDRESS: ldap://my-lldap-server:3890
       # TINYAUTH_LDAP_BINDDN: uid=tinyauth,ou=people,dc=lldalp,dc=localhost
       # TINYAUTH_LDAP_BINDPASSWORD: tinyauth-password
@@ -47,6 +47,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - tinyauth-vol:/data:rw
+      - ./assets:/assets:ro
     labels:
       traefik.enable: true
       traefik.http.middlewares.tinyauth-mdl.forwardauth.address: http://tinyauth:3000/api/auth/traefik
