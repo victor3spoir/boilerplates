@@ -6,6 +6,9 @@ services:
     restart: unless-stopped
     networks:
       docker-net:
+    expose:
+      - 8025
+      - 1025
     deploy:
       resources:
         limits:

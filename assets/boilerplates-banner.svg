@@ -20,20 +20,17 @@
   </g>
   <g transform="translate(118 114)" stroke="#FFFFFF" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <rect x="18" y="92" width="176" height="176" rx="38" stroke-width="7"/>
-    <rect x="60" y="46" width="176" height="176" rx="38" stroke-width="7" opacity="0.74"/>
-    <rect x="104" y="8" width="176" height="176" rx="38" stroke-width="7" opacity="0.48"/>
-    <path d="M48 204C84 162 106 146 143 136C177 126 193 103 208 80C219 64 234 54 254 52" stroke-width="7"/>
-    <path d="M70 232C102 213 131 184 150 159C166 139 186 129 216 127C246 124 268 136 286 160" stroke-width="7" opacity="0.82"/>
-    <path d="M138 90C158 88 170 78 182 62" stroke-width="7" opacity="0.9"/>
-    <path d="M148 104C170 106 188 100 204 86" stroke-width="7" opacity="0.72"/>
-    <circle cx="274" cy="70" r="16" stroke-width="7"/>
-    <path d="M274 98V148" stroke-width="7"/>
-    <path d="M250 122H298" stroke-width="7"/>
-    <path d="M228 34C236 22 250 16 266 16C282 16 294 22 302 34" stroke-width="6" opacity="0.38"/>
+    <rect x="60" y="46" width="176" height="176" rx="38" stroke-width="7" opacity="0.72"/>
+    <rect x="104" y="8" width="176" height="176" rx="38" stroke-width="7" opacity="0.46"/>
+    <path d="M198 74V118" stroke-width="8"/>
+    <path d="M176 96H220" stroke-width="8"/>
+    <circle cx="272" cy="70" r="16" stroke-width="7"/>
+    <path d="M272 98V148" stroke-width="7"/>
+    <path d="M248 122H296" stroke-width="7"/>
   </g>
   <text x="520" y="214" fill="#FFFFFF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="92" font-weight="800" letter-spacing="4">BOILERPLATES</text>
   <path d="M520 308H1092" stroke="#FFFFFF" stroke-width="3" opacity="0.5"/>
-  <text x="520" y="354" fill="#FFFFFF" opacity="0.9" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="30" font-weight="500">Reusable infrastructure starting points for production teams</text>
+  <text x="520" y="354" fill="#FFFFFF" opacity="0.9" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="30" font-weight="500">Collection of battle-tested configs ready for production</text>
   <g opacity="0.2" stroke="#FFFFFF" stroke-width="2">
     <path d="M1240 110C1300 110 1350 160 1350 220"/>
     <path d="M1240 370C1300 370 1350 320 1350 260"/>
