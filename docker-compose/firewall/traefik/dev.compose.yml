@@ -56,9 +56,9 @@ services:
       # - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./data/certs:/var/traefik/certs:rw
+      # - ./data/certs:/var/traefik/certs:rw
       - ./data/logs:/var/log/traefik/:rw
-      - ./config/dynamic:/etc/traefik/dynamic:ro
+      - ./configs/dynamic:/etc/traefik/dynamic:ro
     labels:
       traefik.enable: "true"
       traefik.http.routers.traefik-rtr.service: "api@internal"

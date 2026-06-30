@@ -1,0 +1,93 @@
+name: qdrant
+
+x-qdrant: &qdrant
+  image: qdrant/qdrant:master
+  restart: unless-stopped
+  environment:
+    RUN_MODE: production
+    QDRANT__CLUSTER__ENABLED: true
+    QDRANT_ALLOW_RECOVERY_MODE: true
+    QDRANT__SERVICE__JWT_RBAC: true
+    QDRANT__SERVICE__API_KEY: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+    QDRANT__SERVICE__READ_ONLY_API_KEY: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+  deploy:
+    resources:
+      limits:
+        memory: "400MiB"
+        cpus: "0.2"
+  configs:
+    - source: qdrant_yml
+      target: /qdrant/config/config.yml
+
+services:
+  qdrant-01:
+    <<: *qdrant
+    container_name: qdrant-01
+    command: ./qdrant --uri http://qdrant-01:6335
+    networks:
+      docker-net:
+      qdrant-net:
+    volumes:
+      - qdrant-01-vol:/qdrant/storage
+
+    labels:
+      traefik.enable: true
+
+      # traefik.http.services.qdrant-grpc-svc.loadbalancer.server.port: 6334
+      traefik.http.services.qdrant-http-svc.loadbalancer.server.port: 6333
+      traefik.http.routers.qdrant-http-rtr.entrypoints: web,websecure
+      traefik.http.routers.qdrant-http-rtr.rule: Host(`qdrant.localhost`)
+      traefik.http.routers.qdrant-http-rtr.tls: true
+      traefik.http.routers.qdrant-http-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.qdrant-http-rtr.service: qdrant-http-svc
+      # traefik.http.routers.qdrant-http-rtr.middlewares
+
+      traefik.http.routers.qdrant-ui-rtr.entrypoints: web,websecure
+      traefik.http.routers.qdrant-ui-rtr.rule: Host(`qdrant.localhost`) && PathPrefix(`/dashboard`)
+      traefik.http.routers.qdrant-ui-rtr.tls: true
+      traefik.http.routers.qdrant-ui-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.qdrant-ui-rtr.service: qdrant-http-svc
+      traefik.http.routers.qdrant-ui-rtr.middlewares: basicauth-auth-mdl@file
+
+  qdrant-02:
+    <<: *qdrant
+    container_name: qdrant-02
+    command: ./qdrant --bootstrap http://qdrant-01:6335 --uri http://qdrant-02:6335
+    networks:
+      qdrant-net:
+    volumes:
+      - qdrant-02-vol:/qdrant/storage
+  qdrant-03:
+    <<: *qdrant
+    container_name: qdrant-03
+    command: ./qdrant --bootstrap http://qdrant-01:6335 --uri http://qdrant-03:6335
+    networks:
+      qdrant-net:
+    volumes:
+      - qdrant-03-vol:/qdrant/storage
+
+configs:
+  qdrant_yml:
+    file: "./configs/qdrant.yml"
+
+networks:
+  docker-net:
+    external: true
+  qdrant-net: {}
+
+volumes:
+  qdrant-minio-vol:
+    name: qdrant-minio-vol
+    driver: local
+
+  qdrant-01-vol:
+    name: qdrant-01-vol
+    driver: local
+
+  qdrant-02-vol:
+    name: qdrant-02-vol
+    driver: local
+
+  qdrant-03-vol:
+    name: qdrant-03-vol
+    driver: local

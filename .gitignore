@@ -242,4 +242,5 @@ __marimo__/
 **/*/*.pem
 **/*/secrets/*
 
-**/data/*
+**/logs/*
+**/certs/*

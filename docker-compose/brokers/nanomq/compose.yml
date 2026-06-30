@@ -1,0 +1,26 @@
+name: nanomq
+
+configs:
+  nanomq_conf:
+    file: "./configs/nanomq.conf"
+
+services:
+  nanomq:
+    image: emqx/nanomq:0.14.1-full
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: "500MiB"
+          cpus: "0.5"
+    configs:
+      - source: nanomq_conf
+        target: /etc/nanomq.conf
+    ports:
+      - 1883:1883 #mqqt
+      - 8883:8883 #mqqts
+      - 8083:8083 #ws
+      - '127.0.0.1:8081:8081' #dashboard
+    environment:
+      NANOMQ_HTTP_SERVER_ENABLE: True
+      NANOMQ_HTTP_SERVER_USERNAME: admin

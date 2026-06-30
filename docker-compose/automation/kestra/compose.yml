@@ -1,63 +1,35 @@
 name: kestra
 
-
-
-configs:
-  kestra_yaml:
-    file: ./kestra.yaml
-
 services:
-  kestra-minio:
-    image: quay.io/minio/minio:latest
-    restart: unless-stopped
-    entrypoint: ''
-    command:
-      - sh
-      - -c
-      - mkdir -p /data/kestra && minio server /data --address ":9000"
-    networks:
-      - kestra-net
-    deploy:
-      resources:
-        limits:
-          memory: 300Mb
-          cpus: 0.3
-    environment:
-      MINIO_ROOT_USER:
-      MINIO_ROOT_PASSWORD:
-    volumes:
-      - kestra-minio-vol:/data:rw
-
   kestra-db:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     volumes:
-      - kestra-db-vol:/var/lib/postgresql/data
+      - kestra-db-vol:/var/lib/postgresql
     deploy:
       resources:
         limits:
-          memory: 300Mb
-          cpus: 0.3
+          memory: "300MiB"
+          cpus: "0.3"
     networks:
       - kestra-net
     environment:
-      POSTGRES_DB:
-      POSTGRES_USER:
-      POSTGRES_PASSWORD:
+      POSTGRES_DB: kestra
+      POSTGRES_USER: kestra
+      POSTGRES_PASSWORD: xxxxxxxxxxxxxxxxxxxxxxxxx
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      test:
+        - 'CMD-SHELL'
+        - 'pg_isready -d $${POSTGRES_DB}'
+      interval: 30s
+      timeout: 10s
+      retries: 10
 
   kestra-web:
     depends_on:
       kestra-db:
         condition: service_healthy
-      kestra-minio:
-        condition: service_started
-    image: kestra/kestra:develop
+    image: kestra/kestra:latest-lts
     restart: unless-stopped
     command: server standalone --config /etc/kestra/config.yaml
     user: root
@@ -65,19 +37,29 @@ services:
       replicas: 1
       resources:
         reservations:
-          memory: 600Mb
-          cpus: "0.3"
+          memory: "500MiB"
+          cpus: "0.4"
         limits:
-          memory: 1024Mb
-          cpus: "0.5"
+          memory: "1024MiB"
+          cpus: "0.6"
     networks:
-      - kestra-net
-      - docker-net
+      kestra-net:
+      docker-net:
+    environment:
+      KESTRA_URL: https://kestra.localhost
+      KESTRA_SERVER_BASIC_AUTH_ENABLED: true
+      KESTRA_SERVER_BASIC_AUTH_USERNAME: admin@gmail.com
+      KESTRA_SERVER_BASIC_AUTH_PASSWORD: Password123!
+      KESTRA_ENCRYPTION_SECRET_KEY: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
     configs:
       - source: kestra_yaml
         target: /etc/kestra/config.yaml
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - kestra-vol:/app/storage
+      - ./data/flows:/usr/app/flows:rw
+      - ./data/scripts:/usr/app/scripts:rw
     labels:
       traefik.enable: true
       traefik.http.services.kestra-svc.loadbalancer.server.port: 8080
@@ -89,6 +71,10 @@ services:
       # - traefik.http.routers.kestra-rtr.middlewares=
 
 
+configs:
+  kestra_yaml:
+    file: "./configs/kestra.yaml"
+
 networks:
   docker-net:
     external: true
@@ -98,14 +84,7 @@ volumes:
   kestra-db-vol:
     name: kestra-db-vol
     driver: local
-  # driver_opts:
-  #   type: nfs4
-  #   o: 'addr=127.0.0.1'
-  #   device: ':/mnt/formbricks/db'
-  kestra-minio-vol:
-    name: kestra-minio-vol
+
+  kestra-vol:
+    name: kestra-vol
     driver: local
-# driver_opts:
-#   type: nfs4
-#   o: 'addr=127.0.0.1'
-#   device: ':/mnt/formbricks/db'

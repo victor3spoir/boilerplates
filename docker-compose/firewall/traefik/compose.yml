@@ -29,8 +29,9 @@ services:
       - ./config/dynamic:/etc/traefik/dynamic
     environment:
       TZ: UTC
-      ACME_EMAIL: user@gmail.com
-      CF_DNS_API_TOKEN: change-this-for-cloudflare-dns-challenge
+      # CF_DNS_API_TOKEN: change-this-for-cloudflare-dns-challenge
+      # SPACESHIP_API_KEY:
+      # SPACESHIP_API_SECRET:
     labels:
       traefik.enable: true
       traefik.http.routers.traefik-rtr.service: api@internal
@@ -45,7 +46,7 @@ services:
 
 configs:
   traefik_yml:
-    file: ./config/traefik.yml
+    file: ./configs/traefik.yml
 
 networks:
   docker-net:

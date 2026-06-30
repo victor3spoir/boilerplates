@@ -1,34 +1,52 @@
 name: termix
 
 services:
-  termix:
-    image: ghcr.io/lukegus/termix:latest
-    container_name: termix
-    restart: unless-stopped
-    ports:
-      - "18080:8080"
-    volumes:
-      - termix-data:/app/data
-    environment:
-      PORT: "8080"
-    depends_on:
-      - guacd
-    networks:
-      - termix-net
-
   guacd:
     image: guacamole/guacd:1.6.0
     container_name: guacd
     restart: unless-stopped
-    ports:
-      - "4822:4822"
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.5"
+    expose:
+      - 4822
     networks:
-      - termix-net
+      termix-net:
 
-volumes:
-  termix-data:
-    driver: local
+  termix:
+    image: ghcr.io/lukegus/termix:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.5"
+    networks:
+      docker-net:
+      termix-net:
+    volumes:
+      - termix-data:/app/data
+    environment:
+      PORT: "8080"
+    labels:
+      traefik.enable: true
+      traefik.http.services.termix-svc.loadbalancer.server.port: 8080
+      traefik.http.routers.termix-rtr.entrypoints: websecure
+      traefik.http.routers.termix-rtr.rule: Host(`termix.localhost`)
+      traefik.http.routers.termix-rtr.tls: true
+      traefik.http.routers.termix-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.termix-rtr.service: termix-svc
+      # traefik.http.routers.termix-rtr.middlewares: tinyauth-mdl
+
 
 networks:
   termix-net:
     driver: bridge
+  docker-net:
+    external: true
+
+volumes:
+  termix-data:
+    driver: local

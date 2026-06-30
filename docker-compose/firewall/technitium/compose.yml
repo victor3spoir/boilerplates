@@ -1,3 +1,5 @@
+# http://localhost:5380/
+
 name: technitium
 services:
   dns-server:
@@ -5,12 +7,12 @@ services:
     hostname: dns-server
     image: docker.io/technitium/dns-server:latest
     # For DHCP deployments, use "host" network mode and remove all the port mappings, including the ports array by commenting them
-    # network_mode: "host"
-    ports:
-      - "5380:5380/tcp" #DNS web console (HTTP)
+    network_mode: "host"
+    # ports:
+      # - "5380:5380/tcp" #DNS web console (HTTP)
       # - "53443:53443/tcp" #DNS web console (HTTPS)
-      - "127.0.0.1:53:53/udp" #DNS service
-      - "127.0.0.1:53:53/tcp" #DNS service
+      # - "127.0.0.1:53:53/udp" #DNS service
+      # - "127.0.0.1:53:53/tcp" #DNS service
       # - "853:853/udp" #DNS-over-QUIC service
       # - "853:853/tcp" #DNS-over-TLS service
       # - "443:443/udp" #DNS-over-HTTPS service (HTTP/3)
@@ -46,24 +48,24 @@ services:
       DNS_SERVER_STATS_ENABLE_IN_MEMORY_STATS: false 
       DNS_SERVER_STATS_MAX_STAT_FILE_DAYS: 365 
     volumes:
-      - config:/etc/dns
-      - logs:/var/log/technitium/dns
+      - dns-server-vol:/etc/dns
+      - ./data/logs:/var/log/technitium/dns
     restart: unless-stopped
-    networks:
-      docker-net:
-    sysctls:
-      - net.ipv4.ip_local_port_range=1024 65535 #remove when using "host" network mode
-    labels:
-      traefik.enable: true
-      traefik.http.services.technitium-svc.loadbalancer.server.port: 5380
-      traefik.http.routers.technitium-rtr.entrypoints: web,websecure
-      traefik.http.routers.technitium-rtr.rule: Host(`technitium.localhost`)
-      traefik.http.routers.technitium-rtr.tls: true
-      traefik.http.routers.technitium-rtr.tls.certresolver: letsencrypt
+    # networks:
+    #   docker-net:
+    # sysctls:
+    #   - net.ipv4.ip_local_port_range=1024 65535 #remove when using "host" network mode
+    # labels:
+    #   traefik.enable: true
+    #   traefik.http.services.technitium-svc.loadbalancer.server.port: 5380
+    #   traefik.http.routers.technitium-rtr.entrypoints: web,websecure
+    #   traefik.http.routers.technitium-rtr.rule: Host(`technitium.localhost`)
+    #   traefik.http.routers.technitium-rtr.tls: true
+    #   traefik.http.routers.technitium-rtr.tls.certresolver: letsencrypt
 
 volumes:
-  config:
-  logs:
+  dns-server-vol:
+    name: dns-server-vol
 
 networks:
   docker-net:

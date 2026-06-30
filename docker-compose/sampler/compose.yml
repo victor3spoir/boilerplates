@@ -13,5 +13,23 @@ services:
   # blogs to generate trafic
   goblog:
     image: mariomac/goblog:dev
-    ports:
-      - '18443:8443'
+
+    labels:
+      traefik.enable: true
+      traefik.http.services.goblog-svc.loadbalancer.server.port: 8443
+      traefik.http.routers.goblog-rtr.entrypoints: web,websecure
+      traefik.http.routers.goblog-rtr.rule: Host(`goblog.localhost`)
+      traefik.http.routers.goblog-rtr.tls: true
+      traefik.http.routers.goblog-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.goblog-rtr.service: goblog-svc
+
+  nginx:
+    image: nginxdemos/hello:0.4
+    labels:
+      traefik.enable: true
+      traefik.http.services.nginx-svc.loadbalancer.server.port: 80
+      traefik.http.routers.nginx-rtr.entrypoints: web,websecure
+      traefik.http.routers.nginx-rtr.rule: Host(`nginx.localhost`)
+      traefik.http.routers.nginx-rtr.tls: true
+      traefik.http.routers.nginx-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.nginx-rtr.service: nginx-svc

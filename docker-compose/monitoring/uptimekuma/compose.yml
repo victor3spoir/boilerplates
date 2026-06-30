@@ -1,25 +1,5 @@
+# reset password: npm run reset-password
 name: uptimekuma
-
-networks:
-  docker-net:
-    external: true
-  uptimekuma-net: {}
-
-volumes:
-  uptimekuma-db-vol:
-    name: uptimekuma-db-vol
-    driver: local
-    # driver_opts:
-    #   type: nfs4
-    #   o: "addr=127.0.0.1,rw"
-    #   device: ":/mnt/storage/uptimekuma"
-  uptimekuma-web-vol:
-    name: uptimekuma-web-vol
-    driver: local
-    # driver_opts:
-    #   type: nfs4
-    #   o: "addr=127.0.0.1,rw"
-    #   device: ":/mnt/storage/uptimekuma"
 
 services:
   uptimekuma-db:
@@ -29,29 +9,34 @@ services:
       resources:
         limits:
           memory: 400Mib
-          cpus: 0.2
+          cpus: 0.5
     networks:
-      - uptimekuma-net
+      uptimekuma-net:
+    secrets:
+      - password
+      - root_password
     environment:
-      - MARIADB_USER
-      - MARIADB_PASSWORD
-      - MARIADB_ROOT_PASSWORD
+      MARIADB_USER: mariadb
+      MARIADB_DATABASE: uptimekuma
+      MARIADB_PASSWORD_FILE: "/run/secrets/password"
+      MARIADB_ROOT_PASSWORD_FILE: "/run/secrets/root_password"
     volumes:
       - uptimekuma-db-vol:/var/lib/mysql
 
   uptimekuma-web:
     depends_on:
-      - uptimekuma-db
+      uptimekuma-db:
+        condition: service_started
     image: louislam/uptime-kuma:nightly2
     restart: unless-stopped
     networks:
-      - uptimekuma-net
-      - docker-net
+      uptimekuma-net:
+      docker-net:
     deploy:
       resources:
         limits:
-          memory: 400Mib
-          cpus: 0.3
+          memory: "400MiB"
+          cpus: "0.5"
     volumes:
       - uptimekuma-web-vol:/app/data
     labels:
@@ -62,3 +47,23 @@ services:
       traefik.http.routers.uptimekuma-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.uptimekuma-rtr.rule: Host(`uptimekuma.localhost`)
       traefik.http.routers.uptimekuma-rtr.service: uptimekuma-svc
+
+secrets:
+  password:
+    file: "./secrets/password"
+  root_password:
+    file: "./secrets/root_password"
+
+networks:
+  docker-net:
+    external: true
+  uptimekuma-net: {}
+
+volumes:
+  uptimekuma-db-vol:
+    name: uptimekuma-db-vol
+    driver: local
+
+  uptimekuma-web-vol:
+    name: uptimekuma-web-vol
+    driver: local

@@ -1,0 +1,12 @@
+Host srv-name
+    HostName 10.1.1.1
+    User adminvictor3spoir
+    AddKeysToAgent yes
+    IdentityFile ~/.ssh/private_key
+    UserKnownHostsFile /dev/null
+    IdentitiesOnly true
+    Compression yes
+    StrictHostKeyChecking no
+    ServerAliveInterval 30
+    ServerAliveCountMax 120
+    ConnectionAttempts 30

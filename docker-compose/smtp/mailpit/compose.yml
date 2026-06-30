@@ -2,7 +2,7 @@ name: mailpit
 
 services:
   mailpit:
-    image: axllent/mailpit:v1.27
+    image: axllent/mailpit
     restart: unless-stopped
     networks:
       docker-net:
@@ -11,8 +11,8 @@ services:
         limits:
           cpus: "0.1"
           memory: 200MiB
-    ports:
-      - '127.0.0.1:1025:1025'
+    # ports:
+    #   - '127.0.0.1:1025:1025'
     environment:
       MP_ENABLE_PROMETHEUS: true
     labels:

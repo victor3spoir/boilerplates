@@ -1,0 +1,62 @@
+# default credentials
+# root
+# password grep 'Password:' /etc/gitlab/initial_root_password
+name: gitlab
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:nightly
+    container_name: gitlab
+    restart: unless-stopped
+    hostname: 'localhost'
+    shm_size: '256m'
+    deploy:
+      resources:
+        reservations:
+          memory: "4GB"
+          cpus: "2.0"
+    networks:
+      docker-net:
+    environment:
+      GITLAB_OMNIBUS_CONFIG: from_file('/omnibus_config.rb')
+    expose:
+      - 22 #ssh
+      - 80 #http
+      - 443 #https
+    configs:
+      - source: gitlab_rb
+        target: /omnibus_config.rb
+    volumes:
+      - gitlab-vol:/var/opt/gitlab
+      - gitlab-config-vol:/etc/gitlab
+      - './data/logs:/var/log/gitlab'
+    labels:
+      traefik.enable: true
+      traefik.http.services.gitlab-svc.loadbalancer.server.port: 80
+      traefik.http.services.gitlab-ssh-svc.loadbalancer.server.port: 22
+      traefik.http.routers.gitlab-rtr.rule: Host(`gitlab.localhost`)
+      traefik.http.routers.gitlab-rtr.tls: true
+      traefik.http.routers.gitlab-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.gitlab-rtr.service: gitlab-svc
+  # gitlab-runner:
+  #   image: gitlab/gitlab-runner:alpine
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 4
+
+
+configs:
+  gitlab_rb:
+    file: "./configs/gitlab.rb"
+
+networks:
+  docker-net:
+    external: true
+
+volumes:
+  gitlab-vol:
+    name: gitlab-vol
+    driver: local
+  gitlab-config-vol:
+    name: gitlab-config-vol
+    driver: local

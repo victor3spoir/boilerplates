@@ -16,8 +16,6 @@ services:
         limits:
           memory: "500MiB"
           cpus: "0.5"
-    secrets:
-      - users
     environment:
       TINYAUTH_APPURL: https://tinyauth.localhost
       TINYAUTH_LOG_JSON: true
@@ -26,7 +24,7 @@ services:
       TINYAUTH_UI_TITLE: tinyauth-app
       # TINYAUTH_UI_FORGOTPASSWORDMESSAGE: 
       # TINYAUTH_UI_BACKGROUNDIMAGE: 
-      TINYAUTH_AUTH_USERSFILE: "/run/secrets/users"
+      # TINYAUTH_AUTH_USERS: "---"
       # TINYAUTH_LDAP_ADDRESS: ldap://my-lldap-server:3890
       # TINYAUTH_LDAP_BINDDN: uid=tinyauth,ou=people,dc=lldalp,dc=localhost
       # TINYAUTH_LDAP_BINDPASSWORD: tinyauth-password
@@ -35,7 +33,6 @@ services:
       # TINYAUTH_LDAP_SEARCHFILTER: "(uid=%s)"
 
       # TINYAUTH_OAUTH_PROVIDERS_KEYCLOAK_NAME: Keycloak
-      # TINYAUTH_OAUTH_AUTOREDIRECT: keycloak
       # TINYAUTH_OAUTH_PROVIDERS_KEYCLOAK_CLIENTID: tinyauth
       # TINYAUTH_OAUTH_PROVIDERS_KEYCLOAK_CLIENTSECRET: xxxxxxxxxxxxxx
       # TINYAUTH_OAUTH_PROVIDERS_KEYCLOAK_REDIRECTURL: https://tinyauth.localhost/api/oauth/callback/keycloak
@@ -43,6 +40,16 @@ services:
       # TINYAUTH_OAUTH_PROVIDERS_KEYCLOAK_TOKENURL: https://keycloak.localhost/realms/therealm/protocol/openid-connect/token
       # TINYAUTH_OAUTH_PROVIDERS_KEYCLOAK_USERINFOURL: https://keycloak.localhost/realms/therealm/protocol/openid-connect/userinfo
       # TINYAUTH_OAUTH_PROVIDERS_KEYCLOAK_SCOPES: openid profile email groups
+
+      # TINYAUTH_OAUTH_PROVIDERS_AUTHENTIK_NAME: authentik
+      # TINYAUTH_OAUTH_AUTOREDIRECT: authentik
+      # TINYAUTH_OAUTH_PROVIDERS_AUTHENTIK_CLIENTID: xxxxxxxxxxxxxxxxxxxxxxxx
+      # TINYAUTH_OAUTH_PROVIDERS_AUTHENTIK_CLIENTSECRET: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      # TINYAUTH_OAUTH_PROVIDERS_AUTHENTIK_REDIRECTURL: https://tinyauth.localhost/api/oauth/callback/authentik
+      # TINYAUTH_OAUTH_PROVIDERS_AUTHENTIK_AUTHURL: https://authentik.localhost/application/o/authorize/
+      # TINYAUTH_OAUTH_PROVIDERS_AUTHENTIK_TOKENURL: http://authentik-server:9000/application/o/token/
+      # TINYAUTH_OAUTH_PROVIDERS_AUTHENTIK_USERINFOURL: http://authentik-server:9000/application/o/userinfo/
+      # TINYAUTH_OAUTH_PROVIDERS_AUTHENTIK_SCOPES: openid profile email groups
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -56,12 +63,12 @@ services:
       traefik.http.routers.tinyauth-rtr.tls: true
       traefik.http.routers.tinyauth-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.tinyauth-rtr.service: tinyauth-svc
-      # tinyauth.apps.traefik.ldap.groups: admins,monitoring
-      # tinyauth.apps.gitea.oauth.groups: admins,monitoring
+      # traefik.http.routers.traefik-rtr.middlewares=tinyauth-mdl
+      # tinyauth.apps.myapp.config.domain: myapp.example.com
+      # tinyauth.apps.myapp.ldap.groups: admins,monitoring
+      # tinyauth.apps.myapp.oauth.groups: admins,monitoring
 
-secrets:
-  users:
-    file: '${PWD}/secrets/users'
+
 
 networks:
   docker-net:

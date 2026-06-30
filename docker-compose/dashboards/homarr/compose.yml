@@ -1,0 +1,43 @@
+# https://homarr.dev/docs/category/getting-started/
+name: homarr
+
+services:
+  homarr:
+    image: ghcr.io/homarr-labs/homarr:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.5"
+    networks:
+      docker-net:
+    secrets:
+      - encryption_key
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - homarr-vol:/appdata
+    environment:
+      SECRET_ENCRYPTION_KEY_FILE: "/run/secrets/encryption_key"
+
+    labels:
+      traefik.enable: true
+      traefik.http.services.homarr-svc.loadbalancer.server.port: 7575
+      traefik.http.routers.homarr-rtr.entrypoints: web,websecure
+      traefik.http.routers.homarr-rtr.rule: Host(`homarr.localhost`)
+      traefik.http.routers.homarr-rtr.tls: true
+      traefik.http.routers.homarr-rtr.tls.certresolver: letsencrypt
+      # traefik.http.routers.homarr-rtr.middlewares: 
+
+
+secrets:
+  encryption_key:
+    file: "./secrets/encryption_key"
+
+networks:
+  docker-net:
+    external: true
+
+volumes:
+  homarr-vol:
+    name: homarr-vol

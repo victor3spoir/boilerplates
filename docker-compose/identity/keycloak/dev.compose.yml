@@ -3,7 +3,7 @@ name: keycloak-dev
 services:
   keycloak-dev:
     image: keycloak/keycloak:nightly
-    command: start-dev 
+    command: start-dev
     restart: unless-stopped
     deploy:
       resources:
@@ -17,6 +17,8 @@ services:
       docker-net:
     ports:
       - 8080:8080
+    # volumes:
+    #   - ./themes:/opt/keycloak/themes:ro
     environment:
       KC_HEALTH_ENABLED: true
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
@@ -29,4 +31,3 @@ networks:
 volumes:
   keycloack-data:
     name: keycloack-data
-

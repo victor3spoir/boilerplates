@@ -1,7 +1,5 @@
 name: pgsql-dev
 
-
-
 services:
   pgsql:
     image: postgres:18-alpine
@@ -21,7 +19,11 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - pgsql-vol:/var/lib/postgresql
-
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U $$POSTGRES_USER' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   docker-net:

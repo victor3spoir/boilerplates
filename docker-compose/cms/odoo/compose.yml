@@ -1,71 +1,69 @@
+# admin:admin
 name: odoo
-
-networks:
-  docker-net:
-    external: true
-  odoonet: {}
-
-volumes:
-  odoo-web-vol:
-    name: odoo-web-vol
-    driver: local
-    # driver_opts:
-    #   type: nfs4
-    #   o: 'addr=127.0.0.1,rw'
-    #   device: ':/mnt/storage/odoo/web'
-  odoo-db-vol:
-    name: odoo-db-vol
-    driver: local
-    # driver_opts:
-    #   type: nfs4
-    #   o: 'addr=127.0.0.1,rw'
-    #   device: ':/mnt/storage/odoo/db'
 
 services:
   odoo-db:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          memory: 300Mib
-          cpus: 0.4
+          memory: "300Mib"
+          cpus: "0.4"
     networks:
-      - odoonet
+      odoo-net:
     environment:
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_DB
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: xxxxxxxxxxxxxxxx
+      POSTGRES_DB: odoo
     volumes:
-      - odoo-db-vol:/var/lib/postgresql/data:rw
+      - odoo-db-vol:/var/lib/postgresql
 
   odoo-web:
     depends_on:
       - odoo-db
-    image: odoo:18
+    image: odoo:19
     restart: unless-stopped
+    command: odoo -i base
     deploy:
       resources:
         limits:
           memory: 400Mib
           cpus: 0.8
     networks:
-      - docker-net
-      - odoonet
+      docker-net:
+      odoo-net:
     environment:
-      - HOST=odoo-db
-      - USER
-      - PASSWORD
-    ports:
-      - 127.0.0.1:8069:8069
+      HOST: odoo-db
+      USER: odoo
+      PASSWORD: xxxxxxxxxxxxxxxx
+    configs:
+      - source: odoo_conf
+        target: /etc/odoo/odoo.conf
     volumes:
-      - ./odoo.conf:/etc/odoo/odoo.conf:ro
       - odoo-web-vol:/var/lib/odoo:rw
       # - odoo-web-vol:/mnt/extra-addons:rw
     labels:
-      - traefik.enable=true
-      - traefik.http.services.odoo-svc.loadbalancer.server.port=8069
-      - traefik.http.routers.odoo-rtr.entrypoints=web,websecure
-      - traefik.http.routers.odoo-rtr.rule=Host(`odoo.localhost`)
-      - traefik.http.routers.odoo-rtr.tls=true
-      - traefik.http.routers.odoo-rtr.tls.certresolver=letsencrypt
+      traefik.enable: true
+      traefik.http.services.odoo-svc.loadbalancer.server.port: 8069
+      traefik.http.routers.odoo-rtr.entrypoints: web,websecure
+      traefik.http.routers.odoo-rtr.rule: Host(`odoo.localhost`)
+      traefik.http.routers.odoo-rtr.tls: true
+      traefik.http.routers.odoo-rtr.tls.certresolver: letsencrypt
+
+configs:
+  odoo_conf:
+    file: "./configs/odoo.conf"
+
+networks:
+  docker-net:
+    external: true
+  odoo-net: {}
+
+volumes:
+  odoo-web-vol:
+    name: odoo-web-vol
+    driver: local
+  odoo-db-vol:
+    name: odoo-db-vol
+    driver: local

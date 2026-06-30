@@ -1,0 +1,81 @@
+name: spark
+
+services:
+
+  spark-worker-1:
+    depends_on:
+      spark-master:
+        condition: service_started
+    image: spark:4.0.1-python3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: "1000MiB"
+          cpus: "1.0"
+    networks:
+      spark-net:
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    # ports:
+    #   - "8081:8081"   # Worker Web UI
+    environment:
+      SPARK_WORKER_CORES: 1
+      SPARK_WORKER_MEMORY: 1G
+      SPARK_MASTER: spark://spark:7077
+
+  spark-worker-2:
+    depends_on:
+      spark-master:
+        condition: service_started
+    image: spark:4.0.1-python3
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: "1000MiB"
+          cpus: "1.0"
+    networks:
+      spark-net:
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    # ports:
+    #   - "8082:8081"
+    environment:
+      SPARK_WORKER_CORES: 1
+      SPARK_WORKER_MEMORY: 1G
+      SPARK_MASTER: spark://spark:7077
+
+  spark-master:
+    image: spark:4.0.1-python3
+    restart: unless-stopped
+    hostname: spark-master
+    command: >
+      /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master --host spark-master --port 7077 --webui-port 8080
+    networks:
+      spark-net:
+      docker-net:
+    deploy:
+      resources:
+        limits:
+          memory: "1000MiB"
+          cpus: "1.0"
+    # ports:
+    #   - "7077:7077"   # Master cluster port
+    labels:
+      traefik.enable: true
+      traefik.http.services.spark-svc.loadbalancer.server.port: 8080
+      traefik.http.routers.spark-rtr.entrypoints: websecure
+      traefik.http.routers.spark-rtr.rule: Host(`spark.localhost`)
+      traefik.http.routers.spark-rtr.tls: true
+      traefik.http.routers.spark-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.spark-rtr.service: spark-svc
+      # - traefik.http.routers.spark-rtr.middlewares=
+
+
+
+networks:
+  spark-net:
+    driver: bridge
+  docker-net:
+    external: true
