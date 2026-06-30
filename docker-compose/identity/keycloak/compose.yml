@@ -2,7 +2,7 @@ name: keycloak
 
 services:
   keycloack-db:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     container_name: keycloak-postgres
     environment:
@@ -30,20 +30,15 @@ services:
     command:
       - start
       # - --optimized
-    secrets:
-      - keycloack_admin
-      - keycloack_password
     environment:
-      KEYCLOAK_ADMIN_FILE: "/run/secrets/keycloack_admin"
-      KEYCLOAK_ADMIN_PASSWORD_FILE: "/run/secrets/keycloack_password"
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin@gmail.com
+      KC_BOOTSTRAP_ADMIN_PASSWORD: Password123!
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloack-db:5432/keycloak
       KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: xxxxxxxxxxxxxx
-      KC_PROXY: edge
-      KC_HOSTNAME: keycloak.localhost
+      KC_DB_PASSWORD: "xxxxxxxxxxxxxx"
+      KC_HOSTNAME: https://keycloak.localhost
       KC_HOSTNAME_STRICT: true
-      KC_HOSTNAME_STRICT_HTTPS: true
       KC_HTTP_ENABLED: true
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_PORT: 8080
@@ -61,9 +56,8 @@ services:
       traefik.http.routers.keycloak-rtr.tls.certresolver: "letsencrypt"
 
       traefik.http.routers.keycloak-rtr.service: "keycloak-svc"
-      traefik.http.routers.keycloak-rtr.middlewares: "keycloak-headers"
+      traefik.http.routers.keycloak-rtr.middlewares: keycloak-headers
 
-      # Optional security headers
       traefik.http.middlewares.keycloak-headers.headers.sslredirect: "true"
       traefik.http.middlewares.keycloak-headers.headers.stsSeconds: "31536000"
       traefik.http.middlewares.keycloak-headers.headers.stsIncludeSubdomains: "true"
@@ -73,11 +67,6 @@ services:
       keycloak-net:
 
 
-secrets:
-  keycloack_admin:
-    file: "./secrets/admin"
-  keycloack_password:
-    file: "./secrets/password"
 
 
 volumes:
