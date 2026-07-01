@@ -1,0 +1,108 @@
+# https://getarcane.app/docs
+# arcane: arcane-admin
+name: arcane
+
+services:
+
+  arcane-db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U $$POSTGRES_USER' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      arcane-net:
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.3"
+        limits:
+          memory: "700MiB"
+          cpus: "0.5"
+    environment:
+      POSTGRES_DB: arcane
+      POSTGRES_USER: arcane
+      POSTGRES_PASSWORD: xxxxxxxxxxxxxx
+    volumes:
+      - arcane-db-vol:/var/lib/postgresql
+      - ./backups:/backups
+
+  arcane:
+    depends_on:
+      arcane-db:
+        condition: service_healthy
+    image: ghcr.io/getarcaneapp/manager:latest
+    restart: unless-stopped
+    expose:
+      - 3552
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.3"
+        limits:
+          memory: "700MiB"
+          cpus: "0.5"
+    networks:
+      docker-net:
+      arcane-net:
+    volumes:
+      - arcane-vol:/app/data
+      - arcane-builds-vol:/builds
+      - arcane-backups-vol:/backups
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      APP_URL: https://arcane.localhost
+      PUID: 1000
+      PGID: 1000
+      LOG_LEVEL: info
+      LOG_JSON: true
+      ENCRYPTION_KEY: f5e24bba74c5dfc506fa615b07bdcc6a4806863b4b396452aeeaa675c1eadc73
+      JWT_SECRET: 2b9b3c0e745b1bbc6b61bfab6e90309e28dc5bd4ff08c6500bad3ff9c46ea26f
+      POSTGRES_DB: arcane
+      POSTGRES_USER: arcane
+      POSTGRES_PASSWORD: xxxxxxxxxxxxxx
+      DATABASE_URL: postgresql://arcane:xxxxxxxxxxxxxx@arcane-db:5432/arcane
+      # OIDC_ENABLED: true
+      # OIDC_CLIENT_ID: client-id
+      # OIDC_CLIENT_SECRET: clientsecret
+      # OIDC_ISSUER_URL: https://keycloak.localhost
+      # OIDC_SCOPES: openid email profile groups
+      # OIDC_SKIP_TLS_VERIFY: true
+      # OIDC_AUTO_REDIRECT_TO_PROVIDER: true
+      # OIDC_MERGE_ACCOUNTS: true
+      # OIDC_PROVIDER_NAME: keycloak
+      ARCANE_BACKUP_VOLUME_NAME: arcane-backups-vol
+
+    labels:
+      traefik.enable: true
+      traefik.http.services.arcane-svc.loadbalancer.server.port: 3552
+      traefik.http.routers.arcane-rtr.entrypoints: websecure
+      traefik.http.routers.arcane-rtr.rule: Host(`arcane.localhost`)
+      traefik.http.routers.arcane-rtr.tls: true
+      traefik.http.routers.arcane-rtr.tls.certresolver: spaceship
+      traefik.http.routers.arcane-rtr.service: arcane-svc
+
+
+networks:
+  docker-net:
+    external: true
+  arcane-net:
+    internal: true
+
+volumes:
+  arcane-vol:
+    name: arcane-vol
+    driver: local
+  arcane-builds-vol:
+    name: arcane-builds-vol
+    driver: local
+  arcane-backups-vol:
+    name: arcane-backups-vol
+    driver: local
+  arcane-db-vol:
+    name: arcane-db-vol
+    driver: local

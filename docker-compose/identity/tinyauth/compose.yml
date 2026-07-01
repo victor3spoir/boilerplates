@@ -1,4 +1,4 @@
-# docker run -i -t --rm ghcr.io/steveiliop56/tinyauth:v5 user create --interactive
+# docker run -i -t --rm ghcr.io/tinyauthapp/tinyauth:nightly user create --interactive
 
 name: tinyauth
 
@@ -23,8 +23,7 @@ services:
       TINYAUTH_AUTH_SECURECOOKIE: true
       TINYAUTH_UI_TITLE: tinyauth-app
       # TINYAUTH_UI_FORGOTPASSWORDMESSAGE: 
-      # TINYAUTH_UI_BACKGROUNDIMAGE: 
-      # TINYAUTH_AUTH_USERS: "---"
+      TINYAUTH_AUTH_USERS: "admin:$$2a$$10$$/I2GAFUHNJVMJNU5wizrauIJZonPHRIP6EI1wQndDeHJ927g8C6aG" #change this
       # TINYAUTH_LDAP_ADDRESS: ldap://my-lldap-server:3890
       # TINYAUTH_LDAP_BINDDN: uid=tinyauth,ou=people,dc=lldalp,dc=localhost
       # TINYAUTH_LDAP_BINDPASSWORD: tinyauth-password
@@ -54,6 +53,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - tinyauth-vol:/data:rw
+      - ./resources/background.png:/resources/background.png:ro
     labels:
       traefik.enable: true
       traefik.http.middlewares.tinyauth-mdl.forwardauth.address: http://tinyauth:3000/api/auth/traefik

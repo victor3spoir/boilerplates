@@ -1,6 +1,6 @@
 Host srv-name
     HostName 10.1.1.1
-    User adminvictor3spoir
+    User v3r
     AddKeysToAgent yes
     IdentityFile ~/.ssh/private_key
     UserKnownHostsFile /dev/null

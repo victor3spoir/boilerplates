@@ -4,32 +4,29 @@ services:
   caddy:
     image: caddy:2-alpine
     networks:
-      - docker-net
+      docker-net:
     ports:
-      - 38080:80
+      - 80:80
     configs:
       - source: caddy_file
         target: /etc/caddy/Caddyfile
 
-
-  webapp-01:
-    image: nginxdemos/hello:0.4
-    networks:
-      - docker-net
-  webapp-02:
-    image: nginxdemos/hello:0.4
-    networks:
-      - docker-net
-  webapp-03:
-    image: nginxdemos/hello:0.4
-    networks:
-      - docker-net
+  # webapp-01:
+  #   image: nginxdemos/hello:0.4
+  #   networks:
+  #     - docker-net
+  # webapp-02:
+  #   image: nginxdemos/hello:0.4
+  #   networks:
+  #     - docker-net
+  # webapp-03:
+  #   image: nginxdemos/hello:0.4
+  #   networks:
+  #     - docker-net
 configs:
   caddy_file:
-    file: ./configsCaddyfile
+    file: ./configs/Caddyfile
 
 networks:
   docker-net:
     external: true
-
-

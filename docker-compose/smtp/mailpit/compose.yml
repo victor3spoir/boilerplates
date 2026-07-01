@@ -7,15 +7,14 @@ services:
     networks:
       docker-net:
     expose:
-      - 8025
-      - 1025
+      - 8025 #ui
+      - 1025 #smpt
     deploy:
       resources:
         limits:
-          cpus: "0.1"
-          memory: 200MiB
-    # ports:
-    #   - '127.0.0.1:1025:1025'
+          cpus: "0.2"
+          memory: "200MiB"
+
     environment:
       MP_ENABLE_PROMETHEUS: true
     labels:
