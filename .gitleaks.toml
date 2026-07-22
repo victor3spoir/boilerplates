@@ -5,7 +5,6 @@ description = "Intentional homelab bootstrap credentials and example secrets"
 
 paths = [
 '''docker-compose/firewall/traefik/config/dynamic.yaml''',
-'''docker-compose/identity/keycloak/keycloak.env''',
 '''docker-compose/firewall/traefik-dashboard/compose.yml''',
 '''docker-compose/identity/lldap/lldap.env''',
 '''docker-compose/identity/pocketid/compose.yml''',

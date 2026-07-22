@@ -12,8 +12,7 @@ services:
     restart: unless-stopped
     networks:
       frappe-net:
-    volumes:
-      - frappe-redis-vol:/data
+
 
   frappe-db:
     command:
@@ -24,6 +23,11 @@ services:
     environment:
       MARIADB_AUTO_UPGRADE: "1"
       MYSQL_ROOT_PASSWORD: "Password123!"
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
     healthcheck:
       test:
         - CMD
@@ -42,7 +46,7 @@ services:
       - frappe-db-vol:/var/lib/mysql
 
   frappe-configurator:
-    image: docker.io/library/frappecms:dev
+    image: frappe/erpnext:v16
     command:
       - |
         ls -1 apps > sites/apps.txt; 
@@ -61,7 +65,7 @@ services:
       redis-queue:
         condition: service_started
     entrypoint:
-      - bash
+      - sh
       - -c
     environment:
       DB_HOST: frappe-db
@@ -83,70 +87,22 @@ services:
     depends_on:
       frappe-configurator:
         condition: service_completed_successfully
-    command:
-      - |
-        APPS="hrms insights"
-
-        if [ ! -d "sites/$$SITE_NAME" ]; then
-          echo "INFO: creating site $$SITE_NAME"
-          bench new-site \
-            --mariadb-root-password $$MYSQL_ROOT_PASSWORD \
-            --admin-password $$FRAPPE_ADMIN_PASSWORD \
-            --mariadb-user-host-login-scope='%' \
-            --install-app erpnext \
-            --set-default $$SITE_NAME
-          
-          if [ -n "$$APPS" ]; then
-            echo "INFO: installing extra apps"
-
-            for app in $$APPS; do
-              app=$(echo "$$app" | xargs)
-              echo "INFO: installing $$app..."
-              bench --site $$SITE_NAME install-app $$app || true
-            done
-            bench --site $$SITE_NAME clear-website-cache
-            bench --site $$SITE_NAME clear-cache
-          else
-            echo "INFO: no extra apps to install"
-          fi
-
-          chown -R 1000:1000 sites/assets
-          bench --site $$SITE_NAME enable-scheduler
-        else
-          echo "INFO: site $$SITE_NAME already exists"
-        fi
-
-        if [ "$$INSTALL_APPS" = "true" ]; then
-          if [ -n "$$APPS" ]; then
-            echo "INFO: installing extra apps"
-
-            for app in $$APPS; do
-              app=$(echo "$$app" | xargs)
-              echo "INFO: installing $$app..."
-              bench --site $$SITE_NAME install-app $$app || true
-              bench build --app $$app
-            done
-            bench --site $$SITE_NAME clear-website-cache
-            bench --site $$SITE_NAME clear-cache
-          else
-            echo "INFO: no extra apps to install"
-          fi
-
-        fi
-
-        bench --site $$SITE_NAME migrate;
-
+    command: /home/frappe/frappe-bench/initialize.sh
     environment:
       INSTALL_APPS: ${INSTALL_APPS:-false}
       BENCH_BUILD: ${BENCH_BUILD:-false}
       DB_HOST: frappe-db
       DB_PORT: "3306"
       MYSQL_ROOT_PASSWORD: "Password123!"
-      FRAPPE_ADMIN_PASSWORD: admin
+      FRAPPE_ADMIN_PASSWORD: "Password123!"
       SITE_NAME: frontend
+    volumes:
+      - frappe-sites-vol:/home/frappe/frappe-bench/sites
+      - frappe-assets-vol:/home/frappe/frappe-bench/assets
+      - ./initialize.sh:/home/frappe/frappe-bench/initialize.sh:ro
 
   scheduler:
-    image: docker.io/library/frappecms:dev
+    image: frappe/erpnext:v16
     restart: unless-stopped
     command:
       - bench
@@ -156,6 +112,11 @@ services:
         condition: service_completed_successfully
     networks:
       frappe-net:
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
     volumes:
       - frappe-sites-vol:/home/frappe/frappe-bench/sites
       - frappe-assets-vol:/home/frappe/frappe-bench/assets
@@ -164,8 +125,13 @@ services:
     depends_on:
       frappe-configurator:
         condition: service_completed_successfully
-    image: docker.io/library/frappecms:dev
+    image: frappe/erpnext:v16
     restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
     command:
       - node
       - /home/frappe/frappe-bench/apps/frappe/socketio.js
@@ -179,8 +145,14 @@ services:
     depends_on:
       frappe-sites-initializer:
         condition: service_completed_successfully
-    image: docker.io/library/frappecms:dev
+    image: frappe/erpnext:v16
     restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
     networks:
       frappe-net:
     volumes:
@@ -196,10 +168,16 @@ services:
     depends_on:
       frappe-configurator:
         condition: service_completed_successfully
-    image: docker.io/library/frappecms:dev
+    image: frappe/erpnext:v16
     networks:
       frappe-net:
     restart: unless-stopped
+    deploy:
+      replicas: 2
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
     volumes:
       - frappe-sites-vol:/home/frappe/frappe-bench/sites
       - frappe-assets-vol:/home/frappe/frappe-bench/assets
@@ -212,10 +190,16 @@ services:
     depends_on:
       frappe-configurator:
         condition: service_completed_successfully
-    image: docker.io/library/frappecms:dev
+    image: frappe/erpnext:v16
     networks:
       frappe-net:
     restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
     volumes:
       - frappe-sites-vol:/home/frappe/frappe-bench/sites
       - frappe-assets-vol:/home/frappe/frappe-bench/assets
@@ -226,9 +210,15 @@ services:
         condition: service_started
       frappe-websocket:
         condition: service_started
-    image: docker.io/library/frappecms:dev
+    image: frappe/erpnext:v16
     command:
       - nginx-entrypoint.sh
+    deploy:
+      replicas: 2
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
     environment:
       BACKEND: frappe-backend:8000
       CLIENT_MAX_BODY_SIZE: 50m

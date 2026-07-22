@@ -1,0 +1,36 @@
+# {DOMAIN}/admin -> for admin side
+name: vaultwarden
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.3"
+    networks:
+      docker-net:
+    environment:
+      DOMAIN: https://vaultwarden.localhost
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      DISABLE_ADMIN_TOKEN: true #true
+    volumes:
+      - vaultwarden-vol:/data:rw
+    labels:
+      traefik.enable: true
+      traefik.http.services.vaultwarden-svc.loadbalancer.server.port: 80
+      traefik.http.routers.vaultwarden-rtr.entrypoints: websecure
+      traefik.http.routers.vaultwarden-rtr.rule: Host(`vaultwarden.localhost`)
+      traefik.http.routers.vaultwarden-rtr.tls: true
+      traefik.http.routers.vaultwarden-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.vaultwarden-rtr.service: vaultwarden-svc
+
+volumes:
+  vaultwarden-vol:
+    name: vaultwarden-vol
+
+networks:
+  docker-net:
+    external: true

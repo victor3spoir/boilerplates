@@ -17,17 +17,21 @@ entryPoints:
     address: ":443"
   pgsql:
     address: ":5432"
+  teleport-ssh:
+    address: ":3023"
+  teleport-tunnel:
+    address: ":3024"
 
 providers:
   docker:
-    endpoint: "unix:///var/run/docker.sock"
+    endpoint: "tcp://traefik-socket-proxy:2375"
     exposedByDefault: false
-    watch: true
     network: docker-net
-  file:
-    directory: "/etc/traefik/dynamic"
     watch: true
-
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+  
 certificatesResolvers:
   letsencrypt:
     acme:
@@ -67,7 +71,7 @@ metrics:
     addRoutersLabels: true
     pushInterval: 5s
     serviceName: traefik
-    explicitBoundaries: [ 0.1, 0.3, 1.2, 5.0 ]
+    explicitBoundaries: [0.1, 0.3, 1.2, 5.0]
 # http:
 #   endpoint: http://alloy:4318/v1/metrics
 #   headers:
@@ -107,8 +111,8 @@ accessLog:
   bufferingSize: 100
   filters:
     statusCodes:
-      - "200-299"
-      - "400-599"
+    - "200-299"
+    - "400-599"
   fields:
     defaultMode: keep
     names:
@@ -124,11 +128,10 @@ accessLog:
 experimental:
   fastProxy:
     debug: true
-  otlplogs: true
   plugins:
-    bouncer:
-      moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
-      version: v1.4.6
     geoblock:
       moduleName: github.com/PascalMinder/geoblock
       version: v0.3.3
+    crowdsec:
+      moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      version: v1.4.6
