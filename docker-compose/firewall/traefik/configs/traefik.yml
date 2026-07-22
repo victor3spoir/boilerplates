@@ -2,6 +2,9 @@ global:
   checkNewVersion: true
   sendAnonymousUsage: false
 
+serversTransport:
+  insecureSkipVerify: false
+
 api:
   insecure: true
   dashboard: true
@@ -15,6 +18,20 @@ entryPoints:
     address: ":80"
   websecure:
     address: ":443"
+    proxyProtocol:
+      trustedIPs:
+        - "0.0.0.0/0"
+    http:
+      encodedCharacters:
+        allowEncodedQuestionMark: true
+        allowEncodedSlash: true
+    #   middlewares:
+    #     - crowdsec@file
+    #   tls:
+    #     certResolver: letsencrypt
+    # transport:
+    #   respondingTimeouts:
+    #     readTimeout: 30m
   pgsql:
     address: ":5432"
 
@@ -27,6 +44,10 @@ providers:
   file:
     directory: "/etc/traefik/dynamic"
     watch: true
+  # http:
+  #   endpoint: http://pangolin:3001/api/v1/traefik-config
+  #   pollInterval: 5s
+
 
 certificatesResolvers:
   letsencrypt:
@@ -91,9 +112,13 @@ tracing:
 #   x-api-key: api-key-value
 
 log:
-  level: DEBUG # TRACE, INFO, DEBUG, WARN, ERROR, FATAL, PANIC
+  level: WARN # TRACE, INFO, DEBUG, WARN, ERROR, FATAL, PANIC
   format: json
+  compress: true
   filePath: "/var/log/traefik/traefik.log"
+  maxAge: 3
+  maxBackups: 3
+  maxSize: 100
 # otlp:
 #   http:
 #     endpoint: http://alloy:4318/v1/logs
@@ -106,6 +131,8 @@ accessLog:
   filePath: "/var/log/traefik/access.log"
   bufferingSize: 100
   filters:
+    minDuration: 100ms
+    retryAttempts: true
     statusCodes:
       - "200-299"
       - "400-599"
@@ -124,7 +151,7 @@ accessLog:
 experimental:
   fastProxy:
     debug: true
-  otlplogs: true
+    # otlplogs: true
   plugins:
     bouncer:
       moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
