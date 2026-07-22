@@ -116,7 +116,7 @@ tracing:
 #   x-api-key: api-key-value
 
 log:
-  level: WARN # TRACE, INFO, DEBUG, WARN, ERROR, FATAL, PANIC
+  level: INFO # TRACE, INFO, DEBUG, WARN, ERROR, FATAL, PANIC
   format: json
   compress: true
   filePath: "/var/log/traefik/traefik.log"
