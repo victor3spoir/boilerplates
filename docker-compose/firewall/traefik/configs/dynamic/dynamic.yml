@@ -14,6 +14,10 @@ http:
   #       certResolver: letsencrypt
   #     service: srv-master
 
+  serversTransports:
+    teleport:
+      insecureSkipVerify: true
+
   middlewares:
     api-ratelimit-mdl:
       rateLimit:
