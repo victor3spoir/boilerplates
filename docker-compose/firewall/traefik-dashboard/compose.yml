@@ -13,7 +13,7 @@ services:
           memory: "500MiB"
           cpus: "0.5"
     volumes:
-      - ./data/logs:/logs:ro
+      - ../traefik/data/logs:/logs:ro
       - ./data/positions:/data
     environment:
       TRAEFIK_LOG_DASHBOARD_ACCESS_PATH: "/logs/access.log"
@@ -47,7 +47,7 @@ services:
       - "3001:3001"
     volumes:
       - ./data/dashboard:/app/data
-      - ./data/positions:/data
+      - ../data/positions:/data
     environment:
       AGENT_API_URL: "http://traefik-agent:5000"
       AGENT_API_TOKEN: "c3c576623a85d80c61d9848046d8821399d7204843d06cbeeafae77feebcc1d7"

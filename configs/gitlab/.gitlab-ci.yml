@@ -1,7 +1,6 @@
 workflow:
   name: build_deploy_application
   rules:
-    - when: never
     - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "dev"'
       when: always
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"
@@ -11,46 +10,54 @@ workflow:
 
 default:
   interruptible: true
-  image: docker:latest
+  image: docker:24-cli
 
 services:
   - docker:dind
 
 stages:
+  - lint
+  - security
   - test
   - build
   - deploy
 
 run_lint:
-  image: node:22-alpine
+  image: oven/bun:1.3.10
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"'
       changes: 
         - src/**
       when: always
   retry: 2
-  stage: test
+  stage: lint
   before_script:
-    - node --version && npm --version
-    - npm i -g pnpm && pnpm lint
-    - pnpm biome:ci 'pnpm biome ci --reporter=gitlab --colors=off > /tmp/code-quality.json || true'
-    - cp /tmp/code-quality.json code-quality.json'
+    - bun --version
   script:
-    - echo "run testing task"
-    - pnpm test
+    - bun biome ci --reporter=gitlab --colors=off > /tmp/code-quality.json
   after_script: echo "done."
   artifacts:
     name: artifacts
     reports:
-      junit: /path/to/test.xml
-      sast: /path/to/sast.xml
-      codequality: /path/to/code-quality.json
+      junit: $CI_PROJECT_DIR/test.xml
+      sast: $CI_PROJECT_DIR/sast.xml
+      codequality: $CI_PROJECT_DIR/code-quality.json
     paths:
-      - /project/to/test.xml
-      - /project/to/sast.xml
-      - /project/to/code-quality.json
-    access: all
-    expire_in: '30 days'
+      - $CI_PROJECT_DIR/test.xml
+      - $CI_PROJECT_DIR/sast.xml
+      - $CI_PROJECT_DIR/code-quality.json
+
+
+gitleaks:
+  stage: security
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  script:
+    - gitleaks git --verbose --redact
+  allow_failure: false
+
+
 
 run_build:
   stage: build

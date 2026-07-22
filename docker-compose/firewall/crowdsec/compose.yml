@@ -1,0 +1,52 @@
+name: crowdsec
+
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    restart: unless-stopped
+    expose:
+      - 6060 #metrics
+      - 8080
+      - 7422 #appsec
+    deploy:
+      resources:
+        reservations:
+          memory: "300MiB"
+          cpus: "0.3"
+    networks:
+      docker-net:
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_period: 30s
+      test:
+        - CMD
+        - cscli
+        - lapi
+        - status
+      timeout: 5s
+    environment:
+      GID: 1000
+      CUSTOM_HOSTNAME: "srv-docker"
+      COLLECTIONS: "crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/appsec-crs crowdsecurity/appsec-virtual-patching crowdsecurity/base-http-scenarios crowdsecurity/sshd crowdsecurity/linux crowdsecurity/docker"
+    configs:
+      - source: acquis_config
+        target: /etc/crowdsec/acquis.yaml
+    volumes:
+      - crowdsec-vol:/var/lib/crowdsec/data
+      - ../traefik/data/logs:/var/log/traefik:ro
+      # - /var/log/auth.log:/var/log/auth.log:ro
+      # - /var/log/syslog:/var/log/syslog:ro
+
+configs:
+  acquis_config:
+    file: ./configs/acquis.yaml
+
+volumes:
+  crowdsec-vol:
+    name: crowdsec-vol
+    driver: local
+
+networks:
+  docker-net:
+    external: true

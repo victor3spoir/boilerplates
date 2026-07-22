@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: xxxxxxxxxxxxxx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - keycloak-db-vol:/var/lib/postgresql
     healthcheck:
@@ -31,12 +31,12 @@ services:
       - start
       # - --optimized
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin@gmail.com
-      KC_BOOTSTRAP_ADMIN_PASSWORD: Password123!
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
       KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: "xxxxxxxxxxxxxx"
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       KC_HOSTNAME: https://keycloak.localhost
       KC_HOSTNAME_STRICT: true
       KC_HTTP_ENABLED: true

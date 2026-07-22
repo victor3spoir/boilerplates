@@ -1,0 +1,70 @@
+domains:
+  - localhost
+  - demo.lab
+cert_resolver: cloudflare
+traefik_api_url: http://traefik:8080
+auth_enabled: true
+password_hash: ''
+visible_tabs:
+  dashboard: false
+  routemap: false
+  docker: true
+  kubernetes: false
+  swarm: false
+  nomad: false
+  ecs: false
+  consulcatalog: false
+  redis: false
+  etcd: false
+  consul: false
+  zookeeper: false
+  http_provider: false
+  file_external: false
+  certs: false
+  tls: false
+  crowdsec: false
+  plugins: false
+  logs: false
+must_change_password: false
+setup_complete: false
+otp_secret: ''
+otp_enabled: false
+disabled_routes: {}
+api_keys: []
+api_key_enabled: false
+self_route:
+  domain: ''
+  service_url: ''
+  router_name: traefik-manager
+  entry_point: ''
+acme_json_path: ''
+access_log_path: ''
+static_config_path: ''
+oidc_enabled: false
+oidc_provider_url: ''
+oidc_client_id: ''
+oidc_client_secret: ''
+oidc_display_name: OIDC
+oidc_allowed_emails: ''
+oidc_allowed_groups: ''
+oidc_allow_any_authenticated: false
+oidc_groups_claim: groups
+webhook_url: ''
+webhook_type: ntfy
+webhook_username: ''
+webhook_password: ''
+crowdsec_lapi_url: ''
+crowdsec_api_key: ''
+crowdsec_machine_id: ''
+crowdsec_machine_password: ''
+traefik_api_user: ''
+traefik_api_password: ''
+git_backup_enabled: false
+git_backup_repo: ''
+git_backup_branch: main
+git_backup_username: ''
+git_backup_token: ''
+git_backup_commit_message: 'traefik-manager: {action} at {timestamp}'
+git_backup_auto_push: true
+agent_api_rate_limit: 30
+backup_keep_count: 0

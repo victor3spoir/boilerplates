@@ -1,0 +1,65 @@
+name: traefik-manager
+
+services:
+  traefik-manager-socket-proxy:
+    image: tecnativa/docker-socket-proxy:master
+    restart: unless-stopped
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    expose:
+      - 2375
+    networks:
+      docker-net:
+    environment:
+      CONTAINERS: 1
+      POST: 1
+      RESTART: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  
+  traefik-manager:
+    image: ghcr.io/chr0nzz/traefik-manager:latest
+    container_name: traefik-manager
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    expose:
+      - 5000
+    networks:
+      docker-net:
+    environment:
+      DOCKER_HOST: tcp://traefik-manager-socket-proxy:2375
+      COOKIE_SECURE: true
+      RESTART_METHOD: proxy
+      STATIC_CONFIG_PATH: /app/traefik.yml
+      ADMIN_PASSWORD: Password123!
+      TRAEFIK_CONTAINER: traefik
+      TRAEFIK_API_URL: http://traefik:8080
+      DOMAINS: localhost, demo.lab
+      SECRET_KEY: 7b61ae8919ad1dba796850ff3628a5fe23007f4f48aa9de84a68a07adb630b3a
+      PATH_STYLE: file
+      CONFIG_DIR: /app/config
+    
+    volumes:
+      - ../traefik/configs/dynamic:/app/config
+      - ../traefik/configs/traefik.yml:/app/traefik.yml
+      - ../traefik/data/logs/access.log:/app/logs/access.log
+      - ../traefik/data/certs:/etc/traefik/certs
+    labels:
+      traefik.enable: true
+      traefik.http.services.traefik-manager-svc.loadbalancer.server.port: 5000
+      traefik.http.routers.traefik-manager-rtr.entrypoints: web,websecure
+      traefik.http.routers.traefik-manager-rtr.rule: Host(`traefik-manager.localhost`)
+      traefik.http.routers.traefik-manager-rtr.tls: true
+      traefik.http.routers.traefik-manager-rtr.tls.certresolver: letsencrypt
+
+networks:
+  docker-net:
+    external: true

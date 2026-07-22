@@ -8,7 +8,7 @@ services:
       lldap-net:
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 27b360f5374ef599577eda2695bc038694c49046696013f101107a4d4b910fd3
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: lldap
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
@@ -58,7 +58,7 @@ services:
       # LLDAP_LDAPS_OPTIONS__CERT_FILE: /path/to/certfile.crt
       # LLDAP_LDAPS_OPTIONS__KEY_FILE: /path/to/keyfile.key
 
-      LLDAP-volBASE_URL: postgres://postgres:27b360f5374ef599577eda2695bc038694c49046696013f101107a4d4b910fd3@lldap-db:5432/lldap
+      LLDAP-volBASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@lldap-db:5432/lldap
       # LLDAP_SMTP_OPTIONS__ENABLE_PASSWORD_RESET: true
       # LLDAP_SMTP_OPTIONS__SERVER: mailpit
       # LLDAP_SMTP_OPTIONS__PORT: 25 

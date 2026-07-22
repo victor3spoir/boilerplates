@@ -5,7 +5,11 @@ spec:
     stage:
       type: string
       default: test
-
+   
+    tags:
+      type: array
+      default: []
+   
     needs:
       type: array
       default: []
@@ -39,12 +43,17 @@ spec:
     artifact_name:
       type: string
       default: "$CI_JOB_NAME"
+    
+    project_dir:
+      type: string
+      default: $CI_PROJECT_DIR
 
 ---
 
 '$[[ inputs.run_as ]]':
   image: ubuntu:devel
   stage: $[[ inputs.stage ]]
+  tags: $[[ inputs.tags ]]
   needs: $[[ inputs.needs ]]
   rules: $[[ inputs.rules ]]
 

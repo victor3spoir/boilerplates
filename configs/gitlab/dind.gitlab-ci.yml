@@ -18,24 +18,24 @@ services:
 
 default:
   interruptible: true
-  image: ubuntu:devel
+  image: ubuntu:resolute
   # tags:
   #   - srv-prod
   #   - docker
 
 run_build:
   stage: build
-  image: docker:24
+  image: docker:24-cli
   tags:
     - srv
+    - local
     - docker
   rules:
     - if: $CI_COMMIT_BRANCH == "dev"
       when: always
   before_script:
-    - docker version
     - docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
   script:
     - docker buildx bake -f docker-bake.hcl target-name --push --set *.secrets="id=gh_token,env=GH_TOKEN"
   after_script:
-    - echo "built && pushed"
+    - echo "done."

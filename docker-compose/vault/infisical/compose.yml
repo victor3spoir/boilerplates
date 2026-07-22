@@ -41,9 +41,9 @@ services:
     networks:
       infisical-net:
     environment:
+      POSTGRES_USER: infisical
+      POSTGRES_DB: infisical
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
     healthcheck:
       test: "pg_isready --username=${POSTGRES_USER} && psql --username=${POSTGRES_USER} --list"
       interval: 5s
@@ -75,6 +75,9 @@ services:
     environment:
       NODE_ENV: production
       SITE_URL: https://infisical.localhost
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      AUTH_SECRET: ${AUTH_SECRET}
+      DB_CONNECTION_URI: postgres://infisical:${POSTGRES_PASSWORD}@infisical-db:5432/infisical
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
       SMTP_USERNAME: v3r@gmail.com
@@ -89,8 +92,6 @@ services:
       # OTEL_COLLECTOR_BASIC_AUTH_USERNAME: 
       # OTEL_COLLECTOR_BASIC_AUTH_PASSWORD: 
       # OTEL_DROP_HIGH_CARDINALITY_METERS: false
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
-      AUTH_SECRET: ${AUTH_SECRET}
     networks:
       infisical-net:
       docker-net:

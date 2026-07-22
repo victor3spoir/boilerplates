@@ -15,6 +15,9 @@ services:
       - 2375
     networks:
       docker-net:
+    environment:
+      CONTAINERS: 1
+      POSTS: 1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
