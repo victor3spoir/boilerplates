@@ -1,0 +1,18 @@
+otelcol.exporter.otlp "outbound" {
+   client {
+    endpoint = "alloy-central:4317"
+    tls {
+      insecure = true
+    }
+}
+}
+
+
+otelcol.exporter.otlphttp "outbound" {
+   client {
+    endpoint = "alloy-central:4318"
+    tls {
+      insecure = true
+    }
+}
+}

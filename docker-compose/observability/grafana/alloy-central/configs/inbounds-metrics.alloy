@@ -1,0 +1,12 @@
+
+prometheus.receive_http "inbound" {
+  // accept: /api/v1/metrics/write
+  http {
+    listen_address = "0.0.0.0"
+    listen_port = 9090
+  }
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}
+
+
+

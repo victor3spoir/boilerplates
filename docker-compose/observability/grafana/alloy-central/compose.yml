@@ -1,0 +1,71 @@
+name: alloy-central
+
+
+services:
+  alloy-central:
+    image:  grafana/alloy:v1.18.0
+    hostname: alloy-central
+    expose:
+      - 9090 #prometheus
+      - 3100 #loki
+      - 4317 #otlp-gprc
+      - 4318 #otlp-http
+      - 12345 #ui
+    command: |
+      run 
+      --server.http.listen-addr=0.0.0.0:12345
+      --stability.level=public-preview
+      --storage.path=/var/lib/alloy/data
+      /etc/alloy
+    networks:
+      docker-net:
+      grafana-net:
+    environment:
+      HOSTNAME: alloy-central
+    volumes:
+      # - /var/run/docker.sock:/var/run/docker.sock
+      - ./configs:/etc/alloy:ro
+    labels:
+      traefik.enable: true
+
+      traefik.http.services.alloy-central-ui-svc.loadbalancer.server.port: 12345
+      traefik.http.routers.alloy-central-ui-rtr.entrypoints: web,websecure
+      traefik.http.routers.alloy-central-ui-rtr.rule: Host(`alloy-central-ui.localhost`)
+      traefik.http.routers.alloy-central-ui-rtr.tls: true
+      traefik.http.routers.alloy-central-ui-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.alloy-central-ui-rtr.service: alloy-central-ui-svc
+
+      traefik.http.services.alloy-central-loki-svc.loadbalancer.server.port: 3100
+      traefik.http.routers.alloy-central-loki-rtr.entrypoints: web,websecure
+      traefik.http.routers.alloy-central-loki-rtr.rule: Host(`alloy-central-loki.localhost`)
+      traefik.http.routers.alloy-central-loki-rtr.tls: true
+      traefik.http.routers.alloy-central-loki-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.alloy-central-loki-rtr.service: alloy-central-loki-svc
+
+      traefik.http.services.alloy-central-prom-svc.loadbalancer.server.port: 9090
+      traefik.http.routers.alloy-central-prom-rtr.entrypoints: web,websecure
+      traefik.http.routers.alloy-central-prom-rtr.rule: Host(`alloy-central-prom.localhost`)
+      traefik.http.routers.alloy-central-prom-rtr.tls: true
+      traefik.http.routers.alloy-central-prom-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.alloy-central-prom-rtr.service: alloy-central-prom-svc
+
+      traefik.http.services.alloy-central-otlp-http-svc.loadbalancer.server.port: 4318
+      traefik.http.routers.alloy-central-otlp-http-rtr.entrypoints: web,websecure
+      traefik.http.routers.alloy-central-otlp-http-rtr.rule: Host(`alloy-central-oltp.localhost`)
+      traefik.http.routers.alloy-central-otlp-http-rtr.tls: true
+      traefik.http.routers.alloy-central-otlp-http-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.alloy-central-otlp-http-rtr.service: alloy-central-otlp-http-svc
+
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true
+
+
+
+
+
+volumes:
+  alloy-vol:
+    name: alloy-vol

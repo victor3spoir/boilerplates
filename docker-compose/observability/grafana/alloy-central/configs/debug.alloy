@@ -3,16 +3,15 @@ livedebugging {
 }
 
 // logging {
-  // level  = "public-preview"
-  // format = "logfmt"
-  // write_to = [loki.write.loki_srv.receiver]
+//   level  = "public-preview"
+//   format = "logfmt"
+//   write_to = [loki.write.loki_srv.receiver]
 // }
 
 // tracing {
 //   sampling_fraction = 0.1
 //   write_to = [otelcol.exporter.otlp.tempo.input]
 // }
-
 
 
 

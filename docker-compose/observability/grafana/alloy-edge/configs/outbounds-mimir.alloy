@@ -1,0 +1,17 @@
+
+prometheus.remote_write "outbound" {
+  endpoint {
+    url = "http://alloy-central:9090/api/v1/metrics/write"
+    headers = {
+      "X-Scope-OrgId" = "demo",
+    }
+    // basic_auth {
+    //   username = sys.env("MIMIR_USER")
+    //   password = sys.env("MIMIR_PASSWORD")
+    // }
+  }
+}
+
+
+
+
