@@ -1,7 +1,7 @@
 discovery:
   instrument:
     - open_ports: 443
-log_level: DEBUG
+log_level: INFO
 ebpf:
   wakeup_len: 100
 otel_metrics_export:

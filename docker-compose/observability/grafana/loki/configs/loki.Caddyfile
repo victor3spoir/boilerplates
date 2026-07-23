@@ -1,4 +1,4 @@
-:3100 {
+:80 {
     log {
         output stdout
         format json

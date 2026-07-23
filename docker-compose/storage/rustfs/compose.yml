@@ -16,6 +16,10 @@ services:
           cpus: "0.5"
     networks:
       docker-net:
+    environment:
+      RUSTFS_SERVER_DOMAINS: rustfs.localhost
+    #   RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+    #   RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
     volumes:
       - rustfs-vol:/data
     labels:

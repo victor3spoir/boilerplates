@@ -4,8 +4,7 @@
 
 :80 {
     reverse_proxy {
-        to grafana-01:3000 grafana-02:3000 grafana-03:3000
-        # Health check to detect unresponsive instances
+        to grafana-01:3000 grafana-02:3000 
         health_path /api/health
         health_interval 5s
         health_timeout 2s
@@ -29,12 +28,4 @@
         -Server
     }
     
-    # Log access in JSON format
-    # log {
-    #     output file /data/logs/access.log {
-    #         roll_size 10MB
-    #         roll_keep 10
-    #     }
-    #     format json
-    # }
 }

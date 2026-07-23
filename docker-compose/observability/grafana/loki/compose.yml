@@ -1,96 +1,54 @@
-name: loki
+name: loki-dev
+
+
+
+services:
+  loki:
+    image: grafana/loki:3.1.2
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 500Mib
+          cpus: 0.5
+    command:
+      - -config.file=/etc/loki/loki.yaml
+      - -config.expand-env=true
+    networks:
+      docker-net:
+      grafana-net:
+    volumes:
+      - loki-vol:/loki
+      # - ./rules:/loki/rules
+    configs:
+      - source: loki_yaml
+        target: /etc/loki/loki.yaml
+    labels:
+      traefik.enable: true
+      traefik.http.services.loki-dev-svc.loadbalancer.server.port: 3100
+      traefik.http.routers.loki-dev-rtr.rule: Host(`loki-dev.localhost`)
+      traefik.http.routers.loki-dev-rtr.tls: true
+      traefik.http.routers.loki-dev-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.loki-dev-rtr.service: loki-dev-svc
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  loki-vol:
+    name: loki-vol
+  
 
 configs:
   loki_yaml:
-    file: "./configs/loki-dev.yaml"
-
-  loki_caddyfile:
-    file: "./configs/loki.Caddyfile"
-
-x-loki: &loki
-  image: grafana/loki:latest
-  restart: unless-stopped
-  expose:
-    - 3100
-    - 7946
-    - 9095
-  networks:
-    grafana-net:
-  configs:
-    - source: loki_yaml
-      target: /etc/loki/loki.yaml
-
-  healthcheck:
-    test:
-      - 'CMD-SHELL'
-      - 'wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1'
-    interval: 10s
-    timeout: 5s
-    retries: 5
-
-services:
-
-  loki-read:
-    <<: *loki
-    command:
-      - -config.file=/etc/loki/loki.yaml
-      - -target=read
-
-  loki-write:
-    <<: *loki
-    command:
-      - -config.file=/etc/loki/loki.yaml
-      - -target=write
-    healthcheck:
-      test:
-        - 'CMD-SHELL'
-        - 'wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1'
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  loki-query-frontend:
-    <<: *loki
-    command:
-      - -config.file=/etc/loki/loki.yaml
-      - -target=query-frontend
-
-  loki-backend:
-    <<: *loki
-    command:
-      - -config.file=/etc/loki/loki.yaml
-      - -target=backend
-      - -legacy-read-mode=false
-
-  loki:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    depends_on:
-      loki-read:
-        condition: service_started
-      loki-write:
-        condition: service_started
-    configs:
-      - source: loki_caddyfile
-        target: /etc/caddy/Caddyfile
-    healthcheck:
-      test: [ 'CMD', 'caddy', 'version' ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      grafana-net:
-      docker-net:
-    labels:
-      traefik.enable: true
-      traefik.http.services.loki-svc.loadbalancer.server.port: 3100
-      traefik.http.routers.loki-rtr.rule: Host(`loki.localhost`)
-      traefik.http.routers.loki-rtr.tls: true
-      traefik.http.routers.loki-rtr.tls.certresolver: letsencrypt
-      traefik.http.routers.loki-rtr.service: loki-svc
+    file: "./configs/loki.yaml"
 
 networks:
-  grafana-net:
-    external: true
   docker-net:
+    external: true
+  grafana-net:
     external: true

@@ -1,11 +1,5 @@
 name: beyla
 
-
-
-configs:
-  beyla_config:
-    file: ./configs/beyla.yml
-
 services:
   goblog:
     image: mariomac/goblog:dev
@@ -30,6 +24,10 @@ services:
       BEYLA_ENFORCE_SYS_CAPS: false
       BEYLA_LOG_LEVEL: debug
       BEYLA_OPEN_PORT: 8443
+
+configs:
+  beyla_config:
+    file: ./configs/beyla.yml
 
 networks:
   docker-net:
