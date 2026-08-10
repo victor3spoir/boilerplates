@@ -1,0 +1,111 @@
+---
+# admin: umami
+name: umami
+
+services:
+  umami-redis:
+    image: redis:8-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command: redis-server
+    restart: unless-stopped
+    networks:
+      umami-net:
+    deploy:
+      resources:
+        reservations:
+          memory: "150MiB"
+          cpus: "0.15"
+        limits:
+          memory: "300MiB"
+          cpus: "0.3"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  umami-db:
+    image: postgres:18-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "350MiB"
+          cpus: "0.25"
+        limits:
+          memory: "700MiB"
+          cpus: "0.5"
+    networks:
+      umami-net:
+    environment:
+      POSTGRES_DB: umami
+      POSTGRES_USER: umami
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    stop_grace_period: "1m"
+    volumes:
+      - umami-db-vol:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  umami:
+    image: ghcr.io/umami-software/umami:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        reservations:
+          memory: "350MiB"
+          cpus: "0.25"
+        limits:
+          memory: "700MiB"
+          cpus: "0.5"
+    environment:
+      DATABASE_URL: postgresql://umami:${POSTGRES_PASSWORD}@umami-db:5432/umami
+      APP_SECRET: ${APP_SECRET}
+      REDIS_URL: redis://umami-redis:6379
+    depends_on:
+      umami-db:
+        condition: service_healthy
+      umami-redis:
+        condition: service_healthy
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "curl http://localhost:3000/api/heartbeat" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      docker-net:
+      umami-net:
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.umami-svc.loadbalancer.server.port: 3000
+      traefik.http.routers.umami-rtr.entrypoints: web,websecure
+      traefik.http.routers.umami-rtr.rule: Host(`umami.localhost`)
+      traefik.http.routers.umami-rtr.tls: true
+      traefik.http.routers.umami-rtr.tls.certresolver: letsencrypt
+
+networks:
+  docker-net:
+    external: true
+  umami-net:
+    internal: true
+
+volumes:
+  umami-db-vol:
+    name: umami-db-vol

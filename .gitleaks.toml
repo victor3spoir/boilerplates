@@ -1,0 +1,12 @@
+# .gitleaks.toml
+
+[[allowlists]]
+description = "Intentional homelab bootstrap credentials and example secrets"
+
+paths = [
+'''docker-compose/firewall/traefik/config/dynamic.yaml''',
+'''docker-compose/firewall/traefik-dashboard/compose.yml''',
+'''docker-compose/identity/pocketid/compose.yml''',
+'''docker-compose/identity/keycloak/compose.yml''',
+'''docker-compose/services/zerobyte/compose.yml'''
+]

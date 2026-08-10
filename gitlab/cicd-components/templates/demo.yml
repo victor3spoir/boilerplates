@@ -1,0 +1,15 @@
+spec:
+  inputs:
+    stage:
+      default: test
+    message:
+      type: string
+      default: "hi guys!"
+      description: "Message to pass the pipeline"
+    run_as:
+      type: string
+      default: "component-job"
+---
+'$[[inputs.run_as]]':
+  stage: $[[ inputs.stage ]]
+  script: echo '$[[inputs.message ]]'

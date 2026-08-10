@@ -1,0 +1,31 @@
+name: mqttx
+
+services:
+  mqttx:
+    image: emqx/mqttx-web:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "250MiB"
+          cpus: "0.25"
+        limits:
+          memory: "500MiB"
+          cpus: "0.5"
+    networks:
+      - docker-net
+    ports:
+      - '127.0.0.1:30080:80'
+    environment:
+      VUE_APP_PAGE_TITLE: mqttx-web
+      VUE_APP_PAGE_DESCRIPTION: mqttx-web
+      # - BASE_URL=value
+
+networks:
+  docker-net:
+    external: true

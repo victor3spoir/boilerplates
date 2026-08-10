@@ -1,0 +1,19 @@
+discovery:
+  instrument:
+    - open_ports: 443
+log_level: INFO
+ebpf:
+  wakeup_len: 100
+otel_metrics_export:
+  endpoint: alloy-edge:4317
+otel_traces_export:
+  endpoint: alloy-edge:4317
+prometheus_export:
+  port: 8999
+  path: /metrics
+internal_metrics:
+  exporter: prometheus
+  prometheus:
+    port: 6060
+    exporter: prometheus # otel
+    path: /internal/metrics

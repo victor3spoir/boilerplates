@@ -1,0 +1,58 @@
+datasources:
+  postgres:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://kestra-db:5432/kestra
+    username: kestra
+    password: xxxxxxxxxxxxxxxxxxxxxxxxx
+
+kestra:
+  tutorial-flows:
+    enabled: false
+  blueprints:
+    enabled: false
+  anonymous-usage-report:
+    enabled: false
+  ui-anonymous-usage-report:
+    enabled: false
+  metrics:
+    prefix: kestra
+  jdbc:
+    queues:
+    messageProtection:
+      enabled: true
+      limit: 1048576
+  # encryption:
+  #   secret-key: 93d20380f78e125138903aa53c85c026ef0d557394f052c26489578b96d841be
+  server:
+    basicAuth:
+      enabled: true
+  repository:
+    type: postgres
+  queue:
+    type: postgres
+  storage:
+    type: local
+    local:
+      basePath: "/app/storage"
+  tasks:
+    tmpDir:
+      path: "/tmp/kestra-wd/tmp"
+  local-files:
+    allowed-paths:
+      - /usr/app/flows
+  plugins:
+    configurations:
+      - type: io.kestra.plugin.scripts.runner.docker.Docker
+        values:
+          volume-enabled: true
+      - type: io.kestra.plugin.fs.local.Download
+        values: 
+          allowed-paths: 
+            - /usr/app/scripts
+micronaut:
+  io:
+    watch:
+      enabled: true
+      paths:
+        - /usr/app/flows
+      restart: false

@@ -1,0 +1,3 @@
+basic_auth_users:
+  username: $2a$10$rtjLvc6gKMH5oD8b/nSWE.0y9Qmxkc8DSi2jNoJhykWYck7Yj3jUS # password : bycrypt encoded
+

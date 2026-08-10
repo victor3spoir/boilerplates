@@ -1,0 +1,9 @@
+loki.write "outbound" {
+    endpoint {
+        url = "http://alloy-central:3100/loki/api/v1/push"
+    }
+    // basic_auth {
+    //   username = sys.env("USERNAME")
+    //   password = sys.env("PASSWORD")
+    // }
+}

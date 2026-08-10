@@ -1,0 +1,68 @@
+name: crowdsec
+
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    expose:
+      - 6060 #metrics
+      - 8080
+      - 7422 #appsec
+    deploy:
+      resources:
+        reservations:
+          memory: "300MiB"
+          cpus: "0.3"
+        limits:
+          memory: "600MiB"
+          cpus: "0.6"
+    networks:
+      docker-net:
+    healthcheck:
+      test: [CMD, cscli, lapi, status]
+      interval: 10s
+      retries: 3
+      start_period: 30s
+      timeout: 5s
+    environment:
+      GID: 1000
+      CUSTOM_HOSTNAME: "srv-docker"
+      COLLECTIONS: >
+        crowdsecurity/traefik 
+        crowdsecurity/http-cve 
+        crowdsecurity/appsec-crs 
+        crowdsecurity/appsec-virtual-patching 
+        crowdsecurity/base-http-scenarios 
+        crowdsecurity/sshd 
+        crowdsecurity/linux
+    configs:
+      - source: acquis_config
+        target: /etc/crowdsec/acquis.yaml
+      - source: crowdsec_profiles
+        target: /etc/crowdsec/profiles.yaml
+    volumes:
+      - crowdsec-vol:/var/lib/crowdsec/data
+      # - ./configs/appsec-configs:/etc/crowdsec/appsec-configs:rw
+      - ../traefik/data/logs:/var/log/traefik:ro
+      # - /var/log/auth.log:/var/log/auth.log:ro
+      # - /var/log/syslog:/var/log/syslog:ro
+
+configs:
+  acquis_config:
+    file: "./configs/acquis.yaml"
+  crowdsec_profiles:
+    file: "./configs/profiles.yaml"
+
+volumes:
+  crowdsec-vol:
+    name: crowdsec-vol
+    driver: local
+
+networks:
+  docker-net:
+    external: true

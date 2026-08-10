@@ -1,0 +1,55 @@
+name: loki-dev
+
+
+
+services:
+  loki:
+    image: grafana/loki:3.1.2
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "250MiB"
+          cpus: "0.25"
+        limits:
+          memory: "500MiB"
+          cpus: "0.5"
+    command:
+      - -config.file=/etc/loki/loki.yaml
+      - -config.expand-env=true
+    networks:
+      docker-net:
+      grafana-net:
+    volumes:
+      - loki-vol:/loki
+      # - ./rules:/loki/rules
+    configs:
+      - source: loki_yaml
+        target: /etc/loki/loki.yaml
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.loki-dev-svc.loadbalancer.server.port: 3100
+      traefik.http.routers.loki-dev-rtr.rule: Host(`loki-dev.localhost`)
+      traefik.http.routers.loki-dev-rtr.tls: true
+      traefik.http.routers.loki-dev-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.loki-dev-rtr.service: loki-dev-svc
+
+volumes:
+  loki-vol:
+    name: loki-vol
+  
+
+configs:
+  loki_yaml:
+    file: "./configs/loki.yaml"
+
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true

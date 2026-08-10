@@ -1,0 +1,53 @@
+name: nexus3
+
+services:
+  nexus:
+    image: sonatype/nexus3:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.5"
+        limits:
+          memory: "1000MiB"
+          cpus: "1"
+    volumes:
+      - nexus3-vol:/nexus-data
+    environment:
+      NEXUS_CONTEXT: "/"
+    networks:
+      docker-net:
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.nexus-ui-rtr.service: nexus-ui-svc
+      traefik.http.routers.nexus-ui-rtr.rule: Host(`nexus3.localhost`)
+      traefik.http.routers.nexus-ui-rtr.entrypoints: websecure
+      traefik.http.routers.nexus-ui-rtr.tls: true
+      traefik.http.routers.nexus-ui-rtr.tls.certresolver: letsencrypt # Change to your Traefik cert resolver name
+      traefik.http.services.nexus-ui-svc.loadbalancer.server.port: 8081
+
+
+      traefik.http.services.nexus-registry-svc.loadbalancer.server.port: 8082
+      traefik.http.routers.nexus-registry-rtr.rule: Host(`registry.nexus3.localhost`)
+      traefik.http.routers.nexus-registry-rtr.entrypoints: websecure
+      traefik.http.routers.nexus-registry-rtr.tls: true
+      traefik.http.routers.nexus-registry-rtr.tls.certresolver: letsencrypt # Change to your Traefik cert resolver name
+      traefik.http.routers.nexus-registry-rtr.service: nexus-registry-svc
+      
+      # MIDDLEWARE: Buffering middleware to handle large Docker layer uploads securely
+      traefik.http.routers.nexus-registry-rtr.middlewares: nexus-buffer
+      traefik.http.middlewares.nexus-buffer.buffering.maxRequestBodyBytes: 5368709120 # Allow up to 5GB layers
+
+networks:
+  docker-net:
+    external: true 
+
+volumes:
+  nexus3-vol:
+   name: nexus3-vol

@@ -1,0 +1,18 @@
+
+pyroscope.write "pyroscope" {
+   endpoint {
+       url = "http://pyroscope:4040"
+   }
+}
+
+
+
+otelcol.exporter.otlp "tempo" {
+   client {
+    endpoint = "http://tempo:4317"
+    tls {
+      insecure = true
+    }
+}
+}
+

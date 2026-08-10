@@ -1,0 +1,103 @@
+name: kestra
+
+services:
+  kestra-db:
+    image: postgres:18-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    volumes:
+      - kestra-db-vol:/var/lib/postgresql
+    deploy:
+      resources:
+        reservations:
+          memory: "150MiB"
+          cpus: "0.15"
+        limits:
+          memory: "300MiB"
+          cpus: "0.3"
+    networks:
+      - kestra-net
+    environment:
+      POSTGRES_DB: kestra
+      POSTGRES_USER: kestra
+      POSTGRES_PASSWORD: xxxxxxxxxxxxxxxxxxxxxxxxx
+    healthcheck:
+      test:
+        - 'CMD-SHELL'
+        - 'pg_isready -d $${POSTGRES_DB}'
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  kestra-web:
+    depends_on:
+      kestra-db:
+        condition: service_healthy
+    image: kestra/kestra:latest-lts
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    command: server standalone --config /etc/kestra/config.yaml
+    user: root
+    deploy:
+      replicas: 1
+      resources:
+        reservations:
+          memory: "512MiB"
+          cpus: "0.3"
+        limits:
+          memory: "1024MiB"
+          cpus: "0.6"
+    networks:
+      kestra-net:
+      docker-net:
+    environment:
+      KESTRA_URL: https://kestra.localhost
+      KESTRA_SERVER_BASIC_AUTH_ENABLED: true
+      KESTRA_SERVER_BASIC_AUTH_USERNAME: admin@gmail.com
+      KESTRA_SERVER_BASIC_AUTH_PASSWORD: Password123!
+      KESTRA_ENCRYPTION_SECRET_KEY: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+    configs:
+      - source: kestra_yaml
+        target: /etc/kestra/config.yaml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - kestra-vol:/app/storage
+      - ./data/flows:/usr/app/flows:rw
+      - ./data/scripts:/usr/app/scripts:rw
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.kestra-svc.loadbalancer.server.port: 8080
+      traefik.http.routers.kestra-rtr.entrypoints: websecure
+      traefik.http.routers.kestra-rtr.rule: Host(`kestra.localhost`)
+      traefik.http.routers.kestra-rtr.tls: true
+      traefik.http.routers.kestra-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.kestra-rtr.service: kestra-svc
+      # - traefik.http.routers.kestra-rtr.middlewares=
+
+
+configs:
+  kestra_yaml:
+    file: "./configs/kestra.yaml"
+
+networks:
+  docker-net:
+    external: true
+  kestra-net: {}
+
+volumes:
+  kestra-db-vol:
+    name: kestra-db-vol
+    driver: local
+
+  kestra-vol:
+    name: kestra-vol
+    driver: local

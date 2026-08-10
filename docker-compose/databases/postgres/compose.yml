@@ -1,0 +1,75 @@
+name: pgsql
+
+services:
+  pgsql:
+    image: postgres:18-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "200MiB"
+          cpus: "0.2"
+        limits:
+          memory: "400MiB"
+          cpus: "0.4"
+    command: |
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c hba_file=/etc/postgresql/pg_hba.conf
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: "/run/secrets/pg_password"
+      POSTGRES_DB: postgres
+    volumes:
+      - pgsql-vol:/var/lib/postgresql
+      - ./scripts:/scripts
+      - ./backups:/backups
+    networks:
+      db-net:
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U $$POSTGRES_USER' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    secrets:
+      - pg_password
+    configs:
+      - source: postgres_config
+        target: /etc/postgresql/postgresql.conf
+      - source: postgres_hba_config
+        target: /etc/postgresql/pg_hba.conf
+    labels:
+      traefik.enable: "true"
+      traefik.tcp.services.pgsql-svc.loadbalancer.server.port: "5432"
+      traefik.tcp.routers.pgsql-rtr.entrypoints: "pgsql"
+      traefik.tcp.routers.pgsql-rtr.rule: "HostSNI(`*`)"
+      traefik.tcp.routers.pgsql-rtr.service: "pgsql-svc"
+
+      ofelia.enabled: true
+      ofelia.job-exec.daily-backup.schedule: "0 2 * * *"
+      ofelia.job-exec.daily-backup.command: "dos2unix /scripts/backup.sh && ./scripts/backup.sh"
+
+secrets:
+  pg_password:
+    file: "./secrets/pg_password"
+
+configs:
+  postgres_config:
+    file: "./config/postgresql.conf"
+  postgres_hba_config:
+    file: "./config/pg_hba.conf"
+
+networks:
+  db-net:
+    external: true
+
+volumes:
+  pgsql-vol:
+    name: pgsql-vol

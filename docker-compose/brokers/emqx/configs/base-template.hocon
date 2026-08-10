@@ -1,0 +1,74 @@
+
+mqtt.max_clientid_len = 128
+
+node {
+  name = "emqx"
+  role = core
+}
+
+log {
+    file {
+        level = warning
+    }
+    console {
+        level = warning
+    }
+}
+
+listeners.tcp.default {
+  enable = false
+}
+
+listeners.ws.default {
+  enable = false
+}
+
+
+listeners.ssl.default {
+  bind = "0.0.0.0:8883"
+
+  ssl_options {
+    cacertfile = "etc/certs/ca-cert.pem"
+    certfile = "etc/certs/server-cert.pem"
+    keyfile = "etc/certs/server-key.pem"
+    verify = verify_none #verify_peer
+    fail_if_no_peer_cert = true
+    enable_crl_check = true
+  }
+}
+
+
+
+opentelemetry {
+  exporter {
+    endpoint = "http://alloy:4317"
+    headers {
+      authorization = "Basic dXNlcjpwYXNzd29yZA=="
+    }
+  }
+
+  logs {enable = true, level = info}
+
+  metrics {
+     interval = "10s"
+  }
+
+  traces {
+      enable = true
+      trace_mode = e2e
+      e2e_tracing_options {
+        client_connect_disconnect = true
+        client_messaging = true
+        client_subscribe_unsubscribe = true
+        clientid_match_rules_max = 30
+        topic_match_rules_max = 30
+        cluster_identifier = emqxcl
+        msg_trace_level = 2
+        sample_ratio = "100%"
+        follow_traceparent
+      }
+    }
+  max_queue_size = 50000
+  scheduled_delay = 1000
+
+}

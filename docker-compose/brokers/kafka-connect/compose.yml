@@ -1,0 +1,58 @@
+name: kafka-connect
+
+services:
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect
+    deploy:
+      resources:
+        reservations:
+          memory: "512MiB"
+          cpus: "1.0"
+        limits:
+          memory: "1024MiB"
+          cpus: "2.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      kafka-net:
+    ports:
+      - 8083:8083
+
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka-broker-01:9091,kafka-broker-02:9091,kafka-broker-03:9091
+
+      CONNECT_REST_PORT: 8083
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafkaui
+
+      CONNECT_GROUP_ID: connect-cluster-1
+
+      CONNECT_CONFIG_STORAGE_TOPIC: connect-configs
+      CONNECT_OFFSET_STORAGE_TOPIC: connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect-status
+
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
+
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.kafka-connect-svc.loadbalancer.server.port: 8083
+      traefik.http.routers.kafka-connect-rtr.entrypoints: web,websecure
+      traefik.http.routers.kafka-connect-rtr.rule: Host(`kafka-connect.localhost`)
+      traefik.http.routers.kafka-connect-rtr.tls: true
+      traefik.http.routers.kafka-connect-rtr.tls.certresolver: letsencrypt
+
+networks:
+  kafka-net:
+    external: true

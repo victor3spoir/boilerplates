@@ -1,0 +1,66 @@
+name: appname
+
+services:
+  service-name:
+    image: image:tag
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "100MiB"
+          cpus: "0.1"
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    networks:
+      network-name:
+    ulimits:
+      nofile:
+        soft: 1096
+        hard: 8192
+    stop_grace_period: 80s
+    ports:
+      - "8080:8080"
+    configs:
+      - source: app.conf
+        target: /path/to/config.conf
+
+    volumes:
+      - volume-name:/path/to/data:rw
+    environment:
+      ENV_1: ${ENV_1}
+      ENV_2: ${ENV_2}
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.appname-svc.loadbalancer.server.port: "8080"
+      traefik.http.routers.appname-rtr.rule: Host(`appname.localhost`)
+      traefik.http.routers.appname-rtr.tls: "true"
+      traefik.http.routers.appname-rtr.tls.certresolver: certresolver
+      traefik.http.routers.appname-rtr.service: appname-svc
+
+networks:
+  network-name:
+    external: true
+
+configs:
+  app.conf:
+    content: |
+      appname: elementor
+      version: 1.0.0
+      backend_url: http://localhost:9090
+  config.yml:
+    file: /path/to/file
+
+volumes:
+  volume-name:
+    name: volume-name
+    driver: local
+    driver_opts:
+      type: nfs
+      device: :/path/to/volume
+      o: 'addr=127.0.0.1,rw'

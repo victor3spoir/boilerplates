@@ -1,0 +1,49 @@
+#cloud-config
+hostname: srv-name
+manage_etc_hosts: true
+
+apt_update: true
+apt_upgrade: false
+locale: en_US.UTF-8
+timezone: UTC
+
+packages:
+  - build-essential
+  - gpg
+  - zsh
+  - docker.io
+  - neovim
+
+ssh_pwauth: false
+
+groups:
+  - devops
+
+users:
+  - name: demo
+    groups: sudo,docker,devops
+    shell: /bin/zsh
+    sudo: [ 'ALL=(ALL) NOPASSWD:ALL' ]
+    ssh-authorized-keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAZmk9JmH28XMQd+V1vIlNnr0OdAzxrhSVyIrpIM4JIs
+  - name: automation
+    groups: sudo
+    shell: /bin/zsh
+    sudo: [ 'ALL=(ALL) NOPASSWD:ALL' ]
+    ssh-authorized-keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAZmk9JmH28XMQd+V1vIlNnr0OdAzxrhSVyIrpIM4JIs
+
+runcmd:
+  - systemctl enable docker
+  - systemctl start docker
+  - systemctl enable ssh
+  - systemctl start ssh
+
+write_files:
+  - path: /home/demo/message.txt
+    owner: demo:demo
+    permissions: "0644"
+    content: |
+      new user create, hi you!!
+
+final_message: "all done."

@@ -1,0 +1,106 @@
+# https://pocket-id.org/docs/introduction
+# https://pocket-id.localhost/signup/setup (on first connect)
+
+name: pocketid
+
+services:
+  pocketid-db:
+    image: postgres:18-alpine
+    deploy:
+      resources:
+        reservations:
+          memory: "256MiB"
+          cpus: "0.5"
+        limits:
+          memory: "512MiB"
+          cpus: "1.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      pocketid-net:
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Password123!
+      POSTGRES_DB: pocketid
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - pocketid-db-vol:/var/lib/postgresql
+  pocketid:
+    depends_on:
+      pocketid-db:
+        condition: service_started
+    image: pocketid/pocket-id:v2.9
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      docker-net:
+      pocketid-net:
+    environment:
+      APP_URL: https://pocketid.localhost
+      TRUST_PROXY: true
+      ENCRYPTION_KEY: 5fcef611d4d51a4d2eec7d237d1f2f8ac652dd442e916b2261794ba02c13eeb6
+      PUID: 1000
+      PGID: 1000
+      DB_CONNECTION_STRING: postgres://postgres:Password123!@pocketid-db:5432/pocketid
+      # MAXMIND_LICENSE_KEY:
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_FROM: admin@local.host
+      SMTP_USER: admin
+      SMTP_PASSWORD: Password123!
+      SMTP_TLS: none
+
+      # LDAP_ENABLED: false
+      # LDAP_URL: ldap://my-lldap-server:3890
+      # LDAP_BIND_DN: uid=pocketid,ou=people,dc=example,dc=localhost
+      # LDAP_BIND_PASSWORD: pocketid-password
+      # LDAP_BASE: dc=example,dc=com
+    volumes:
+      - pocketid-vol:/app/data
+    healthcheck:
+      test: [ "CMD", "/app/pocket-id", "healthcheck" ]
+      interval: 1m30s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.pocket-id-svc.loadbalancer.server.port: 1411
+      traefik.http.routers.pocket-id-rtr.entrypoints: websecure
+      traefik.http.routers.pocket-id-rtr.rule: Host(`pocketid.localhost`)
+      traefik.http.routers.pocket-id-rtr.tls: true
+      traefik.http.routers.pocket-id-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.pocket-id-rtr.service: pocket-id-svc
+
+volumes:
+  pocketid-vol:
+   name: pocketid-vol
+  pocketid-db-vol:
+   name: pocketid-db-vol
+
+
+networks:
+  docker-net:
+   external: true
+  pocketid-net:

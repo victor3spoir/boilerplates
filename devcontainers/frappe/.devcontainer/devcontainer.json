@@ -1,0 +1,31 @@
+{
+  "name": "frappe-devcontainer",
+  "dockerComposeFile": "../compose.yml",
+  "service": "frappe",
+  "workspaceFolder": "/workspaces/frappe",
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "echo alldone.",
+  
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "esbenp.prettier-vscode",
+        "charliermarsh.ruff"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {
+      "setLocale": true,
+      "theme": "robbyrussell",
+      "plugins": "git docker",
+      "desiredLocale": "en_US.UTF-8 UTF-8"
+    }
+  },
+  "remoteUser": "frappe"
+}

@@ -1,0 +1,41 @@
+# https://beszel.dev/guide/agent-installation
+name: beszel
+
+services:
+  beszel:
+    image: henrygd/beszel
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      docker-net:
+    volumes:
+      - beszel-vol:/beszel_data
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.beszel-svc.loadbalancer.server.port: 8090
+      traefik.http.routers.beszel-rtr.entrypoints: websecure
+      traefik.http.routers.beszel-rtr.rule: Host(`beszel.localhost`)
+      traefik.http.routers.beszel-rtr.tls: true
+      traefik.http.routers.beszel-rtr.tls.certresolver: spaceship
+      traefik.http.routers.beszel-rtr.service: beszel-svc
+
+networks:
+  docker-net:
+    external: true
+
+volumes:
+  beszel-vol:
+    name: beszel-vol
+    driver: local

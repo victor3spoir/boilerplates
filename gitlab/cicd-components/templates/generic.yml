@@ -1,0 +1,71 @@
+# string, array, number, boolean
+spec:
+  component: [name, version, reference]
+  inputs:
+    stage:
+      type: string
+      default: test
+   
+    tags:
+      type: array
+      default: []
+   
+    needs:
+      type: array
+      default: []
+      description: "job the current component depends on"
+
+    rules:
+      type: array
+      default: 
+        - when: always
+
+    before_script:
+      type: array
+      default: []
+
+    after_script:
+      type: array
+      default: []
+
+    script:
+      type: array
+      description: "Commands to execute"
+
+
+    artifact_paths:
+      type: array
+      default: []
+    
+    artifact_name:
+      type: string
+      default: "$CI_JOB_NAME"
+    
+    run_as:
+      type: string
+      description: "the job name"
+    
+    sdk_image:
+      type: string
+      default: ubuntu:devel
+
+    project_dir:
+      type: string
+      default: $CI_PROJECT_DIR
+
+---
+
+'$[[ inputs.run_as ]]':
+  image: $[[ inputs.sdk_image ]]
+  stage: $[[ inputs.stage ]]
+  tags: $[[ inputs.tags ]]
+  needs: $[[ inputs.needs ]]
+  rules: $[[ inputs.rules ]]
+
+  before_script: $[[ inputs.before_script ]]
+  after_script: $[[ inputs.after_script ]]
+  script: $[[ inputs.script ]]
+
+  artifacts:
+    name: "$[[ inputs.artifact_name ]]"
+    paths: $[[ inputs.artifact_paths ]]

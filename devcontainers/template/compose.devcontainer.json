@@ -1,0 +1,50 @@
+{
+  "name": "devcontainer",
+  "dockerComposeFile": "./dev.compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/app",
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "echo ready",
+  "postStartCommand": "echo started",
+  "customizations": {
+    "vscode": {
+      "extensions": [],
+      "settings": {}
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {
+      "setLocale": true,
+      "theme": "robbyrussell",
+      "plugins": "git docker",
+      "desiredLocale": "en_US.UTF-8 UTF-8"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts",
+      "pnpmVersion": "latest",
+      "nvmVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "10.0",
+      "tabCompletions": true,
+      "dotnetRuntimeVersions": "latest, lts",
+      "aspNetCoreRuntimeVersions": "latest, lts"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "",
+      "optimize": true,
+      "installTools": true,
+      "toolsToInstall": "pytest"
+    },
+    "ghcr.io/jsburckhardt/devcontainer-features/ruff:1": {},
+    "ghcr.io/jsburckhardt/devcontainer-features/uv:1": {}
+  },
+  "remoteUser": "app",
+  "containerUser": "root",
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/,type=bind,readonly"
+  ]
+}

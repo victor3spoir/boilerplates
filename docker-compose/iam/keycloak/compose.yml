@@ -1,0 +1,104 @@
+name: keycloak
+
+services:
+  keycloak-db:
+    image: postgres:18-alpine
+    deploy:
+      resources:
+        reservations:
+          memory: "512MiB"
+          cpus: "1.0"
+        limits:
+          memory: "1024MiB"
+          cpus: "2.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    container_name: keycloak-postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - keycloak-db-vol:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      keycloak-net:
+
+  keycloak:
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    image: keycloak/keycloak:nightly
+    deploy:
+      resources:
+        reservations:
+          memory: "512MiB"
+          cpus: "1.0"
+        limits:
+          memory: "1024MiB"
+          cpus: "2.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    container_name: keycloak
+    restart: unless-stopped
+    command:
+      - start
+      # - --optimized
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_HOSTNAME: https://keycloak.localhost
+      KC_HOSTNAME_STRICT: true
+      KC_HTTP_ENABLED: true
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_PORT: 8080
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_CACHE: ispn
+      KC_CACHE_STACK: kubernetes
+
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.keycloak-svc.loadbalancer.server.port: "8080"
+      traefik.http.routers.keycloak-rtr.rule: "Host(`keycloak.localhost`)"
+      traefik.http.routers.keycloak-rtr.entrypoints: "websecure"
+      traefik.http.routers.keycloak-rtr.tls: "true"
+      traefik.http.routers.keycloak-rtr.tls.certresolver: "letsencrypt"
+
+      traefik.http.routers.keycloak-rtr.service: "keycloak-svc"
+      traefik.http.routers.keycloak-rtr.middlewares: keycloak-headers
+
+      traefik.http.middlewares.keycloak-headers.headers.sslredirect: "true"
+      traefik.http.middlewares.keycloak-headers.headers.stsSeconds: "31536000"
+      traefik.http.middlewares.keycloak-headers.headers.stsIncludeSubdomains: "true"
+
+    networks:
+      docker-net:
+      keycloak-net:
+
+volumes:
+  keycloak-db-vol:
+    name: keycloak-db-vol
+    driver: local
+
+networks:
+  docker-net:
+    external: true
+  keycloak-net:
+    internal: true

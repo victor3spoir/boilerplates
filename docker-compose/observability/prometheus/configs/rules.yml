@@ -1,0 +1,11 @@
+groups:
+  - name: AllInstances
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          title: 'Instance {{ $labels.instance }} down'
+          description: '{{ $labels.instance }} is down'

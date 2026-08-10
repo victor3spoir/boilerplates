@@ -1,0 +1,85 @@
+services:
+
+  registry:
+    image: registry:2
+    deploy:
+      resources:
+        reservations:
+          memory: "256MiB"
+          cpus: "0.5"
+        limits:
+          memory: "512MiB"
+          cpus: "1.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      registry-net:
+    volumes:
+      - registry-vol:/var/lib/registry
+      - ./config:/auth:ro
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: "Private Registry"
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: '[https://ui.registry.localhost]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Methods: '[HEAD,GET,OPTIONS,DELETE]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Headers: '[Authorization,Accept,Cache-Control]'
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Credentials: '[true]'
+
+    labels:
+      traefik.enable: "true"
+
+      # Registry API
+      traefik.http.routers.registry.rule: Host(`registry.localhost`)
+      traefik.http.routers.registry.entrypoints: websecure
+      traefik.http.routers.registry.tls: true
+
+      traefik.http.services.registry.loadbalancer.server.port: 5000
+
+  registry-ui:
+    image: joxit/docker-registry-ui:latest
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      registry-net:
+      docker-net:
+    environment:
+      REGISTRY_TITLE: My Registry
+      REGISTRY_URL: http://registry:5000
+      SINGLE_REGISTRY: true
+      DELETE_IMAGES: true
+      SHOW_CONTENT_DIGEST: true
+      CATALOG_ELEMENTS_LIMIT: 1000
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.registry-ui.rule: Host(`ui.registry.localhost`)
+      traefik.http.routers.registry-ui.entrypoints: websecure
+      traefik.http.routers.registry-ui.tls: true
+      traefik.http.services.registry-ui.loadbalancer.server.port: 80
+
+networks:
+  docker-net:
+    external: true
+  registry-net:
+    driver: bridge
+
+volumes:
+  registry-vol:
+    name: registry-vol

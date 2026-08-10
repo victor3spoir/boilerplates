@@ -1,0 +1,6 @@
+---
+- hosts: "{{ target_hosts | default('all') }}"
+  become: true
+
+  roles:
+    - docker-ce

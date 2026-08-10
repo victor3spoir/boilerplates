@@ -1,0 +1,43 @@
+name: pgsql-dev
+
+services:
+  pgsql:
+    image: postgres:18-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "100MiB"
+          cpus: "0.1"
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    networks:
+      docker-net:
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - pgsql-vol:/var/lib/postgresql
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U $$POSTGRES_USER' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  docker-net:
+    external: true
+
+volumes:
+  pgsql-vol:
+    name: pgsql-vol
+    driver: local

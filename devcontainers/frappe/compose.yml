@@ -1,0 +1,144 @@
+name: frappe-devcontainer
+
+# bench new-site frontend --set-default  --mariadb-root-password Password123! --admin-password Password123! 
+# bench --site frontend set developer mode
+# bench --site frontend export-fixtures
+# bench --site frontend export-doc Article
+
+
+services:
+  frappe-db:
+    image: mariadb:12.1
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    networks:
+      frappe-net:
+    healthcheck:
+      test:
+        - CMD
+        - healthcheck.sh
+        - --connect
+        - --innodb_initialized
+      timeout: 5s
+      interval: 5s
+      retries: 5
+      start_period: 10s
+    environment:
+      MARIADB_AUTO_UPGRADE: "1"
+      MYSQL_ROOT_PASSWORD: "Password123!"
+    volumes:
+      - frappe-db-vol:/var/lib/mysql
+
+  frappe-redis-queue:
+    image: redis:8-alpine
+    restart: unless-stopped
+    networks:
+      frappe-net:
+  frappe-redis-cache:
+    image: redis:8-alpine
+    restart: unless-stopped
+    networks:
+      frappe-net:
+  frappe-init:
+    depends_on:
+      frappe-db:
+        condition: service_healthy
+    image: frappe/bench:v5.29.1
+    networks:
+      frappe-net: 
+    platform: linux/amd64
+    restart: on-failure
+    working_dir: /workspaces/frappe
+    volumes:
+      - ./src:/workspaces/frappe:cached
+    entrypoint:
+      - bash
+      - -c
+    command:
+      - |
+        if [ ! -d "demo" ]; then
+          echo "Initializing Bench in 'demo'..."
+          bench init demo --frappe-branch version-16 --skip-redis-config-generation
+        else
+          echo "'demo' already exists, skipping bench init."
+        fi
+  frappe-configurator:
+    depends_on:
+      frappe-db:
+        condition: service_healthy
+      frappe-init:
+        condition: service_completed_successfully
+    image: frappe/bench:v5.29.1
+    networks:
+      frappe-net: 
+    platform: linux/amd64
+    restart: on-failure
+    working_dir: /workspaces/frappe/demo
+    volumes:
+      - ./src:/workspaces/frappe:cached
+    entrypoint:
+      - bash
+      - -c
+    command:
+      - |
+        echo "check apps"
+        ls -1 apps > sites/apps.txt; 
+        echo "seting up config..."
+        bench set-config -g db_host $$DB_HOST; 
+        bench set-config -gp db_port $$DB_PORT; 
+        bench set-config -g redis_cache "redis://$$REDIS_CACHE"; 
+        bench set-config -g redis_queue "redis://$$REDIS_QUEUE"; 
+        bench set-config -g redis_socketio "redis://$$REDIS_QUEUE"; 
+        bench set-config -gp socketio_port $$SOCKETIO_PORT;
+        bench set-config -g server_script_enabled 1;
+        bench set-config -g developer_mode true
+
+    environment:
+      DB_HOST: frappe-db
+      DB_PORT: "3306"
+      REDIS_CACHE: frappe-redis-cache:6379
+      REDIS_QUEUE: frappe-redis-queue:6379
+      SOCKETIO_PORT: "9000"
+  frappe:
+    depends_on:
+      frappe-configurator:
+        condition: service_completed_successfully
+    image: frappe/bench:v5.29.1
+    restart: unless-stopped
+
+    entrypoint:
+      - bash
+      - -c
+    command:
+      - tail -f /dev/null
+    networks:
+      frappe-net:
+      docker-net:
+    environment:
+      SHELL: "/bin/bash"
+      DB_HOST: frappe-db
+      DB_PORT: "3306"
+      MYSQL_ROOT_PASSWORD: "Password123!"
+    working_dir: /workspaces/frappe/demo
+    volumes:
+      - ./src:/workspaces/frappe:cached
+    ports:
+      - 8000:8000
+
+
+volumes:
+  frappe-db-vol:
+    name: frappe-db-vol
+  frappe-sites-vol:
+    name: frappe-sites-vol
+
+networks:
+  docker-net: 
+    external: true
+  frappe-net:
+
+# automate site creations

@@ -1,0 +1,53 @@
+name: pyroscope
+
+
+
+services:
+  pyroscope:
+    image: grafana/pyroscope:latest
+    deploy:
+      resources:
+        reservations:
+          memory: "512MiB"
+          cpus: "1.0"
+        limits:
+          memory: "1024MiB"
+          cpus: "2.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    command:
+      - server
+      - -config.file=/etc/pyroscope.yaml
+    networks:
+      docker-net:
+      grafana-net:
+    configs:
+      - source: pyroscope_yaml
+        target: /etc/pyroscope.yaml
+    volumes:
+      - pyroscope-data:/data/pyroscope
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.pyroscope-svc.loadbalancer.server.port: 4040
+      traefik.http.routers.pyroscope-rtr.rule: Host(`pyroscope.localhost`)
+      traefik.http.routers.pyroscope-rtr.tls: true
+      traefik.http.routers.pyroscope-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.pyroscope-rtr.service: pyroscope-svc
+
+configs:
+  pyroscope_yaml:
+    file: "./configs/pyroscope.yaml"
+
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true
+
+volumes:
+  pyroscope-data:
+    name: pyroscope-data

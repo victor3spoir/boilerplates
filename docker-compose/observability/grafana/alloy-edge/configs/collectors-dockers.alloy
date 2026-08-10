@@ -1,0 +1,38 @@
+discovery.docker "containers" {
+  // host = "unix:///var/run/docker.sock"
+  host = "tcp://host.docker.internal:2375"
+  refresh_interval = "30s"
+}
+
+// prometheus.exporter.cadvisor "containers" {
+//   docker_host = "unix:///var/run/docker.sock"
+// }
+
+
+loki.source.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+  targets = discovery.relabel.containers.output
+  forward_to = [loki.write.outbound.receiver]
+}
+
+
+// prometheus.scrape "containers" {
+//   targets    = prometheus.exporter.cadvisor.containers.targets
+//   forward_to = [ 
+//     prometheus.remote_write.outbound.receiver, 
+//     ]
+//   scrape_interval = "5s"
+//   scrape_timeout = "5s"
+// }
+
+prometheus.scrape "containers" {
+  targets    = discovery.docker.containers.targets
+  forward_to = [
+    prometheus.remote_write.alloy.receiver,
+  ]
+  scrape_interval = "5s"
+  scrape_timeout = "5s"
+}
+
+
+

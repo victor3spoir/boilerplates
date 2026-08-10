@@ -1,0 +1,36 @@
+[user]
+	name = username
+	email = user@local.host
+
+[init]
+	defaultBranch = main
+
+[core]
+    editor = code --wait
+    quotepath = false
+	autocrlf = true
+	safecrlf = false
+
+[merge]
+    tool = vscode
+
+[mergetool "vscode"]
+    cmd = code --wait $MERGED
+
+[diff]
+    tool = vscode
+
+[difftool "vscode"]
+    cmd = code --wait --diff $LOCAL $REMOTE
+
+
+
+[push]
+    default = simple
+
+[color]
+    ui = auto
+
+[interactive]
+    rebase = true
+

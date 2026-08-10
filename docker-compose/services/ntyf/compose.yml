@@ -1,0 +1,123 @@
+name: ntfy
+services:
+  ntfy-db:
+    image: postgres:18-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "100MiB"
+          cpus: "0.1"
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    networks:
+      ntfy-net:
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ntfy
+      POSTGRES_PASSWORD: xxxxxxxxxxxxxxxx
+      POSTGRES_DB: ntfy
+    volumes:
+      - ntfy-db-vol:/var/lib/postgresql
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U $$POSTGRES_USER' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ntfy:
+    depends_on:
+      ntfy-db:
+        condition: service_healthy
+    image: binwiederhier/ntfy
+    deploy:
+      resources:
+        reservations:
+          memory: "256MiB"
+          cpus: "0.5"
+        limits:
+          memory: "512MiB"
+          cpus: "1.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    command:
+      - serve
+    secrets:
+      - private_key
+      - public_key
+    environment:
+      TZ: UTC
+      NTFY_BASE_URL: https://ntfy.localhost
+      NTFY_AUTH_DEFAULT_ACCESS: deny-all
+      # NTFY_AUTH_USERS: # Must escape '$' as '$$'
+      NTFY_BEHIND_PROXY: true
+      NTFY_ATTACHMENT_CACHE_DIR: /var/lib/ntfy/attachments
+      NTFY_ENABLE_LOGIN: true
+      NTFY_DATABASE_URL: "postgres://ntfy:xxxxxxxxxxxxxxxx@ntfy-db:5432/ntfy"
+      NTFY_WEB_PUSH_PUBLIC_KEY: "/run/secrets/public_key"
+      NTFY_WEB_PUSH_PRIVATE_KEY: "/run/secrets/private_key"
+      NTFY_WEB_PUSH_EMAIL_ADDRESS: "admin@gmail.com"
+      NTFY_SMTP_SENDER_ADDR: "mailpit:1025"
+      NTFY_SMTP_SENDER_FROM: "ntfy@local.host"
+      NTFY_SMTP_SENDER_USER: "user"
+      NTFY_SMTP_SENDER_PASS: "password"
+      NTFY_SMTP_SERVER_LISTEN: ":25"
+      NTFY_SMTP_SERVER_DOMAIN: "local.host"
+      NTFY_UPSTREAM_BASE_URL: "https://ntfy.sh"
+      NTFY_ENABLE_METRICS: "true"
+      NTFY_LOG_FORMAT: json
+      NTFY_METRICS_LISTEN_HTTP: ":9090"
+      NTFY_AUTH_ACCESS: "*:up*:write-only"
+    networks:
+      ntfy-net:
+      docker-net:
+    volumes:
+      - ntfy-vol:/var/cache/ntfy
+      # - /etc/ntfy:/etc/ntfy
+    healthcheck:
+      # optional: remember to adapt the host:port to your environment
+      test: [ "CMD-SHELL", "wget -q --tries=1 http://localhost:80/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1" ]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    init: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.ntfy-svc.loadbalancer.server.port: 80
+      traefik.http.services.ntfy-svc-metrics.loadbalancer.server.port: 9090
+      traefik.http.routers.ntfy-rtr.entrypoints: websecure
+      traefik.http.routers.ntfy-rtr.rule: Host(`ntfy.localhost`)
+      traefik.http.routers.ntfy-rtr.tls: true
+      traefik.http.routers.ntfy-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.ntfy-rtr.service: ntfy-svc
+
+secrets:
+  public_key:
+    file: "./secrets/public_key"
+  private_key:
+    file: "./secrets/private_key"
+  
+
+volumes:
+  ntfy-db-vol:
+    name: ntfy-db-vol
+  ntfy-vol:
+    name: ntfy-vol
+
+networks:
+  ntfy-net:
+    driver: bridge
+  docker-net:
+    external: true
