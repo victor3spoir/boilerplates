@@ -1,0 +1,98 @@
+name: traefik
+
+services:
+  traefik-socket-proxy:
+    image: tecnativa/docker-socket-proxy:master
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    privileged: true
+    deploy:
+      resources:
+        reservations:
+          memory: "100MiB"
+          cpus: "0.1"
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    expose:
+      - 2375
+    networks:
+      docker-net:
+    environment:
+      CONTAINERS: 1
+      POST: 1
+      NETWORKS: 1
+      SERVICES: 1
+      NODES: 1
+      EVENTS: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  traefik:
+    image: traefik:v3.7.0
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    container_name: traefik
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    deploy:
+      resources:
+        reservations:
+          memory: "200MiB"
+          cpus: "0.25"
+        limits:
+          memory: "400MiB"
+          cpus: "0.5"
+    networks:
+      docker-net:
+    ports:
+      - 80:80
+      - 443:443
+      # - 3023:3023
+      # - 3024:3024
+    configs:
+      - source: traefik_yml
+        target: /etc/traefik/traefik.yml
+    volumes:
+      - ./data/certs:/var/traefik/certs:rw
+      - ./data/logs:/var/log/traefik:rw
+      - ./configs/dynamic:/etc/traefik/dynamic:rw
+    environment:
+      TZ: UTC
+      DOCKER_HOST: tcp://traefik-socket-proxy:2375
+      # CF_DNS_API_TOKEN: change-this-for-cloudflare-dns-challenge
+      # SPACESHIP_API_KEY:
+      # SPACESHIP_API_SECRET:
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.traefik-rtr.service: api@internal
+      traefik.http.routers.traefik-rtr.entrypoints: web,websecure
+      traefik.http.routers.traefik-rtr.rule: Host(`traefik.localhost`)
+      traefik.http.routers.traefik-rtr.tls: true
+      traefik.http.routers.traefik-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.traefik-rtr.tls.domains[0].main: "localhost"
+      traefik.http.routers.traefik-rtr.tls.domains[0].sans: "*.localhost"
+      # traefik.http.routers.traefik-rtr.middlewares: crowdsec@file
+
+configs:
+  traefik_yml:
+    file: "./configs/traefik.yml"
+
+
+networks:
+  docker-net:
+    external: true

@@ -1,0 +1,39 @@
+name: mailpit
+
+services:
+  mailpit:
+    image: axllent/mailpit
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      docker-net:
+    expose:
+      - 8025 #ui
+      - 1025 #smpt
+    deploy:
+      resources:
+        reservations:
+          memory: "100MiB"
+          cpus: "0.1"
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+
+    environment:
+      MP_ENABLE_PROMETHEUS: true
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.mailpit-svc.loadbalancer.server.port: 8025
+      traefik.http.routers.mailpit-rtr.entrypoints: web,websecure
+      traefik.http.routers.mailpit-rtr.rule: Host(`mailpit.localhost`)
+      traefik.http.routers.mailpit-rtr.tls: true
+      traefik.http.routers.mailpit-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.mailpit-rtr.service: mailpit-svc
+
+networks:
+  docker-net:
+    external: true

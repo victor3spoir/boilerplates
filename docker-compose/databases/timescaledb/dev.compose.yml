@@ -1,0 +1,31 @@
+name: timescaldb-dev
+
+services:
+  timescaledb-dev:
+    image: timescale/timescaledb:latest-pg18
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        reservations:
+          memory: "250MiB"
+          cpus: "0.25"
+        limits:
+          memory: "500MiB"
+          cpus: "0.5"
+    ports:
+      - '127.0.0.1:5432:5432'
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - timescaldb-vol:/var/lib/postgresql/data
+
+volumes:
+  timescaldb-vol:
+    name: timescaldb-vol

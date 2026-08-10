@@ -44,25 +44,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: nextcloud-ingress
-  namespace: nextcloud
-  labels:
-    name: nextcloud-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/service-upstream: "true"
-spec:
-  rules:
-    - host: nextcloud.home.victor3spoir.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix #ImplementationSpecific
-            backend:
-              service:
-                name: nextcloud-svc
-                port:
-                  number: 80
+

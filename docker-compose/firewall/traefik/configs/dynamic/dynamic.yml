@@ -1,0 +1,95 @@
+http:
+  # services:
+  #   srv-master:
+  #     loadBalancer:
+  #       servers:
+  #         - url: "http://srv-master.multipass:80"
+
+  # routers:
+  #   srv-master-rtr:
+  #     rule: "Host(`srv-side.localhost`)"
+  #     entryPoints:
+  #       - websecure
+  #     tls:
+  #       certResolver: letsencrypt
+  #     service: srv-master
+
+  serversTransports:
+    selfsigned:
+      insecureSkipVerify: true
+
+  middlewares:
+    crowdsec:
+      plugin:
+        crowdsec:
+          enabled: true
+          crowdsecLapiHost: crowdsec:8080
+          crowdsecLapiKey: IyR2HhiL8N6SttEx9U8cQLduP3ABplzxGtXca9okwQc
+          crowdsecAppsecEnabled: true
+          crowdsecAppsecHost: crowdsec:7422
+  
+    api-ratelimit-mdl:
+      rateLimit:
+        average: 100
+        burst: 200
+    https-redirect-mdl:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    
+    internal-allowlist-mdl:
+      ipAllowList:
+        sourceRange:
+          - 10.0.0.0/8
+          - 192.168.0.0/16
+
+    ratelimit-webapp-mdl:
+      rateLimit:
+        average: 50
+        burst: 200
+        period: 1s
+    chain-web-security-mdl:
+      chain:
+        middlewares:
+          - header-web-security-mdl
+          - ratelimit-webapp-mdl
+          - compress-security-mdl
+    compress-security-mdl:
+      compress:
+        excludedContentTypes:
+          - text/event-stream
+
+    header-web-security-mdl:
+      headers:
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        frameDeny: true
+        sslRedirect: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 63072000
+        referrerPolicy: "strict-origin-when-cross-origin"
+        permissionsPolicy: >-
+          camera=(), microphone=(), geolocation=(), payment=()
+        accessControlAllowOriginList:
+          - "*"
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - PUT
+          - POST
+          - UPDATE
+          - DELETE
+          - PATCH
+        accessControlAllowHeaders:
+          - content-type
+          - authorization
+          - cache-control
+          - x-requested-with
+          - upload-source
+          - x-session-id
+          - x-lazy-pagination
+          - x-disable-pagination
+        accessControlMaxAge: 100
+

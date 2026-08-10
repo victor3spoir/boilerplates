@@ -1,0 +1,76 @@
+name: flog
+
+networks:
+  docker-net:
+    external: true
+
+services:
+  # generate logs
+  flog:
+    image: mingrammer/flog
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command: -f json -d 200ms -l
+
+  # blogs to generate trafic
+  goblog:
+    image: mariomac/goblog:dev
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      OTEL_SERVICE_NAME: goblog
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://alloy-edge:4317
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.goblog-svc.loadbalancer.server.port: 8443
+      traefik.http.routers.goblog-rtr.entrypoints: web,websecure
+      traefik.http.routers.goblog-rtr.rule: Host(`goblog.localhost`)
+      traefik.http.routers.goblog-rtr.tls: true
+      traefik.http.routers.goblog-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.goblog-rtr.service: goblog-svc
+
+  nginx:
+    image: nginxdemos/hello:0.4
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    expose:
+      - 80

@@ -1,0 +1,46 @@
+name: caddy
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      docker-net:
+    ports:
+      - 80:80
+    configs:
+      - source: caddy_file
+        target: /etc/caddy/Caddyfile
+
+  # webapp-01:
+  #   image: nginxdemos/hello:0.4
+  #   networks:
+  #     - docker-net
+  # webapp-02:
+  #   image: nginxdemos/hello:0.4
+  #   networks:
+  #     - docker-net
+  # webapp-03:
+  #   image: nginxdemos/hello:0.4
+  #   networks:
+  #     - docker-net
+configs:
+  caddy_file:
+    file: ./configs/Caddyfile
+
+networks:
+  docker-net:
+    external: true

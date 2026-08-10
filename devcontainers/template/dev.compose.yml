@@ -1,0 +1,33 @@
+configs:
+  init_sql:
+    content: |
+      CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+      CREATE TABLE app_user (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          username TEXT NOT NULL UNIQUE,
+          password_hash TEXT NOT NULL,
+          created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: Password123!
+      POSTGRES_DB: db
+    ports:
+      - "5432:5432"
+    configs:
+      - source: init_sql
+        target: /docker-entrypoint-initdb.d/init.sql
+  app:
+    depends_on:
+      db:
+        condition: service_completed_successfully
+    image: mcr.microsoft.com/devcontainers/base:dev
+    command: sleep infinity
+    working_dir: /workspace
+    volumes:
+      - ../src:/workspace

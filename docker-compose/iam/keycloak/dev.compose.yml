@@ -1,0 +1,38 @@
+name: keycloak-dev
+
+services:
+  keycloak-dev:
+    image: keycloak/keycloak:nightly
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command: start-dev
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "350MiB"
+          cpus: "0.3"
+        limits:
+          memory: "700MiB"
+          cpus: "0.6"
+    networks:
+      docker-net:
+    ports:
+      - 8080:8080
+    # volumes:
+    #   - ./themes:/opt/keycloak/themes:ro
+    environment:
+      KC_HEALTH_ENABLED: true
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
+
+networks:
+  docker-net:
+    external: true
+
+volumes:
+  keycloack-data:
+    name: keycloack-data

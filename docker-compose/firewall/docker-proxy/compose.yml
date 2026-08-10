@@ -1,0 +1,34 @@
+#  DOCKER_HOST: tcp://docker-proxy:2375
+name: docker-proxy
+
+services:
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:master
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    privileged: true
+    deploy:
+      resources:
+        reservations:
+          memory: "100MiB"
+          cpus: "0.1"
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    expose:
+      - 2375
+    networks:
+      docker-net:
+    environment:
+      CONTAINERS: 1
+      POSTS: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  docker-net:
+    external: true

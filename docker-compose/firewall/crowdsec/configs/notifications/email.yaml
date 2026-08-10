@@ -1,0 +1,30 @@
+type: email
+name: email
+
+log_level: info
+
+format: |
+  CrowdSec Alert
+
+  Machine: {{.MachineID}}
+  Source: {{.Source}}
+
+  IP:
+  {{range .Decisions}}
+  - {{.Value}}
+  {{end}}
+
+  Reason:
+  {{range .Decisions}}
+  - {{.Reason}}
+  {{end}}
+
+smtp:
+  host: mailpit
+  port: 1025
+  username: admin@gmail.com
+  password: password
+
+sender_email: admin@gmail.com
+receiver_emails:
+  - v3r@home.lab

@@ -1,0 +1,25 @@
+version: v3
+teleport:
+  ca_pin:
+    - "{sha256:bb089291586d334c46157cc99bdc2d6e0884e74a2f43b499648d78a58a305627}"
+  nodename: node-name
+  data_dir: /var/lib/teleport
+  join_params:
+    token_name: {a669375f4f685d3e784181ac2f4febc5}
+    method: token
+  proxy_server: {teleport.local.domain.tld:443}
+  log:
+    output: stderr
+    severity: INFO
+    format:
+      output: text
+  diag_addr: ""
+auth_service:
+  enabled: "no"
+ssh_service:
+  enabled: "yes"
+proxy_service:
+  enabled: "no"
+  https_keypairs: []
+  https_keypairs_reload_interval: 0s
+  acme: {}

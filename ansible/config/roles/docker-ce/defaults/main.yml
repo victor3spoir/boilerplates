@@ -1,0 +1,3 @@
+docker_remove_legacy: false
+docker_users:
+  - "{{ ansible_user }}"

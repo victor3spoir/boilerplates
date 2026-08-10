@@ -1,0 +1,85 @@
+# admin:admin
+name: odoo
+
+services:
+  odoo-db:
+    image: postgres:18-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "150MiB"
+          cpus: "0.2"
+        limits:
+          memory: "300MiB"
+          cpus: "0.4"
+    networks:
+      odoo-net:
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: xxxxxxxxxxxxxxxx
+      POSTGRES_DB: odoo
+    volumes:
+      - odoo-db-vol:/var/lib/postgresql
+
+  odoo-web:
+    depends_on:
+      - odoo-db
+    image: odoo:19
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    command: odoo -i base
+    deploy:
+      resources:
+        reservations:
+          memory: "200MiB"
+          cpus: "0.4"
+        limits:
+          memory: "400MiB"
+          cpus: "0.8"
+    networks:
+      docker-net:
+      odoo-net:
+    environment:
+      HOST: odoo-db
+      USER: odoo
+      PASSWORD: xxxxxxxxxxxxxxxx
+    configs:
+      - source: odoo_conf
+        target: /etc/odoo/odoo.conf
+    volumes:
+      - odoo-web-vol:/var/lib/odoo:rw
+      # - odoo-web-vol:/mnt/extra-addons:rw
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.odoo-svc.loadbalancer.server.port: 8069
+      traefik.http.routers.odoo-rtr.entrypoints: web,websecure
+      traefik.http.routers.odoo-rtr.rule: Host(`odoo.localhost`)
+      traefik.http.routers.odoo-rtr.tls: true
+      traefik.http.routers.odoo-rtr.tls.certresolver: letsencrypt
+
+configs:
+  odoo_conf:
+    file: "./configs/odoo.conf"
+
+networks:
+  docker-net:
+    external: true
+  odoo-net: {}
+
+volumes:
+  odoo-web-vol:
+    name: odoo-web-vol
+    driver: local
+  odoo-db-vol:
+    name: odoo-db-vol
+    driver: local

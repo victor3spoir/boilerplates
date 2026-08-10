@@ -1,0 +1,22 @@
+- name: Configure & setup
+  hosts: all
+  become: true
+
+  vars:
+    app_name: demo
+    target_dir: "/usr/stack"
+
+  tasks:
+    - name: Ensure dir exists
+      ansible.builtin.file:
+        path: "{{ target_dir }}"
+        state: directory
+        mode: "0755"
+    - name: Check disk space
+      ansible.builtin.command: df -h /
+      register: disk_output
+      changed_when: false
+
+    - name: Display disk space
+      ansible.builtin.debug:
+        msg: "Disk space output -> {{ disk_output.stdout_lines }}"

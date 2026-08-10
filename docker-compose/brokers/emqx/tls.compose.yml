@@ -1,0 +1,68 @@
+#defaultcreds: admin: public
+name: emqx
+
+services:
+  emqx:
+    image: emqx/emqx:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "250MiB"
+          cpus: "0.25"
+        limits:
+          memory: "500MiB"
+          cpus: "0.5"
+    networks:
+      docker-net:
+    ports:
+      - 1883:1883 #mqqt
+      - 8883:8883 #mqqts
+      - 8083:8083 #ws
+      - 8084:8084 #wss
+      - '127.0.0.1:18083:18083' #dashoard
+    secrets:
+      - servercert_pem
+      - cacert_pem
+      - serverkey_pem
+    configs:
+      - source: base_hocon
+        target: /opt/emqx/etc/base.hocon
+    volumes:
+      - emqx-vol:/opt/emqx/data
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.emqx-ui-svc.loadbalancer.server.port: 18083
+      traefik.http.routers.emqx-ui-rtr.entrypoints: web,websecure
+      traefik.http.routers.emqx-ui-rtr.rule: Host(`emqx-ui.localhost`)
+      traefik.http.routers.emqx-ui-rtr.tls: true
+      traefik.http.routers.emqx-ui-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.emqx-ui-rtr.service: emqx-ui-svc
+      # - traefik.http.routers.emqx-dashboard-rtr.middlewares=
+
+
+secrets:
+  servercert_pem:
+    file: "./secrets/servercert.pem"
+  cacert_pem:
+    file: "./secrets/cacert.pem"
+  serverkey_pem:
+    file: "./secrets/serverkey.pem"
+
+configs:
+  base_hocon:
+    file: "./configs/base.hocon"
+
+volumes:
+  emqx-vol:
+    name: emqx-vol
+    driver: local
+
+networks:
+  docker-net:
+    external: true

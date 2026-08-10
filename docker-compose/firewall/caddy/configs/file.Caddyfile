@@ -1,0 +1,18 @@
+{
+  admin :2019
+	metrics {
+		per_host
+	}
+}
+:80 {
+	root * /usr/share/caddy
+	file_server
+	handle_errors {
+		rewrite * /50x.html
+		file_server
+	}
+	@dotfiles path_regexp /\.ht
+	respond @dotfiles "403 Forbidden" 403
+	@assets path /assets/*
+	respond @assets "403 Forbidden" 403
+}

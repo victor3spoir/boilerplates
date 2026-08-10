@@ -1,0 +1,119 @@
+name: traefik-dev
+
+services:
+  traefik-socket-proxy:
+    image: tecnativa/docker-socket-proxy:master
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    privileged: true
+    deploy:
+      resources:
+        reservations:
+          memory: "100MiB"
+          cpus: "0.1"
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    expose:
+      - 2375
+    networks:
+      docker-net:
+    environment:
+      CONTAINERS: 1
+      POSTS: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  traefik-dev:
+    image: traefik:v3.7.0
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    container_name: traefik-dev
+    deploy:
+      resources:
+        reservations:
+          memory: "200MiB"
+          cpus: "0.25"
+        limits:
+          memory: "400MiB"
+          cpus: "0.5"
+    command:
+      - --global.checknewversion=true
+      - --global.sendanonymoususage=false
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --api.debug=true
+      - --ping=true
+      - --ping.entryPoint=web
+
+      - --entryPoints.web.address=:80
+      - --entryPoints.websecure.address=:443
+
+      - --providers.docker.endpoint=unix://var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=docker-net
+      - --providers.directory.filename=/etc/traefik/dynamic
+      - --providers.directory.watch=true
+
+      - --certificatesResolvers.letsencrypt.acme.email=admin@local.host
+      - --certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json
+      - --certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=web
+
+      - --log.level=INFO # TRACE - INFO - DEBUG - WARN - ERROR - FATAL - PANIC
+      - --log.format=json
+      - --log.nocolor=false
+      - --log.compress=true
+      - --log.filepath=/var/log/traefik/traefik.log
+
+      - --accessLog=true
+      - --accesslog.format=json
+      - --accessLog.addinternals=true
+      - --accesslog.filepath=/var/log/traefik/access.log
+
+      - --experimental.fastProxy
+      - --experimental.otlpLogs=true
+    networks:
+      docker-net:
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOCKER_HOST: tcp://traefik-socket-proxy:2375
+    configs:
+      - source: traefik_dynamic_yml
+        target: /etc/traefik/dynamic.yml
+    volumes:
+      - ./data/certs:/var/traefik/certs:rw
+      - ./data/logs:/var/log/traefik/:rw
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.traefik-rtr.service: "api@internal"
+      traefik.http.routers.traefik-rtr.entrypoints: web,websecure
+      traefik.http.routers.traefik-rtr.rule: "Host(`traefik.localhost`)"
+      traefik.http.routers.traefik-rtr.tls: "true"
+      traefik.http.routers.traefik-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.traefik-rtr.tls.domains[0].main: "localhost"
+      traefik.http.routers.traefik-rtr.tls.domains[0].sans: "*.localhost"
+
+configs:
+  traefik_dynamic_yml:
+    file: "./configs/dynamic.yml"
+
+networks:
+  docker-net:
+    external: true

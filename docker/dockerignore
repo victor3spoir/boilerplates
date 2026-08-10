@@ -1,0 +1,13 @@
+compose.yml 
+*-compose.yml
+*.compose.yml
+Notes.md
+README.m
+.devcontainer
+docker-bake.*
+Dockerfile
+Dockerfile.*
+*.Dockerfile.*
+*.Dockerfile
+.git
+.dockerignore

@@ -1,0 +1,16 @@
+otelcol.processor.batch "otlp" {
+  output {
+      metrics = [
+        otelcol.exporter.otlp.outbound.input,
+        otelcol.exporter.otlphttp.outbound.input,
+        ]
+      logs    = [
+        otelcol.exporter.otlp.outbound.input,
+        otelcol.exporter.otlphttp.outbound.input,
+        ]
+      traces  = [
+        otelcol.exporter.otlp.outbound.input,
+        otelcol.exporter.otlphttp.outbound.input,
+        ]
+    }
+}

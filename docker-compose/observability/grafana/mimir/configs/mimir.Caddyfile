@@ -1,0 +1,18 @@
+:80 {
+    reverse_proxy mimir-01:8080 mimir-02:8080 mimir-03:8080 mimir-04:8080 {
+      lb_policy round_robin
+			health_uri /ready
+      health_interval 10s
+      health_timeout 5s
+			header_up Upgrade {http.request.header.Upgrade}
+			header_up Connection {http.request.header.Connection}
+			header_up X-Forwarded-For {http.request.remote}
+			header_up X-Forwarded-Proto {http.request.scheme}
+			header_up Host {http.request.host}
+			transport http {
+					read_timeout 300s
+					write_timeout 300s
+			}
+
+    }
+}

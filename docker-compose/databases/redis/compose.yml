@@ -1,0 +1,65 @@
+name: redis
+
+
+
+
+services:
+  redis:
+    image: redis:8-alpine
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    deploy:
+      resources:
+        reservations:
+          memory: "100MiB"
+          cpus: "0.1"
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    healthcheck:
+      test: [ 'CMD-SHELL', 'redis-cli ping | grep PONG' ]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    networks:
+      redis-net:
+
+  redisinsight:
+    image: redis/redisinsight:2.66
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "100MiB"
+          cpus: "0.1"
+        limits:
+          memory: "200MiB"
+          cpus: "0.2"
+    networks:
+      docker-net:
+      redis-net:
+    ports:
+      - 5540:5540
+    volumes:
+      - redisinsight-vol:/data
+
+networks:
+  docker-net:
+    external: true
+  redis-net: {}
+
+volumes:
+  redisinsight-vol:
+    name: redisinsight-vol
+    driver: local
