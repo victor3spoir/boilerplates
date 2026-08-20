@@ -76,6 +76,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.services.keycloak-svc.loadbalancer.server.port: "8080"
+      
       traefik.http.routers.keycloak-rtr.rule: "Host(`keycloak.localhost`)"
       traefik.http.routers.keycloak-rtr.entrypoints: "websecure"
       traefik.http.routers.keycloak-rtr.tls: "true"

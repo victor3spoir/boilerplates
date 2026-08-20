@@ -51,8 +51,10 @@ metrics_generator:
   storage:
     path: /var/tempo/generator/wal
     remote_write:
-      - url: http://prometheus:9090/api/v1/write
+      - url: http://mimir:9090/api/v1/push
         send_exemplars: true
+        # headers:
+        #   X-Scope-OrgID: observability
 
 query_frontend:
   search:
@@ -66,7 +68,7 @@ overrides:
       processors:
         - service-graphs
         - span-metrics
-      generate_native_histograms: both
+      generate_native_histograms: classic # classic|both
 
 usage_report:
   reporting_enabled: false

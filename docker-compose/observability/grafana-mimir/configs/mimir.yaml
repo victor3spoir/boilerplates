@@ -85,4 +85,4 @@ limits:
   ingestion_burst_size: 200000
 
 activity_tracker:
-  filepath: /data/local/activity.log
+  filepath: /tmp/mimir-activity.log
