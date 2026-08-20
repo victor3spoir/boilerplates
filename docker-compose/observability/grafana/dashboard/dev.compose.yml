@@ -3,38 +3,27 @@ name: grafana-dev
 services:
   grafana-dev:
     image: grafana/grafana-enterprise:main
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     restart: unless-stopped
     deploy:
       resources:
-        reservations:
-          memory: "250MiB"
-          cpus: "0.25"
         limits:
           memory: "500MiB"
           cpus: "0.5"
     networks:
-      docker-net:
+      - docker-net
     volumes:
       - grafana-vol:/var/lib/grafana
     environment:
-      GF_LOG_LEVEL: warn
-      GF_AUTH_ANONYMOUS_ENABLED: false
-      GF_AUTH_ANONYMOUS_ORG_ROLE: viewer
-      GF_SECURITY_ADMIN_USER: v3r
-      GF_SECURITY_ADMIN_EMAIL: v3r@local.host
-      GF_SECURITY_ADMIN_PASSWORD: password
+      GF_LOG_LEVEL: debug
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_EMAIL: admin@local.host
+      GF_SECURITY_ADMIN_PASSWORD: Password123!
       GF_USERS_DEFAULT_THEME: light
-      GF_FEATURE_TOGGLES_ENABLE: provisioning,kubernetesDashboards
     labels:
-      traefik.enable: "true"
+      traefik.enable: true
       traefik.http.services.grafana-dev-svc.loadbalancer.server.port: 3000
       traefik.http.routers.grafana-dev-rtr.entrypoints: web,websecure
-      traefik.http.routers.grafana-dev-rtr.rule: Host(`grafana.localhost`)
+      traefik.http.routers.grafana-dev-rtr.rule: Host(`grafana-dev.localhost`)
       traefik.http.routers.grafana-dev-rtr.tls: true
       traefik.http.routers.grafana-dev-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.grafana-dev-rtr.service: grafana-dev-svc

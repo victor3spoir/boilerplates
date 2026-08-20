@@ -20,23 +20,32 @@ memberlist:
 
 common:
   storage:
-    backend: filesystem
-    filesystem:
-      dir: /data/shared
+    backend: s3
+    s3:
+      endpoint: ${MIMIR_S3_ENDPOINT}
+      region: ${MIMIR_S3_REGION}
+      bucket_name: ${MIMIR_S3_BUCKET}
+      access_key_id: ${MIMIR_S3_ACCESS_KEY}
+      secret_access_key: ${MIMIR_S3_SECRET_KEY}
+      bucket_lookup_type: path
+      dualstack_enabled: false
+      insecure: false
+      http:
+        idle_conn_timeout: 90s
+        response_header_timeout: 30s
+        insecure_skip_verify: false
+        tls_handshake_timeout: 10s
 
 blocks_storage:
-  backend: filesystem
+  backend: s3
   storage_prefix: blocks
 
-  filesystem:
-    dir: /data/shared
-
   bucket_store:
-    sync_dir: /data/local/tsdb-sync
+    sync_dir: /data/tsdb-sync
     sync_interval: 5m
 
   tsdb:
-    dir: /data/local/tsdb
+    dir: /data/tsdb
     retention_period: 24h
 
 ingester:
@@ -51,13 +60,13 @@ distributor:
       store: memberlist
 
 compactor:
-  data_dir: /data/local/compactor
+  data_dir: /data/compactor
   sharding_ring:
     kvstore:
       store: memberlist
 
 ruler:
-  rule_path: /data/local/ruler
+  rule_path: /data/ruler-temp
   alertmanager_url: http://alertmanager:9093
   evaluation_interval: 15s
   ring:
@@ -67,10 +76,8 @@ ruler:
     heartbeat_timeout: 1m
 
 ruler_storage:
-  backend: filesystem
+  backend: s3
   storage_prefix: ruler
-  filesystem:
-    dir: /data/shared
 
 store_gateway:
   sharding_ring:
@@ -85,4 +92,4 @@ limits:
   ingestion_burst_size: 200000
 
 activity_tracker:
-  filepath: /data/local/activity.log
+  filepath: /data/activity.log

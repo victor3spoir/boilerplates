@@ -2,7 +2,7 @@ name: tempo
 
 services:
   tempo:
-    image: grafana/tempo:main-e79e340-1974-1
+    image: grafana/tempo:3.0.3
     logging:
       driver: json-file
       options:
@@ -23,12 +23,16 @@ services:
           cpus: "0.5"
     command:
       - -config.file=/etc/tempo.yaml
+      - -config.expand-env=true
+
     networks:
       docker-net:
       grafana-net:
     configs:
       - source: tempo_yaml
         target: /etc/tempo.yaml
+    volumes:
+      - tempo-vol:/var/tempo
     labels:
       traefik.enable: "true"
       traefik.http.services.tempo-svc.loadbalancer.server.port: 3200

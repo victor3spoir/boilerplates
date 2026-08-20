@@ -1,10 +1,8 @@
-name: loki-dev
-
-
+name: loki
 
 services:
   loki:
-    image: grafana/loki:3.1.2
+    image: grafana/loki:3.6.15
     logging:
       driver: json-file
       options:
@@ -22,6 +20,8 @@ services:
     command:
       - -config.file=/etc/loki/loki.yaml
       - -config.expand-env=true
+    security_opt:
+      - no-new-privileges:true
     networks:
       docker-net:
       grafana-net:
@@ -31,22 +31,36 @@ services:
     configs:
       - source: loki_yaml
         target: /etc/loki/loki.yaml
+    environment:
+      LOKI_S3_ENDPOINT: ${S3_ENDPOINT}
+      LOKI_S3_REGION: us-east-1
+      LOKI_S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      LOKI_S3_SECRET_KEY: ${S3_SECRET_KEY}
+      LOKI_S3_CHUNKS_BUCKET: loki
+      LOKI_S3_RULER_BUCKET: loki-ruler
     labels:
       traefik.enable: "true"
-      traefik.http.services.loki-dev-svc.loadbalancer.server.port: 3100
-      traefik.http.routers.loki-dev-rtr.rule: Host(`loki-dev.localhost`)
-      traefik.http.routers.loki-dev-rtr.tls: true
-      traefik.http.routers.loki-dev-rtr.tls.certresolver: letsencrypt
-      traefik.http.routers.loki-dev-rtr.service: loki-dev-svc
 
-volumes:
-  loki-vol:
-    name: loki-vol
-  
+      traefik.http.services.loki-svc.loadbalancer.server.port: 3100
+      traefik.http.services.loki-svc.loadbalancer.healthcheck.path: /ready
+      traefik.http.services.loki-svc.loadbalancer.healthcheck.interval: 15s
+      traefik.http.services.loki-svc.loadbalancer.healthcheck.timeout: 5s
+
+      traefik.http.routers.loki-rtr.rule: Host(`${LOKI_DOMAIN}`)
+      traefik.http.routers.loki-rtr.entrypoints: websecure
+      traefik.http.routers.loki-rtr.tls: "true"
+      traefik.http.routers.loki-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.loki-rtr.service: loki-svc
+      # traefik.http.routers.loki-rtr.middlewares: loki-auth@file
+
 
 configs:
   loki_yaml:
     file: "./configs/loki.yaml"
+
+volumes:
+  loki-vol:
+    name: loki-vol
 
 networks:
   docker-net:
