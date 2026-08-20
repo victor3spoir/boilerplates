@@ -24,7 +24,14 @@ services:
     command:
       - -config.file=/etc/tempo.yaml
       - -config.expand-env=true
-
+    environment:
+      TEMPO_S3_ENDPOINT: ${TEMPO_S3_ENDPOINT}
+      TEMPO_S3_REGION: ${TEMPO_S3_REGION}
+      TEMPO_S3_BUCKET: ${TEMPO_S3_BUCKET}
+      TEMPO_S3_ACCESS_KEY: ${TEMPO_S3_ACCESS_KEY}
+      TEMPO_S3_SECRET_KEY: ${TEMPO_S3_SECRET_KEY}
+      TEMPO_RETENTION: ${TEMPO_RETENTION}
+      TEMPO_METRICS_REMOTE_WRITE_URL: ${TEMPO_METRICS_REMOTE_WRITE_URL}
     networks:
       docker-net:
       grafana-net:
