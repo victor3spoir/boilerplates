@@ -214,6 +214,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+<<<<<<< HEAD
+**/*/.env
+=======
 **/*/.env
 
 # env
@@ -333,3 +336,4 @@ terraform.rc
 # Uncomment the line below if you want to ignore planout files.
 # planout
 **/*/.terraform.lock.hcl
+>>>>>>> 91ec0708497a50bd48dba552fe4970c11186f332

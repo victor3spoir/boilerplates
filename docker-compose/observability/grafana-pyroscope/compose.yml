@@ -1,0 +1,70 @@
+name: pyroscope
+
+
+
+services:
+  pyroscope:
+    image: grafana/pyroscope:2.2.1
+    deploy:
+      resources:
+        reservations:
+          memory: "512MiB"
+          cpus: "1.0"
+        limits:
+          memory: "1024MiB"
+          cpus: "2.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    command:
+      - server
+      - -config.file=/etc/pyroscope.yaml
+      - -config.expand-env=true
+    networks:
+      docker-net:
+      grafana-net:
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    configs:
+      - source: pyroscope_yaml
+        target: /etc/pyroscope.yaml
+    environment:
+      PYROSCOPE_S3_ENDPOINT: ${S3_ENDPOINT}
+      PYROSCOPE_S3_REGION: us-east-1
+      PYROSCOPE_S3_BUCKET: pyroscope
+      PYROSCOPE_S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      PYROSCOPE_S3_SECRET_KEY: ${S3_SECRET_KEY}
+      PYROSCOPE_S3_INSECURE: false
+    volumes:
+      - pyroscope-data:/data/pyroscope
+    labels:
+      traefik.enable: "true"
+
+      traefik.http.services.pyroscope-svc.loadbalancer.server.port: 4040
+      traefik.http.services.pyroscope-svc.loadbalancer.healthcheck.path: /ready
+      traefik.http.services.pyroscope-svc.loadbalancer.healthcheck.interval: 15s
+      traefik.http.services.pyroscope-svc.loadbalancer.healthcheck.timeout: 5s
+      
+      traefik.http.routers.pyroscope-rtr.rule: Host(`pyroscope.localhost`)
+      traefik.http.routers.pyroscope-rtr.tls: true
+      traefik.http.routers.pyroscope-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.pyroscope-rtr.service: pyroscope-svc
+
+configs:
+  pyroscope_yaml:
+    file: "./configs/pyroscope.yaml"
+
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true
+
+volumes:
+  pyroscope-data:
+    name: pyroscope-data

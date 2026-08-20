@@ -1,0 +1,25 @@
+
+service:
+  # Check user HTTPS client certificate against CA file specified in tls config
+  verify_https_client_certificate: false
+  enable_tls: true
+
+# tls:
+#   # Server certificate chain file
+#   cert: ./tls/cert.pem
+
+#   # Server private key file
+#   key: ./tls/key.pem
+
+cluster:
+  # Configuration of the inter-cluster communication
+  p2p:
+    enable_tls: true
+
+storage:
+  # Where to store all the data
+  storage_path: ./storage
+  snapshots_path: ./snapshots
+  snapshots_config:
+    snapshots_storage: local
+  temp_path: null

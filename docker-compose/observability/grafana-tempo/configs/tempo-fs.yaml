@@ -1,0 +1,74 @@
+stream_over_http_enabled: true
+multitenancy_enabled: false
+
+server:
+  http_listen_address: 0.0.0.0
+  http_listen_port: 3200
+  grpc_listen_address: 0.0.0.0
+  grpc_listen_port: 9095
+  log_level: warn
+  graceful_shutdown_timeout: 30s
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+storage:
+  trace:
+    backend: local
+    blocklist_poll: 5m
+
+    wal:
+      path: /var/tempo/wal
+
+    local:
+      path: /var/tempo/blocks
+
+backend_scheduler:
+  provider:
+    compaction:
+      compaction:
+        block_retention: 720h
+
+backend_worker:
+  compaction:
+    block_retention: 720h
+    compacted_block_retention: 1h
+    compaction_window: 1h
+    retention_concurrency: 2
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: docker
+
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://mimir:9090/api/v1/push
+        send_exemplars: true
+        # headers:
+        #   X-Scope-OrgID: observability
+
+query_frontend:
+  search:
+    duration_slo: 5s
+    throughput_bytes_slo: 1073741824
+    query_backend_after: 15m
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - span-metrics
+      generate_native_histograms: classic # classic|both
+
+usage_report:
+  reporting_enabled: false

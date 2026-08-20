@@ -1,0 +1,88 @@
+target: all,overrides-exporter
+
+multitenancy_enabled: false
+no_auth_tenant: anonymous
+
+server:
+  http_listen_address: 0.0.0.0
+  http_listen_port: 8080
+  grpc_listen_address: 0.0.0.0
+  grpc_listen_port: 9095
+  log_level: warn
+  graceful_shutdown_timeout: 30s
+
+memberlist:
+  join_members:
+    - mimir-01
+    - mimir-02
+    - mimir-03
+    - mimir-04
+
+common:
+  storage:
+    backend: filesystem
+    filesystem:
+      dir: /data/shared
+
+blocks_storage:
+  backend: filesystem
+  storage_prefix: blocks
+
+  filesystem:
+    dir: /data/shared
+
+  bucket_store:
+    sync_dir: /data/local/tsdb-sync
+    sync_interval: 5m
+
+  tsdb:
+    dir: /data/local/tsdb
+    retention_period: 24h
+
+ingester:
+  ring:
+    kvstore:
+      store: memberlist
+    replication_factor: 3
+
+distributor:
+  ring:
+    kvstore:
+      store: memberlist
+
+compactor:
+  data_dir: /data/local/compactor
+  sharding_ring:
+    kvstore:
+      store: memberlist
+
+ruler:
+  rule_path: /data/local/ruler
+  alertmanager_url: http://alertmanager:9093
+  evaluation_interval: 15s
+  ring:
+    kvstore:
+      store: memberlist
+    heartbeat_period: 5s
+    heartbeat_timeout: 1m
+
+ruler_storage:
+  backend: filesystem
+  storage_prefix: ruler
+  filesystem:
+    dir: /data/shared
+
+store_gateway:
+  sharding_ring:
+    kvstore:
+      store: memberlist
+    replication_factor: 3
+
+limits:
+  compactor_blocks_retention_period: 30d
+  max_label_names_per_series: 40
+  ingestion_rate: 10000
+  ingestion_burst_size: 200000
+
+activity_tracker:
+  filepath: /tmp/mimir-activity.log

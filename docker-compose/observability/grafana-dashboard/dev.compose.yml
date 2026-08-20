@@ -1,0 +1,38 @@
+name: grafana-dev
+
+services:
+  grafana-dev:
+    image: grafana/grafana-enterprise:main
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: "500MiB"
+          cpus: "0.5"
+    networks:
+      - docker-net
+    volumes:
+      - grafana-vol:/var/lib/grafana
+    environment:
+      GF_LOG_LEVEL: debug
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_EMAIL: admin@local.host
+      GF_SECURITY_ADMIN_PASSWORD: Password123!
+      GF_USERS_DEFAULT_THEME: light
+    labels:
+      traefik.enable: true
+      traefik.http.services.grafana-dev-svc.loadbalancer.server.port: 3000
+      traefik.http.routers.grafana-dev-rtr.entrypoints: web,websecure
+      traefik.http.routers.grafana-dev-rtr.rule: Host(`grafana-dev.localhost`)
+      traefik.http.routers.grafana-dev-rtr.tls: true
+      traefik.http.routers.grafana-dev-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.grafana-dev-rtr.service: grafana-dev-svc
+
+networks:
+  docker-net:
+    external: true
+
+volumes:
+  grafana-vol:
+    name: grafana-vol
+    driver: local

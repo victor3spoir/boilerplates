@@ -1,13 +1,29 @@
+<<<<<<< HEAD
+<div align="center" style="">
+
+<h1 align="center">🚀 Production-Ready Docker, Kubernetes Boilerplates</h1>
+=======
 <div align="center">
   <img src="./assets/boilerplates-banner.svg" alt="Boilerplates banner" width="100%" />
 </div>
 
 <h1 align="center">Production-Ready Infrastructure Boilerplates</h1>
+>>>>>>> 91ec0708497a50bd48dba552fe4970c11186f332
 
 <p align="center">
   Reusable templates for Docker, Kubernetes, Ansible, Terraform/OpenTofu, and related infra tooling.
 </p>
+</div>
 
+<<<<<<< HEAD
+Hi there, I'm victor3spoir, I'm DevSecOps Practionner & Tech enthousiast, I like writting technicals writes & sharing knowledges.
+  
+Here, you will find a collections of production ready templates & config files for technologies & tools I have personnaly tested & use in my daily work. I hope you will find here something that can help you.
+  
+## 🚀 Getting Started
+
+### Docker
+=======
 <p align="center">
   <a href="https://github.com/victor3spoir/boilerplates/stargazers"><img alt="GitHub stars" src="https://shieldcn.dev/github/stars/victor3spoir/boilerplates.svg?variant=secondary" /></a>
   <a href="https://github.com/victor3spoir/boilerplates/commits"><img alt="Last commit" src="https://shieldcn.dev/github/last-commit/victor3spoir/boilerplates.svg?variant=secondary" /></a>
@@ -24,9 +40,19 @@
 </p>
 
 I'm Victor, a DevSecOps practitioner and technical writer. This repository collects infrastructure boilerplates I use, test, and reuse in real work.
+>>>>>>> 91ec0708497a50bd48dba552fe4970c11186f332
 
 The goal is simple: keep production-ready starting points for common infrastructure tasks in one place, so the hard parts are already wired and the remaining work is project-specific.
 
+<<<<<<< HEAD
+```bash
+# Create a copy of the service.env config file
+cp service.env .env
+
+# Launch the application
+docker-compose -f compose.yml up -d
+```
+=======
 ## What's inside
 
 - `docker-compose/`: categorized Compose stacks for databases, brokers, identity (`iam`), observability, monitoring, analytics, firewalls, storage, vault, CMS, media, automation, AI (`ia`), SMTP, registries, dashboards, and service examples.
@@ -43,15 +69,24 @@ The goal is simple: keep production-ready starting points for common infrastruct
 This is not a single application repository. It is a library of self-contained starting points you can copy, adapt, and combine.
 
 Most folders include:
+>>>>>>> 91ec0708497a50bd48dba552fe4970c11186f332
 
 - configuration files close to the service they configure
 - environment files or config samples where needed
 - deployment examples for local, staging, or infrastructure use
 - defaults that are intentionally easy to override
 
+<<<<<<< HEAD
+For Kubernetes deployments
+
+```bash
+kubectl apply -f /path/to/config.yml
+```
+=======
 ## Contributing
 
 Contributions are welcome when they improve clarity, correctness, or usability.
+>>>>>>> 91ec0708497a50bd48dba552fe4970c11186f332
 
 Before opening a pull request:
 

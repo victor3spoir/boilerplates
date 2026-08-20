@@ -2,7 +2,7 @@
 name: authentik
 
 x-authentik: &authentik
-  image: authentik/server:2026.5.3
+  image: authentik/server:2026.8.0
   depends_on:
     authentik-db:
       condition: service_healthy
@@ -18,16 +18,16 @@ x-authentik: &authentik
     authentik-net:
   environment:
     AUTHENTIK_URL: https://authentik.localhost
-    AUTHENTIK_SECRET_KEY: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+    AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
     AUTHENTIK_REDIS__HOST: authentik-redis
     AUTHENTIK_POSTGRESQL__HOST: authentik-db
     AUTHENTIK_POSTGRESQL__USER: authentik
     AUTHENTIK_POSTGRESQL__NAME: authentik
-    AUTHENTIK_POSTGRESQL__PASSWORD: xxxxxxxxxxxxxx
+    AUTHENTIK_POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD}
     AUTHENTIK_EMAIL__HOST: mailpit
     AUTHENTIK_EMAIL__PORT: 1025
-    AUTHENTIK_EMAIL__USERNAME: username
-    AUTHENTIK_EMAIL__PASSWORD: password
+    AUTHENTIK_EMAIL__USERNAME: ${AUTHENTIK_EMAIL__USERNAME}
+    AUTHENTIK_EMAIL__PASSWORD: ${AUTHENTIK_EMAIL__PASSWORD}
     AUTHENTIK_EMAIL__USE_SSL: false
     AUTHENTIK_EMAIL__TIMEOUT: 10
     AUTHENTIK_EMAIL__USE_TLS: true
@@ -54,18 +54,17 @@ services:
           memory: "400MiB"
           cpus: "0.4"
     healthcheck:
-      test: [ 'CMD-SHELL', 'pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}' ]
+      test: [ 'CMD-SHELL', 'pg_isready -U $$POSTGRES_USER' ]
       start_period: 20s
       interval: 30s
       retries: 5
       timeout: 5s
     volumes:
       - authentik-db-vol:/var/lib/postgresql
-      # - ./backups:/backups
     environment:
       POSTGRES_USER: authentik
       POSTGRES_DB: authentik
-      POSTGRES_PASSWORD: xxxxxxxxxxxxxx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
   authentik-redis:
     image: redis:8-alpine
@@ -87,7 +86,7 @@ services:
     networks:
       authentik-net:
     healthcheck:
-      test: [ 'CMD-SHELL', 'redis-cli ping | grep PONG' ]
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       start_period: 20s
       interval: 30s
       retries: 5
@@ -97,9 +96,13 @@ services:
 
   authentik-worker:
     <<: *authentik
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
     command: worker
     deploy:
-      replicas: 2
       resources:
         reservations:
           memory: "500MiB"
@@ -114,20 +117,18 @@ services:
       # - ./certs:/certs
       # - ./custom-templates:/templates
 
-    depends_on:
-      authentik-db:
-        condition: service_healthy
-      authentik-redis:
-        condition: service_healthy
-
   authentik-server:
+    <<: *authentik
     depends_on:
       authentik-worker:
         condition: service_started
-    <<: *authentik
     command: server
+    expose:
+      - 9000
+    networks:
+      authentik-net:
+      docker-net:
     deploy:
-      replicas: 1
       resources:
         reservations:
           memory: "300MiB"
@@ -135,25 +136,21 @@ services:
         limits:
           memory: "600MiB"
           cpus: "0.6"
-    networks:
-      authentik-net:
-      docker-net:
-
-        # volumes:
-        #   - ./media:/media
-        #   - ./custom-templates:/templates
     labels:
-      traefik.enable: "true"
+      traefik.enable: true
+      traefik.docker.network: docker-net
+
       traefik.http.services.authentik-svc.loadbalancer.server.port: 9000
-      traefik.http.routers.authentik-rtr.entrypoints: web,websecure
+      traefik.http.services.authentik-svc.loadbalancer.healthcheck.path: /-/health/ready/
+      traefik.http.services.authentik-svc.loadbalancer.healthcheck.interval: 15s
+      traefik.http.services.authentik-svc.loadbalancer.healthcheck.timeout: 5s
+
+      traefik.http.routers.authentik-rtr.entrypoints: websecure
       traefik.http.routers.authentik-rtr.rule: Host(`authentik.localhost`)
       traefik.http.routers.authentik-rtr.tls: true
       traefik.http.routers.authentik-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.authentik-rtr.service: authentik-svc
-      # traefik.http.routers.authentik-rtr.middlewares: 
-
-
-
+      # traefik.http.routers.authentik-rtr.middlewares:
 
 volumes:
   authentik-db-vol:

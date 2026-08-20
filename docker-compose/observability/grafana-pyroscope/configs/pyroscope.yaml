@@ -1,0 +1,54 @@
+target: all
+architecture_storage: v2
+multitenancy_enabled: false
+
+server:
+  http_listen_address: 0.0.0.0
+  http_listen_port: 4040
+  grpc_listen_address: 127.0.0.1
+  grpc_listen_port: 9095
+  log_format: json
+  log_level: warn
+  graceful_shutdown_timeout: 90s
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 2m
+  http_server_idle_timeout: 2m
+
+storage:
+  backend: filesystem
+  filesystem:
+    dir: /data/pyroscope/objects
+
+metastore:
+  data_dir: /data/pyroscope/metastore/data
+  snapshot_compact_on_restore: true
+  raft:
+    dir: /data/pyroscope/metastore/raft
+    bootstrap_expect_peers: 1
+  index:
+    cleanup_interval: 15m
+    cleanup_grace_period: 6h
+
+compaction_worker:
+  temp_dir: /data/pyroscope/compaction
+  job_capacity: 1
+
+limits:
+  ingestion_rate_mb: 25
+  ingestion_burst_size_mb: 50
+  max_profile_size_bytes: 16777216
+  max_label_name_length: 1024
+  max_label_value_length: 2048
+  max_query_length: 7d
+  max_query_lookback: 31d
+  reject_older_than: 1h
+  reject_newer_than: 10m
+
+self_profiling:
+  disable_push: true
+
+analytics:
+  reporting_enabled: false
+
+tracing:
+  enabled: false

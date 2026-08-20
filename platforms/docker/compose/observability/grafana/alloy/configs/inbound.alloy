@@ -1,0 +1,45 @@
+otelcol.auth.basic "creds" {
+    username = sys.env("<USERNAME>")
+    password = sys.env("<PASSWORD>")
+}
+
+pyroscope.receive_http "pyroscope" {
+  http {
+       listen_address = "0.0.0.0"
+       listen_port = 9999
+   }
+   forward_to = [pyroscope.write.backend.receiver]
+}
+
+otelcol.receiver.otlp "otlp" {
+    grpc {
+      endpoint = "0.0.0.0:4317"
+      // auth = otelcol.auth.basic.creds.handler
+    }
+    http {
+      endpoint = "0.0.0.0:4318"
+      // auth = otelcol.auth.basic.creds.handler
+    }
+    output {
+      metrics = [otelcol.processor.batch.oltp.input]
+      logs    = [otelcol.processor.batch.oltp.input]
+      traces  = [otelcol.processor.batch.oltp.input]
+  }
+}
+
+prometheus.receive_http "prometheus" {
+  // accept: /api/v1/metrics/write
+  http {
+    listen_address = "0.0.0.0"
+    listen_port = 9090
+  }
+  forward_to = [prometheus.remote_write.mimir.receiver]
+}
+
+loki.source.api "loki" {
+    http {
+        listen_address = "0.0.0.0"
+        listen_port = "3100"
+    }
+    forward_to = [loki.write.loki_srv.receiver]
+}
