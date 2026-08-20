@@ -1,0 +1,25 @@
+mqtt.max_clientid_len = 128
+
+node {
+  name = "emqx"
+  role = core
+}
+
+authentication = [
+  {
+    mechanism = password_based
+    backend = built_in_database
+  }
+]
+
+authorization {
+  no_match = deny
+
+  sources = [
+    {
+      type = built_in_database
+    }
+  ]
+}
+
+allow_anonymous = false

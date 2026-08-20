@@ -1,0 +1,344 @@
+name: frappe
+
+services:
+  redis-cache:
+    image: redis:8-alpine
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      frappe-net:
+
+  redis-queue:
+    image: redis:8-alpine
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      frappe-net:
+
+
+  frappe-db:
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-character-set-client-handshake
+      - --skip-innodb-read-only-compressed
+    environment:
+      MARIADB_AUTO_UPGRADE: "1"
+      MYSQL_ROOT_PASSWORD: "Password123!"
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
+        limits:
+          memory: "1000MiB"
+          cpus: "0.8"
+    healthcheck:
+      test:
+        - CMD
+        - healthcheck.sh
+        - --connect
+        - --innodb_initialized
+      timeout: 5s
+      interval: 5s
+      retries: 5
+      start_period: 5s
+    image: mariadb:11.8
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      frappe-net:
+    restart: unless-stopped
+    volumes:
+      - frappe-db-vol:/var/lib/mysql
+
+  frappe-configurator:
+    image: frappe/erpnext:v16
+    command:
+      - |
+        ls -1 apps > sites/apps.txt; 
+        bench set-config -g db_host $$DB_HOST; 
+        bench set-config -gp db_port $$DB_PORT; 
+        bench set-config -g redis_cache "redis://$$REDIS_CACHE"; 
+        bench set-config -g redis_queue "redis://$$REDIS_QUEUE"; 
+        bench set-config -g redis_socketio "redis://$$REDIS_QUEUE"; 
+        bench set-config -gp socketio_port $$SOCKETIO_PORT;
+        bench set-config -g server_script_enabled 1;
+    depends_on:
+      frappe-db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      redis-queue:
+        condition: service_started
+    entrypoint:
+      - sh
+      - -c
+    environment:
+      DB_HOST: frappe-db
+      DB_PORT: "3306"
+      REDIS_CACHE: redis-cache:6379
+      REDIS_QUEUE: redis-queue:6379
+      SOCKETIO_PORT: "9000"
+    networks:
+      frappe-net:
+    restart: on-failure
+    volumes:
+      - frappe-sites-vol:/home/frappe/frappe-bench/sites
+      - frappe-assets-vol:/home/frappe/frappe-bench/assets
+
+  frappe-sites-initializer:
+    extends:
+      service: frappe-configurator
+    restart: "no"
+    depends_on:
+      frappe-configurator:
+        condition: service_completed_successfully
+    command: /home/frappe/frappe-bench/initialize.sh
+    environment:
+      INSTALL_APPS: ${INSTALL_APPS:-false}
+      BENCH_BUILD: ${BENCH_BUILD:-false}
+      DB_HOST: frappe-db
+      DB_PORT: "3306"
+      MYSQL_ROOT_PASSWORD: "Password123!"
+      FRAPPE_ADMIN_PASSWORD: "Password123!"
+      SITE_NAME: frontend
+    volumes:
+      - frappe-sites-vol:/home/frappe/frappe-bench/sites
+      - frappe-assets-vol:/home/frappe/frappe-bench/assets
+      - ./initialize.sh:/home/frappe/frappe-bench/initialize.sh:ro
+
+  scheduler:
+    image: frappe/erpnext:v16
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    command:
+      - bench
+      - schedule
+    depends_on:
+      frappe-configurator:
+        condition: service_completed_successfully
+    networks:
+      frappe-net:
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
+        limits:
+          memory: "1000MiB"
+          cpus: "0.8"
+    volumes:
+      - frappe-sites-vol:/home/frappe/frappe-bench/sites
+      - frappe-assets-vol:/home/frappe/frappe-bench/assets
+
+  frappe-websocket:
+    depends_on:
+      frappe-configurator:
+        condition: service_completed_successfully
+    image: frappe/erpnext:v16
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
+        limits:
+          memory: "1000MiB"
+          cpus: "0.8"
+    command:
+      - node
+      - /home/frappe/frappe-bench/apps/frappe/socketio.js
+    networks:
+      frappe-net:
+    volumes:
+      - frappe-sites-vol:/home/frappe/frappe-bench/sites
+      - frappe-assets-vol:/home/frappe/frappe-bench/assets
+
+  frappe-backend:
+    depends_on:
+      frappe-sites-initializer:
+        condition: service_completed_successfully
+    image: frappe/erpnext:v16
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
+        limits:
+          memory: "1000MiB"
+          cpus: "0.8"
+    networks:
+      frappe-net:
+    volumes:
+      - frappe-sites-vol:/home/frappe/frappe-bench/sites
+      - frappe-assets-vol:/home/frappe/frappe-bench/assets
+
+  queue-long:
+    command:
+      - bench
+      - worker
+      - --queue
+      - long,default,short
+    depends_on:
+      frappe-configurator:
+        condition: service_completed_successfully
+    image: frappe/erpnext:v16
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      frappe-net:
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
+        limits:
+          memory: "1000MiB"
+          cpus: "0.8"
+    volumes:
+      - frappe-sites-vol:/home/frappe/frappe-bench/sites
+      - frappe-assets-vol:/home/frappe/frappe-bench/assets
+  queue-short:
+    command:
+      - bench
+      - worker
+      - --queue
+      - short,default
+    depends_on:
+      frappe-configurator:
+        condition: service_completed_successfully
+    image: frappe/erpnext:v16
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      frappe-net:
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
+        limits:
+          memory: "1000MiB"
+          cpus: "0.8"
+    volumes:
+      - frappe-sites-vol:/home/frappe/frappe-bench/sites
+      - frappe-assets-vol:/home/frappe/frappe-bench/assets
+
+  frappe-frontend:
+    depends_on:
+      frappe-backend:
+        condition: service_started
+      frappe-websocket:
+        condition: service_started
+    image: frappe/erpnext:v16
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command:
+      - nginx-entrypoint.sh
+    deploy:
+      replicas: 2
+      resources:
+        reservations:
+          memory: "500MiB"
+          cpus: "0.4"
+        limits:
+          memory: "1000MiB"
+          cpus: "0.8"
+    environment:
+      BACKEND: frappe-backend:8000
+      CLIENT_MAX_BODY_SIZE: 50m
+      FRAPPE_SITE_NAME_HEADER: frontend
+      PROXY_READ_TIMEOUT: "120"
+      SOCKETIO: frappe-websocket:9000
+      UPSTREAM_REAL_IP_ADDRESS: 127.0.0.1
+      UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
+      UPSTREAM_REAL_IP_RECURSIVE: "off"
+    networks:
+      frappe-net:
+      docker-net:
+    restart: unless-stopped
+    volumes:
+      - frappe-sites-vol:/home/frappe/frappe-bench/sites
+      - frappe-assets-vol:/home/frappe/frappe-bench/assets
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.frappe-svc.loadbalancer.server.port: 8080
+      traefik.http.routers.frappe-rtr.entrypoints: web,websecure
+      traefik.http.routers.frappe-rtr.rule: Host(`frappe.localhost`)
+      traefik.http.routers.frappe-rtr.tls: true
+      traefik.http.routers.frappe-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.frappe-rtr.service: frappe-svc
+
+networks:
+  frappe-net:
+    driver: bridge
+  docker-net:
+    external: true
+
+volumes:
+  frappe-db-vol:
+    name: frappe-db-vol
+  frappe-redis-vol:
+    name: frappe-redis-vol
+  frappe-sites-vol:
+    name: frappe-sites-vol
+  frappe-assets-vol:
+    name: frappe-assets-vol
+    driver: local

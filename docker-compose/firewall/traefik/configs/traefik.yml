@@ -1,0 +1,179 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+serversTransport:
+  insecureSkipVerify: false
+
+api:
+  insecure: true
+  dashboard: true
+  debug: true
+
+ping:
+  entryPoint: web
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          scheme: https
+          to: websecure
+          permanent: true
+  websecure:
+    address: ":443"
+    allowACMEByPass: true
+    # proxyProtocol:
+    #   trustedIPs:
+    #     - "0.0.0.0/0"
+    http:
+      encodedCharacters:
+        allowEncodedQuestionMark: false
+        allowEncodedSlash: false
+      # middlewares:
+      #   - crowdsec@file
+    transport:
+      respondingTimeouts:
+        readTimeout: "0s"
+        writeTimeout: "0s"
+        idleTimeout: "0s"
+    #   tls:
+    #     certResolver: letsencrypt
+    # transport:
+    #   respondingTimeouts:
+    #     readTimeout: 30m
+  pgsql:
+    address: ":5432"
+
+providers:
+  docker:
+    endpoint: "tcp://traefik-socket-proxy:2375"
+    exposedByDefault: false
+    watch: true
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+  # http:
+  #   endpoint: http://pangolin:3001/api/v1/traefik-config
+  #   pollInterval: 5s
+
+
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: admin@gmail.com
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      # caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      storage: "/var/traefik/certs/letsencrypt.json"
+      httpChallenge:
+        entryPoint: web
+
+# cloudflare:
+#   acme:
+#     email: "${ACME_EMAIL}"
+#     caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+#     storage: "/var/traefik/certs/cloudflare.json"
+#     keyType: EC256
+#     dnsChallenge:
+#       provider: cloudflare
+#       resolvers:
+#         - "1.1.1.1:53"
+#         - "8.8.8.8:53"
+
+# spaceship:
+#   acme:
+#     email: "admin@gmail.com"
+#     caServer: "https://acme-v02.api.letsencrypt.org/directory"
+#     storage: "/var/traefik/certs/spaceship.json"
+#     keyType: EC256
+#     dnsChallenge:
+#       provider: spaceship
+# resolvers:
+# - "1.1.1.1:53"
+# - "8.8.8.8:53"
+
+metrics:
+  otlp:
+    addRoutersLabels: true
+    pushInterval: 5s
+    serviceName: traefik
+    explicitBoundaries: [ 0.1, 0.3, 1.2, 5.0 ]
+    grpc:
+      # endpoint: alloy-edge:4317/v1/metrics
+      endpoint: alloy-edge:4317
+      # headers:
+      #   x-api-key: sdf78s1sdsAs7
+
+      # prometheus:
+      #   addRoutersLabels: true
+      #   buckets: [0.1, 0.3, 1.2, 5.0]
+      #   entryPoint: metrics
+
+tracing:
+  serviceName: traefik
+  sampleRate: 0.2
+  addInternals: true
+  otlp:
+    # http:
+    #   endpoint: http://alloy-edge:4318/v1/traces
+    #   tls:
+    #     insecureSkipVerify: false
+    grpc:
+      endpoint: alloy-edge:4317
+      insecure: true
+      # tls:
+      #   insecureSkipVerify: false
+
+      # headers:
+      #   x-api-key: api-key-value
+
+log:
+  level: INFO # TRACE, INFO, DEBUG, WARN, ERROR, FATAL, PANIC
+  format: json
+  compress: true
+  filePath: "/var/log/traefik/traefik.log"
+  maxAge: 3
+  maxBackups: 3
+  maxSize: 100
+# otlp:
+#   http:
+#     endpoint: http://alloy:4318/v1/logs
+#     headers:
+#       x-api-key: api-key-value
+
+accessLog:
+  format: json
+  addInternals: true
+  filePath: "/var/log/traefik/access.log"
+  bufferingSize: 100
+  filters:
+    minDuration: 100ms
+    retryAttempts: true
+    statusCodes:
+      - "200-299"
+      - "400-599"
+  fields:
+    defaultMode: keep
+    names:
+      ClientUsername: drop
+    headers:
+      defaultMode: keep #drop|keep
+      names:
+        User-Agent: keep
+        X-Real-Ip: keep
+        X-Forwarded-For: keep
+        X-Forwarded-Proto: keep
+
+experimental:
+  fastProxy:
+    debug: true
+  plugins:
+    geoblock:
+      moduleName: github.com/PascalMinder/geoblock
+      version: v0.3.3
+    crowdsec:
+      moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      version: v1.4.6

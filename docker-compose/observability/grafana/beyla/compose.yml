@@ -1,0 +1,60 @@
+name: beyla
+
+services:
+  goblog:
+    image: mariomac/goblog:dev
+    deploy:
+      resources:
+        reservations:
+          memory: "128MiB"
+          cpus: "0.25"
+        limits:
+          memory: "256MiB"
+          cpus: "0.5"
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - '18443:8443'
+
+  autoinstrumenter:
+    image: grafana/beyla:latest
+    deploy:
+      resources:
+        reservations:
+          memory: "256MiB"
+          cpus: "0.5"
+        limits:
+          memory: "512MiB"
+          cpus: "1.0"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    pid: 'service:goblog' # 'service:target-service'
+    restart: unless-stopped
+    privileged: true
+    networks:
+      docker-net:
+    configs:
+      - source: beyla_config
+        target: /etc/beyla/config.yml
+    environment:
+      BEYLA_CONFIG_PATH: /etc/beyla/config.yml
+      BEYLA_TRACE_PRINTER: json_indent
+      BEYLA_SHUTDOWN_TIMEOUT: "10s"
+      BEYLA_ENFORCE_SYS_CAPS: false
+      BEYLA_LOG_LEVEL: debug
+      BEYLA_OPEN_PORT: 8443
+
+configs:
+  beyla_config:
+    file: ./configs/beyla.yml
+
+networks:
+  docker-net:
+    external: true

@@ -1,0 +1,58 @@
+version: v3
+
+teleport:
+  nodename: teleport
+  data_dir: /var/lib/teleport
+  log:
+    output: stderr
+    severity: DEBUG
+    format:
+      output: json
+      extra_fields:
+        - timestamp
+        - level
+        - component
+        - caller
+  storage:
+    type: sqlite
+    sync: NORMAL
+    journal: WAL
+
+proxy_service:
+  enabled: yes
+  web_listen_addr: 0.0.0.0:3080 #443 for direct proxy wiring
+  tunnel_listen_addr: 0.0.0.0:3024
+  listen_addr: 0.0.0.0:3023
+  acme: {}
+
+  public_addr:
+    - teleport.localhost:443
+  ssh_public_addr: teleport.localhost:3023
+  tunnel_public_addr: teleport.localhost:3024
+
+auth_service:
+  enabled: true
+  proxy_listener_mode: multiplex
+  cluster_name: "teleport.localhost"
+  session_recording: proxy #proxy|node
+  authentication:
+    type: local
+    require_session_mfa: false
+    second_factors: ["webauthn", "otp"]
+    webauthn:
+      rp_id: "teleport.localhost"
+
+  listen_addr: 0.0.0.0:3025
+
+ssh_service:
+  enabled: no
+
+app_service:
+  enabled: yes
+  # apps:
+  #   - name: "webapp"
+  #     uri: "http://webapp.tls:9999"
+  #     insecure_skip_verify: true
+
+debug_service:
+  enabled: false

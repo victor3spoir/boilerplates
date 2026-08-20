@@ -1,0 +1,34 @@
+id: test
+namespace: demo
+
+description: simple demo task.
+
+tasks:
+  - id: first_group
+    type: io.kestra.plugin.core.flow.Parallel
+    tasks:
+      - id: first_tasks
+        type: io.kestra.plugin.core.flow.Sequential
+        tasks:
+          - id: first
+            type: io.kestra.plugin.scripts.shell.Commands
+            commands:
+              - echo hello
+              - uname -a > linux_name.txt
+            outputFiles:
+              - linux_name.txt
+          - id: second
+            type: io.kestra.plugin.scripts.shell.Commands
+            inputFiles:
+              name.txt: "{{outputs.first.outputFiles['linux_name.txt']}}"
+            commands:
+              - echo second
+              - cat name.txt
+      - id: hello
+        type: io.kestra.plugin.scripts.shell.Commands
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+        commands:
+          - echo hello
+          - echo $(uname -a)
+          - ls -lh /usr

@@ -1,0 +1,32 @@
+http:
+  services:
+    web-svc:
+      loadBalancer:
+        servers:
+          - url: "http://129.168.0.23:3000"
+          - url: "http://129.168.0.24:3000"
+
+  routers:
+    web-rtr:
+      rule: "Host(`web.domain.tld`)"
+      entryPoints:
+        - https
+      tls:
+        certResolver: letsencrypt
+      services:
+        web-svc
+
+
+  middlewares:
+    chain-web-security-mdl:
+      chain:
+        middlewares:
+          - header-web-security-mdl
+          - ratelimit-webapp-mdl
+          - ompress-security-mdl
+    ratelimit-webapp-mdl:
+      rateLimit:
+        average: 50
+        burst: 200
+        period: 1s
+

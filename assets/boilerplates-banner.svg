@@ -1,0 +1,39 @@
+<svg width="1600" height="520" viewBox="0 0 1600 520" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Boilerplates banner">
+  <rect width="1600" height="520" fill="#050505"/>
+  <g opacity="0.22" stroke="#FFFFFF" stroke-width="1">
+    <path d="M120 92H1480"/>
+    <path d="M120 148H1480"/>
+    <path d="M120 204H1480"/>
+    <path d="M120 260H1480"/>
+    <path d="M120 316H1480"/>
+    <path d="M120 372H1480"/>
+    <path d="M120 428H1480"/>
+    <path d="M160 56V464"/>
+    <path d="M320 56V464"/>
+    <path d="M480 56V464"/>
+    <path d="M640 56V464"/>
+    <path d="M800 56V464"/>
+    <path d="M960 56V464"/>
+    <path d="M1120 56V464"/>
+    <path d="M1280 56V464"/>
+    <path d="M1440 56V464"/>
+  </g>
+  <g transform="translate(118 114)" stroke="#FFFFFF" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="18" y="92" width="176" height="176" rx="38" stroke-width="7"/>
+    <rect x="60" y="46" width="176" height="176" rx="38" stroke-width="7" opacity="0.72"/>
+    <rect x="104" y="8" width="176" height="176" rx="38" stroke-width="7" opacity="0.46"/>
+    <path d="M198 74V118" stroke-width="8"/>
+    <path d="M176 96H220" stroke-width="8"/>
+    <circle cx="272" cy="70" r="16" stroke-width="7"/>
+    <path d="M272 98V148" stroke-width="7"/>
+    <path d="M248 122H296" stroke-width="7"/>
+  </g>
+  <text x="520" y="214" fill="#FFFFFF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="92" font-weight="800" letter-spacing="4">BOILERPLATES</text>
+  <path d="M520 308H1092" stroke="#FFFFFF" stroke-width="3" opacity="0.5"/>
+  <text x="520" y="354" fill="#FFFFFF" opacity="0.9" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="30" font-weight="500">Collection of battle-tested configs ready for production</text>
+  <g opacity="0.2" stroke="#FFFFFF" stroke-width="2">
+    <path d="M1240 110C1300 110 1350 160 1350 220"/>
+    <path d="M1240 370C1300 370 1350 320 1350 260"/>
+    <path d="M1380 130C1430 180 1430 260 1380 310"/>
+  </g>
+</svg>

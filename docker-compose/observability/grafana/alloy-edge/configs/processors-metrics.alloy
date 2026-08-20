@@ -1,0 +1,11 @@
+// prometheus.relabel "mimir" {
+//   rule {
+//     source_labels = ["__name__"]
+//     // regex = "/(.*)"
+//     target_label = "name"
+//   }
+//   forward_to = [
+//   prometheus.remote_write.mimir.receiver, 
+//   // prometheus.remote_write.prometheus.receiver,
+//   ]
+// }

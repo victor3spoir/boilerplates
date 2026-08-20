@@ -1,0 +1,31 @@
+{
+  admin :2019
+  metrics
+  auto_https off
+}
+
+:80 {
+  
+  @app1 host app1.local.domain.tld
+  handle @app1 {
+    reverse_proxy app1:80
+  }
+
+  @app2 host app2.local.domain.tld
+  handle @app2 {
+    reverse_proxy app2:8080
+  }
+
+    @arcane host arcane.local.domain.tld
+  handle @arcane {
+    reverse_proxy arcane:3552 {
+      header_up Host {upstream_hostport}
+      header_up X-Forwarded-Proto {scheme}
+      header_up X-Forwarded-For {remote}
+    }
+  }
+
+  handle {
+          respond "unknown host" 404
+      }
+}

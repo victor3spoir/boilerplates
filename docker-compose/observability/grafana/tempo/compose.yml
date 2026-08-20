@@ -1,0 +1,53 @@
+name: tempo
+
+services:
+  tempo:
+    image: grafana/tempo:main-e79e340-1974-1
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    restart: unless-stopped
+    expose:
+      - 3200
+      - 4317 # gprc
+      - 4318 # http
+    deploy:
+      resources:
+        reservations:
+          memory: "250MiB"
+          cpus: "0.25"
+        limits:
+          memory: "500MiB"
+          cpus: "0.5"
+    command:
+      - -config.file=/etc/tempo.yaml
+    networks:
+      docker-net:
+      grafana-net:
+    configs:
+      - source: tempo_yaml
+        target: /etc/tempo.yaml
+    labels:
+      traefik.enable: "true"
+      traefik.http.services.tempo-svc.loadbalancer.server.port: 3200
+      traefik.http.routers.tempo-rtr.rule: Host(`tempo.localhost`)
+      traefik.http.routers.tempo-rtr.tls: true
+      traefik.http.routers.tempo-rtr.tls.certresolver: letsencrypt
+      traefik.http.routers.tempo-rtr.service: tempo-svc
+
+configs:
+  tempo_yaml:
+    file: "./configs/tempo.yaml"
+
+networks:
+  docker-net:
+    external: true
+  grafana-net:
+    external: true
+
+volumes:
+  tempo-vol:
+    name: tempo-vol
+    driver: local
