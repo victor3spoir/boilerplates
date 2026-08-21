@@ -19,7 +19,7 @@
     @arcane host arcane.local.domain.tld
   handle @arcane {
     reverse_proxy arcane:3552 {
-      header_up Host {upstream_hostport}
+      # header_up Host {upstream_hostport}
       header_up X-Forwarded-Proto {scheme}
       header_up X-Forwarded-For {remote}
     }

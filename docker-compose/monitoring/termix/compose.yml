@@ -3,66 +3,81 @@ name: termix
 services:
   guacd:
     image: guacamole/guacd:1.6.0
+    restart: unless-stopped
+    init: true
+    security_opt:
+      - no-new-privileges:true
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-    container_name: guacd
-    restart: unless-stopped
     deploy:
       resources:
         reservations:
-          memory: "500MiB"
-          cpus: "0.5"
+          memory: "256MiB"
+          cpus: "0.25"
         limits:
-          memory: "1000MiB"
+          memory: "1GiB"
           cpus: "1"
     expose:
-      - 4822
+      - "4822"
     networks:
       termix-net:
 
   termix:
     image: ghcr.io/lukegus/termix:latest
+    restart: unless-stopped
+    init: true
+    depends_on:
+      guacd:
+        condition: service_started
+    security_opt:
+      - no-new-privileges:true
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
-    restart: unless-stopped
     deploy:
       resources:
         reservations:
-          memory: "500MiB"
+          memory: "512MiB"
           cpus: "0.5"
         limits:
-          memory: "1000MiB"
+          memory: "1GiB"
           cpus: "1"
-    networks:
-      docker-net:
-      termix-net:
-    volumes:
-      - termix-data:/app/data
     environment:
       PORT: "8080"
+      ENABLE_TELEMETRY: "false"
+      TZ: "UTC"
+    volumes:
+      - termix-data:/app/data
+    networks:
+      termix-net:
+      docker-net:
     labels:
       traefik.enable: "true"
-      traefik.http.services.termix-svc.loadbalancer.server.port: 8080
+      traefik.docker.network: docker-net
+
+      traefik.http.services.termix-svc.loadbalancer.server.port: "8080"
+
       traefik.http.routers.termix-rtr.entrypoints: websecure
       traefik.http.routers.termix-rtr.rule: Host(`termix.localhost`)
-      traefik.http.routers.termix-rtr.tls: true
+      traefik.http.routers.termix-rtr.tls: "true"
       traefik.http.routers.termix-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.termix-rtr.service: termix-svc
       # traefik.http.routers.termix-rtr.middlewares: tinyauth-mdl
+      # tinyauth.apps.termix.oauth.groups: it-admins
 
 
 networks:
   termix-net:
-    driver: bridge
+    internal: true
   docker-net:
     external: true
 
 volumes:
   termix-data:
+    name: termix-data
     driver: local
