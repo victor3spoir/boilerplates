@@ -1,0 +1,36 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Boilerplates logo proposal">
+  <defs>
+    <linearGradient id="logo-accent" x1="108" y1="104" x2="404" y2="412" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5DE1FF"/>
+      <stop offset="1" stop-color="#5B6CFF"/>
+    </linearGradient>
+    <linearGradient id="logo-surface" x1="96" y1="72" x2="416" y2="440" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#132A46"/>
+      <stop offset="1" stop-color="#091525"/>
+    </linearGradient>
+    <filter id="logo-shadow" x="34" y="42" width="444" height="444" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020817" flood-opacity="0.36"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#logo-shadow)">
+    <rect x="56" y="56" width="400" height="400" rx="104" fill="url(#logo-surface)"/>
+    <rect x="61" y="61" width="390" height="390" rx="99" stroke="#8BDFFF" stroke-opacity="0.16" stroke-width="10"/>
+  </g>
+
+  <g stroke="url(#logo-accent)" stroke-width="12" stroke-linejoin="round">
+    <rect x="178" y="126" width="218" height="136" rx="38" fill="#0B1B30" fill-opacity="0.54" opacity="0.42"/>
+    <rect x="134" y="188" width="218" height="136" rx="38" fill="#0B1B30" fill-opacity="0.76" opacity="0.72"/>
+    <rect x="90" y="250" width="218" height="136" rx="38" fill="#0D2139"/>
+  </g>
+
+  <g fill="#DDF8FF">
+    <circle cx="132" cy="292" r="9"/>
+    <circle cx="164" cy="292" r="9" opacity="0.58"/>
+    <rect x="194" y="284" width="70" height="16" rx="8" opacity="0.82"/>
+  </g>
+
+  <path d="M352 208H384C399.464 208 412 220.536 412 236V326C412 341.464 399.464 354 384 354H334" stroke="url(#logo-accent)" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="352" cy="208" r="13" fill="#0B1B30" stroke="#69D9FF" stroke-width="10"/>
+  <circle cx="334" cy="354" r="13" fill="#0B1B30" stroke="#6478FF" stroke-width="10"/>
+</svg>
