@@ -1,0 +1,75 @@
+<svg width="1600" height="520" viewBox="0 0 1600 520" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Boilerplates corporate banner proposal">
+  <defs>
+    <linearGradient id="banner-bg" x1="96" y1="36" x2="1500" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1A2E"/>
+      <stop offset="0.58" stop-color="#071321"/>
+      <stop offset="1" stop-color="#050B14"/>
+    </linearGradient>
+    <linearGradient id="banner-accent" x1="124" y1="112" x2="424" y2="414" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5DE1FF"/>
+      <stop offset="1" stop-color="#5B6CFF"/>
+    </linearGradient>
+    <linearGradient id="banner-surface" x1="122" y1="92" x2="432" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#132A46"/>
+      <stop offset="1" stop-color="#091525"/>
+    </linearGradient>
+    <radialGradient id="banner-glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(292 258) rotate(28) scale(410 360)">
+      <stop stop-color="#247DFF" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#247DFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="banner-shadow" x="74" y="66" width="412" height="412" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020817" flood-opacity="0.38"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="520" fill="url(#banner-bg)"/>
+  <rect width="760" height="520" fill="url(#banner-glow)"/>
+
+  <g opacity="0.12" stroke="#91B9D9" stroke-width="1">
+    <path d="M0 88H1600"/>
+    <path d="M0 176H1600"/>
+    <path d="M0 264H1600"/>
+    <path d="M0 352H1600"/>
+    <path d="M0 440H1600"/>
+    <path d="M108 0V520"/>
+    <path d="M284 0V520"/>
+    <path d="M460 0V520"/>
+    <path d="M636 0V520"/>
+    <path d="M812 0V520"/>
+    <path d="M988 0V520"/>
+    <path d="M1164 0V520"/>
+    <path d="M1340 0V520"/>
+    <path d="M1516 0V520"/>
+  </g>
+
+  <g filter="url(#banner-shadow)">
+    <rect x="108" y="88" width="344" height="344" rx="88" fill="url(#banner-surface)"/>
+    <rect x="113" y="93" width="334" height="334" rx="83" stroke="#8BDFFF" stroke-opacity="0.16" stroke-width="10"/>
+  </g>
+
+  <g stroke="url(#banner-accent)" stroke-width="10" stroke-linejoin="round">
+    <rect x="212" y="146" width="178" height="112" rx="31" fill="#0B1B30" fill-opacity="0.54" opacity="0.42"/>
+    <rect x="176" y="197" width="178" height="112" rx="31" fill="#0B1B30" fill-opacity="0.76" opacity="0.72"/>
+    <rect x="140" y="248" width="178" height="112" rx="31" fill="#0D2139"/>
+  </g>
+
+  <g fill="#DDF8FF">
+    <circle cx="174" cy="283" r="7"/>
+    <circle cx="199" cy="283" r="7" opacity="0.58"/>
+    <rect x="224" y="277" width="56" height="12" rx="6" opacity="0.82"/>
+  </g>
+
+  <path d="M354 213H382C394.15 213 404 222.85 404 235V309C404 321.15 394.15 331 382 331H338" stroke="url(#banner-accent)" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="354" cy="213" r="10" fill="#0B1B30" stroke="#69D9FF" stroke-width="8"/>
+  <circle cx="338" cy="331" r="10" fill="#0B1B30" stroke="#6478FF" stroke-width="8"/>
+
+  <text x="540" y="222" fill="#F4FAFF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="88" font-weight="780" letter-spacing="2">BOILERPLATES</text>
+  <rect x="542" y="258" width="86" height="5" rx="2.5" fill="url(#banner-accent)"/>
+  <text x="540" y="316" fill="#AFC4D8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="29" font-weight="500" letter-spacing="0.4">Battle-tested infrastructure templates, ready to deploy.</text>
+
+
+  <path d="M1360 116H1482V238" stroke="#6AD9FF" stroke-opacity="0.18" stroke-width="2"/>
+  <path d="M1482 282V404H1360" stroke="#6678FF" stroke-opacity="0.18" stroke-width="2"/>
+  <circle cx="1360" cy="116" r="5" fill="#5DE1FF" fill-opacity="0.42"/>
+  <circle cx="1360" cy="404" r="5" fill="#6678FF" fill-opacity="0.42"/>
+</svg>
