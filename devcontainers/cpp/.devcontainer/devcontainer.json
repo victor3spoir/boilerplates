@@ -1,0 +1,28 @@
+{
+  "name": "cpp-devcontainer",
+  "dockerComposeFile": "./compose.yml",
+  "service": "cpp-devcontainer",
+  "workspaceFolder": "/workspaces",
+ "capAdd": [
+  "SYS_PTRACE"
+ ],
+ "securityOpt": [
+  "seccomp=unconfined"
+ ],
+ "shutdownAction": "stopCompose",
+ "postCreateCommand": "gcc --version && gdb --version",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpp-devtools"
+      ],
+      "settings": {
+        "C_Cpp.default.compilerPath": "/usr/bin/gcc",
+        "C_Cpp.default.cStandard": "c17",
+        "C_Cpp.default.intelliSenseMode": "linux-gcc-x64"
+      }
+    }
+  }
+}

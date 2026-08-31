@@ -1,0 +1,10 @@
+name: rust-devcontainer
+services:
+  rust-devcontainer:
+    image: mcr.microsoft.com/devcontainers/rust:dev-trixie
+
+    command: sleep infinity
+    working_dir: /workspaces
+    init: true
+    volumes:
+      - ../workspaces:/workspaces:cached

@@ -1,0 +1,10 @@
+name: cpp-devcontainer
+
+services:
+  cpp-devcontainer:
+    image: mcr.microsoft.com/devcontainers/cpp:ubuntu
+    command: sleep infinity
+    working_dir: /workspaces
+    init: true
+    volumes:
+      - ../workspaces:/workspaces:cached
