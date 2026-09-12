@@ -11,3 +11,6 @@ Dockerfile.*
 *.Dockerfile
 .git
 .dockerignore
+**/.env
+**/.env.*
+!**/.env.example
