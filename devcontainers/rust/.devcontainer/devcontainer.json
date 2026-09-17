@@ -1,0 +1,18 @@
+{
+  "name": "rust-devcontainer",
+  "dockerComposeFile": "./compose.yml",
+  "service": "rust-devcontainer",
+  "workspaceFolder": "/workspaces",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer"
+      ],
+      "settings": {
+        "rust-analyzer.check.command": "clippy"
+      }
+    }
+  },
+  "postCreateCommand": "rustc --version && cargo --version && rustup --version",
+  "shutdownAction": "stopCompose"
+}
