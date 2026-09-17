@@ -24,7 +24,11 @@ services:
       docker-net:
     environment:
       CONTAINERS: 1
-      POSTS: 1
+      NETWORKS: 1
+      EVENTS: "1"
+      SERVICES: "1"
+      TASKS: "1"
+      VERSION: "1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -56,23 +60,23 @@ services:
 
       - --entryPoints.web.address=:80
       - --entryPoints.websecure.address=:443
-
-      - --providers.docker.endpoint=unix://var/run/docker.sock
+      - --providers.docker=true
+      - --providers.docker.endpoint=tcp://traefik-socket-proxy:2375
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=docker-net
-      - --providers.directory.filename=/etc/traefik/dynamic
-      - --providers.directory.watch=true
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
 
       - --certificatesResolvers.letsencrypt.acme.email=admin@local.host
       - --certificatesResolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
       - --certificatesResolvers.letsencrypt.acme.storage=/var/traefik/certs/letsencrypt-acme.json
       - --certificatesResolvers.letsencrypt.acme.httpChallenge.entrypoint=web
 
-      - --log.level=INFO # TRACE - INFO - DEBUG - WARN - ERROR - FATAL - PANIC
+      - --log.level=DEBUG # TRACE - INFO - DEBUG - WARN - ERROR - FATAL - PANIC
       - --log.format=json
       - --log.nocolor=false
       - --log.compress=true
-      - --log.filepath=/var/log/traefik/traefik.log
+      # - --log.filepath=/var/log/traefik/traefik.log
 
       - --accessLog=true
       - --accesslog.format=json
@@ -86,16 +90,22 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - 8080:8080
     environment:
-      DOCKER_HOST: tcp://traefik-socket-proxy:2375
-    configs:
-      - source: traefik_dynamic_yml
-        target: /etc/traefik/dynamic.yml
+      TZ: UTC
+      # DOCKER_HOST: tcp://traefik-socket-proxy:2375
     volumes:
       - ./data/certs:/var/traefik/certs:rw
       - ./data/logs:/var/log/traefik/:rw
+      - ./config/dynamic:/etc/traefik/dynamic
+    # healthcheck:
+    #   test: ["CMD", "traefik", "healthcheck"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 10s
     healthcheck:
-      test: ["CMD", "traefik", "healthcheck"]
+      test: [ "CMD", "wget", "--spider", "-q", "http://127.0.0.1:80/ping" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -103,16 +113,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.http.routers.traefik-rtr.service: "api@internal"
-      traefik.http.routers.traefik-rtr.entrypoints: web,websecure
+      traefik.http.routers.traefik-rtr.entrypoints: websecure
       traefik.http.routers.traefik-rtr.rule: "Host(`traefik.localhost`)"
       traefik.http.routers.traefik-rtr.tls: "true"
       traefik.http.routers.traefik-rtr.tls.certresolver: letsencrypt
       traefik.http.routers.traefik-rtr.tls.domains[0].main: "localhost"
       traefik.http.routers.traefik-rtr.tls.domains[0].sans: "*.localhost"
-
-configs:
-  traefik_dynamic_yml:
-    file: "./configs/dynamic.yml"
 
 networks:
   docker-net:

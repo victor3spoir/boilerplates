@@ -71,8 +71,9 @@ services:
       # CF_DNS_API_TOKEN: change-this-for-cloudflare-dns-challenge
       # SPACESHIP_API_KEY:
       # SPACESHIP_API_SECRET:
+
     healthcheck:
-      test: ["CMD", "traefik", "healthcheck"]
+      test: [ "CMD", "wget", "--spider", "-q", "http://127.0.0.1:80/ping" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -91,7 +92,6 @@ services:
 configs:
   traefik_yml:
     file: "./configs/traefik.yml"
-
 
 networks:
   docker-net:
