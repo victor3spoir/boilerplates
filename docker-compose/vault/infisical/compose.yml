@@ -1,17 +1,19 @@
 # https://infisical.com/docs/documentation/getting-started/overview
 name: infisical
 
+
+x-log-config: &log-config
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
 services:
 
   infisical-redis:
     image: redis:8-alpine
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-    container_name: infisical-dev-redis
-    env_file: .env
+    <<: *log-config
     restart: unless-stopped
     deploy:
       resources:
@@ -29,15 +31,9 @@ services:
       - infisical-redis-vol:/data
 
   infisical-db:
-    container_name: infisical-db
     image: postgres:18-alpine
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+    <<: *log-config
     restart: unless-stopped
-    env_file: .env
     deploy:
       resources:
         reservations:
@@ -51,8 +47,8 @@ services:
     networks:
       infisical-net:
     environment:
-      POSTGRES_USER: infisical
-      POSTGRES_DB: infisical
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
       test: [ 'CMD-SHELL', 'pg_isready -U $$POSTGRES_USER' ]
@@ -61,7 +57,6 @@ services:
       retries: 5
 
   infisical-backend:
-    container_name: infisical-backend
     restart: unless-stopped
     depends_on:
       infisical-db:
@@ -69,16 +64,11 @@ services:
       infisical-redis:
         condition: service_started
     image: infisical/infisical:latest
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+    <<: *log-config
     expose:
       - 9464 #prometheus
-      - 8080
+      - 8080 #ui & api
 
-    env_file: .env
     deploy:
       resources:
         reservations:
@@ -87,32 +77,43 @@ services:
         limits:
           memory: "1000MiB"
           cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     environment:
       NODE_ENV: production
       SITE_URL: https://infisical.localhost
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
       AUTH_SECRET: ${AUTH_SECRET}
-      DB_CONNECTION_URI: postgres://infisical:${POSTGRES_PASSWORD}@infisical-db:5432/infisical
-      SMTP_HOST: mailpit
+      DB_CONNECTION_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@infisical-db:5432/${POSTGRES_DB}
       SMTP_PORT: 1025
-      SMTP_USERNAME: v3r@gmail.com
-      SMTP_PASSWORD: Password123!
-      SMTP_FROM_ADDRESS: v3r@gmail.com
-      SMTP_FROM_NAME: Infisical
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM_ADDRESS: ${SMTP_FROM_ADDRESS}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME}
       SMTP_IGNORE_TLS: true
       OTEL_TELEMETRY_COLLECTION_ENABLED: true
-      OTEL_EXPORT_TYPE: prometheus #otlp
+      OTEL_DROP_HIGH_CARDINALITY_METERS: true
+      OTEL_EXPORT_TYPE: prometheus #otlp | prometheus
       REDIS_URL: redis://infisical-redis:6379
       # OTEL_EXPORT_OTLP_ENDPOINT: http://alloy:4381
       # OTEL_COLLECTOR_BASIC_AUTH_USERNAME: 
       # OTEL_COLLECTOR_BASIC_AUTH_PASSWORD: 
       # OTEL_DROP_HIGH_CARDINALITY_METERS: false
+      # CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
     networks:
       infisical-net:
       docker-net:
     labels:
       traefik.enable: "true"
       traefik.http.services.nginx-svc.loadbalancer.server.port: 8080
+      traefik.http.services.nginx-svc.loadbalancer.healthcheck.path: "/api/status"
+      traefik.http.services.nginx-svc.loadbalancer.healthcheck.interval: "30s"
+      traefik.http.services.nginx-svc.loadbalancer.healthcheck.timeout: "5s"
       traefik.http.routers.nginx-rtr.entrypoints: web,websecure
       traefik.http.routers.nginx-rtr.rule: Host(`infisical.localhost`)
       traefik.http.routers.nginx-rtr.tls: true
